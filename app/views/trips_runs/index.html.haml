@@ -17,6 +17,7 @@
 :javascript
   var run_ids = #{@runs.pluck(:id) || []};
   var target_run_id = #{params[:run_id] || false} || null;
+  var dropping_to_trips = false;
   // Local Storages
   // dispatch_loaded_run_ids = [] (list of run panels that are open)
   // dispatch_runs_panel_collapsed: 1/0 (0 if the runs panel is collapsed)
@@ -193,6 +194,31 @@
       zIndex: 10010,
       helper: function() {
         return $(this).parent('tr').clone();
+      }
+    });
+
+    $("#unassigned_trips_panel").droppable({
+      tolerance: 'pointer',
+      hoverClass: "drop-zone-active-red",
+      over: function(event, ui) {
+        $(".run_trips_panel").droppable("disable");
+      },
+      out: function(event, ui) {
+        $(".run_trips_panel").droppable("enable");
+      },
+      drop: function(e, ui) {
+        $('.drop-zone-active').removeClass('drop-zone-active');
+        var source_panel = ui.draggable.parents('.panel');
+        var prev_run_id = source_panel.data('run-id');
+        if(prev_run_id) {
+          var trip_id = ui.draggable.data('trip-id');
+          unschedule_trips(trip_id, $('.unassigned_trip_type_dropdown').data('status-id'), prev_run_id);
+        }
+
+        setTimeout(function() {
+          $(".run_trips_panel").droppable("enable");
+        }, 200);
+        
       }
     });
 

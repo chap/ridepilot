@@ -5,7 +5,7 @@
   options[Run::CAB_RUN_ID] = 'Cab' if current_provider.try(:cab_enabled?)
   unassigned_trip_status_id = session[:unassigned_trip_status_id].try(:to_i)
 
-%span.dropdown.dispatch-action.unassigned_trip_type_dropdown{style: 'margin-bottom: 5px;'}
+%span.dropdown.dispatch-action.unassigned_trip_type_dropdown{style: 'margin-bottom: 5px;', data: {status_id: unassigned_trip_status_id}}
   %a.dropdown-toggle.non_jump_top{href: '#', type: 'button', style: 'color: white; font-size: small;', data: {toggle: 'dropdown'}} 
     = "Showing "
     %b{style: 'color: pink;'}

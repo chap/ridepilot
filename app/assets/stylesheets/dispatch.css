@@ -60,6 +60,13 @@
   border: 2px solid #000;
 }
 
+.drop-zone-active-red {
+  -moz-box-shadow: 0 4px 8px rgba(255,0,0,0.5);
+  -webkit-box-shadow: 0 4px 8px rgba(255,0,0,0.5);
+  box-shadow: 0 4px 8px rgba(255,0,0,0.5);
+  border: 2px solid #F00;
+}
+
 .dispatch-action a:hover, a:focus {
   text-decoration: none !important;
 }

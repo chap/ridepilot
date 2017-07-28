@@ -66,9 +66,9 @@ class TripsRunsController < ApplicationController
           end
         end
 
-        run = Run.find_by_id @new_status_id
-        if run
-          TrackerActionLog.trips_added_to_run(run, Trip.where(id: assigned_trip_ids), current_user)
+        @target_run = Run.find_by_id @new_status_id
+        if @target_run
+          TrackerActionLog.trips_added_to_run(@target_run, Trip.where(id: assigned_trip_ids), current_user)
         end
 
         @errors.uniq!

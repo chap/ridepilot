@@ -5,4 +5,12 @@
   <% if @errors && @errors.any? && @error_trip_count > 0 %>
     bootbox.alert("<b>Action failed for <%= @error_trip_count %> trip(s). Error(s) are as follows:</b><br><%= @errors.join('.<br>')%>");
   <% end %>
+
+  <% if @target_run %>
+    var run_id = <%= @target_run.id %>;
+    if(run_id) {
+      $('#run_trips_panel_' + run_id).replaceWith("<%= j render('trips_runs/run_trips_panel', run: @target_run) %>");
+      $('#runs_panel table tbody tr[data-run-id=' + run_id + '] td.trips_count').html(<%= @target_run.reload.trips.count%>);
+    }
+  <% end %>
 <% end %>

@@ -34,7 +34,10 @@
 :javascript
   $("#run_trips_panel_#{run.id}").droppable({
     tolerance: 'pointer',
-    hoverClass : 'drop-zone-active',
+    hoverClass: "drop-zone-active",
+    over: function(e, ui) {
+      $("#run_trips_panel_#{run.id}").addClass("drop-zone-active");
+    },
     drop: function(e, ui) {
       var source_panel = ui.draggable.parents('.panel');
       var prev_run_id = source_panel.data('run-id');
