@@ -79,6 +79,85 @@
 - else
   = render 'shared/hide_invisible_form_fields_js', model_name: "trip", table_name: 'trips', provider_id:  current_provider.try(:id)
 
+- if @trip.run && !@trip.new_record?
+  :javascript
+    function check_run_disruption(callback) {
+      console.log('checking...');
+      var attrs = [];
+
+      if($('#trip_customer_id').val() != "#{@trip.customer_id}") {
+        attrs.push('customer');
+      }
+
+      var original_date = moment("#{@trip.date.to_s}");
+      var new_date = moment($('#trip_date').val());
+      
+      if(new_date - original_date != 0) {
+        attrs.push('date');
+      }
+
+      var today_str = moment(new Date()).format('YYYY-MM-DD');
+      var original_pickup_time = moment(today_str + " #{@trip.pickup_time.try(:to_s, :time_only)}");
+      var new_pickup_time = moment(today_str + " " +$('#trip_pickup_time').val());
+      if(new_pickup_time - original_pickup_time != 0) {
+        attrs.push('pickup time');
+      }
+
+      var original_appointment_time = moment(today_str + " #{@trip.appointment_time.try(:to_s, :time_only)}");
+      var new_appointment_time = moment(today_str + " " + $('#trip_appointment_time').val());
+      if(new_appointment_time - original_appointment_time != 0) {
+        attrs.push('appointment time');
+      }
+
+      if($('#trip_pickup_address_id').val() != "#{@trip.pickup_address_id}") {
+        attrs.push('pickup address');
+      }
+      if($('#trip_dropoff_address_id').val() != "#{@trip.dropoff_address_id}") {
+        attrs.push('dropoff address');
+      }
+      if($('#trip_mobility_id').val() != "#{@trip.mobility_id}") {
+        attrs.push('mobility');
+      }
+      if($('#trip_guest_count').length > 0 && $('#trip_guest_count').val() != "#{@trip.guest_count}") {
+        attrs.push('guest size');
+      }
+      if($('#trip_attendant_count').length > 0 && $('#trip_attendant_count').val() != "#{@trip.attendant_count}") {
+        attrs.push('attendant size');
+      }
+      if($('#trip_group_size').length >0 && $('#trip_group_size').val() != "#{@trip.group_size}") {
+        attrs.push('group size');
+      }
+      if($('#trip_mobility_device_accommodations').val() != "#{@trip.mobility_device_accommodations}") {
+        attrs.push('mobility device count');
+      }
+
+      if(attrs.length == 0) {
+        if(callback) {
+          callback();
+        }
+      } else {
+        bootbox.confirm("<b>Changes in following fields (<span style='color: red;'>" + attrs.join(', ') + "</span>) are likely to disrupt the run and the trip would be unscheduled. Are you sure to continue?</b>", function(result) {
+          if(result) {
+            if(callback) {
+              callback();
+            }
+          }
+        });
+      }
+    }
+
+- if @trip.is_return? && @trip.run && !@trip.new_record?
+  :javascript
+    $(function() {
+      $('.trip_form').submit(function(e) {
+        var form = this;
+        e.preventDefault();
+        check_run_disruption(function() {
+          form.submit();
+        });
+      });
+    });
+
 - if !@is_repeating_trip && !@trip.is_return?
   = render partial: 'trips/double_booked_trip_dialog'
   :javascript
@@ -97,22 +176,31 @@
       dbh.form.submit(function(e) {
         var form = this;
         e.preventDefault();
-        var requestBody = dbh.requestBodyFromForm(#{@trip_id || 'null'});
+        var callback = function() {
+          var requestBody = dbh.requestBodyFromForm(#{@trip_id || 'null'});
 
-        dbh.checkDoubleBooked(requestBody, function(data) {
-          // If double booking exists, alert user and let them cancel or continue
-          if(data.trips.length > 0) {
-            dbh.populateTable(data.trips);
-            dbh.showModal();
-            // If modal submit button is clicked, submit form.
-            dbh.modal.find('.submit-double-book-modal').click(function() {
+          dbh.checkDoubleBooked(requestBody, function(data) {
+            // If double booking exists, alert user and let them cancel or continue
+            if(data.trips.length > 0) {
+              dbh.populateTable(data.trips);
+              dbh.showModal();
+              // If modal submit button is clicked, submit form.
+              dbh.modal.find('.submit-double-book-modal').click(function() {
+                form.submit();
+              });
+            // Else, submit form
+            } else {
               form.submit();
-            });
-          // Else, submit form
-          } else {
-            form.submit();
-          }
-        });
+            }
+          });
+        }
+
+        // first check run disruption warning
+        if(check_run_disruption) {
+          check_run_disruption(callback);
+        } else {
+          check_run_disruption();
+        }
         
       });
     });
