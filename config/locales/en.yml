@@ -1126,6 +1126,7 @@ en:
   new_run_heading: "New Run"
   new_run_submit: "Submit"
   runs: 'Runs'
+  assigned_to: "Assigned to"
   new_run: 'New Run'
   run_tracking: "Tracking"
   run_tracking_senior: "Senior"

@@ -1,7 +1,8 @@
 %span{style: 'font-size: small;'}
   - if @trip.run
-    = "#{translate_helper(:run)}: "
+    = "#{translate_helper(:assigned_to)}: "
     = link_to @trip.run.name, run_path(@trip.run), target: '_blank'
+    = "(#{run_summary(@trip.run)})"
   - elsif @trip.is_stand_by
     Standby
   - elsif @trip.cab

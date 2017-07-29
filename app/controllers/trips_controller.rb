@@ -216,9 +216,20 @@ class TripsController < ApplicationController
   def new
     @trip = Trip.new(:provider_id => current_provider_id)
 
-    if params[:run_id] && run = Run.find_by_id(params[:run_id])
-      @trip.run_id = run.id 
-      @trip.date = run.date
+    if params[:run_id]
+      case params[:run_id].to_i 
+      when Run::UNSCHEDULED_RUN_ID
+      when Run::STANDBY_RUN_ID
+        @trip.is_stand_by = true
+      when Run::CAB_RUN_ID
+        @trip.cab = true 
+      else
+        run = Run.find_by_id(params[:run_id])
+        if run 
+          @trip.run_id = run.id 
+          @trip.date = run.date
+        end
+      end
     end
 
     if params[:customer_id] && customer = Customer.find_by_id(params[:customer_id])
