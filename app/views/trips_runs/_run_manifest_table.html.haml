@@ -29,7 +29,11 @@
           %td
             %input.trip-selected{type: "checkbox"}
           %td= itin[:is_recurring] ? 'Recur' : 'Daily'
-          %td= itin[:leg_flag] == 1 ? 'PU' : 'DO'
+          %td{style: 'white-space: nowrap;'}
+            = itin[:leg_flag] == 1 ? 'PU' : 'DO'
+            - if itin[:is_new]
+              %span.badge.new-trip-badge.pull-right{style: 'background-color: red;'}
+                New
           %td= itin[:customer]
           %td= itin[:address]
           %td= format_time_for_listing(itin[:time])

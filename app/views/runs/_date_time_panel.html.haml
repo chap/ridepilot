@@ -30,12 +30,12 @@
         .col-sm-3
           = f.label :actual_start_time, translate_helper("actual_start_time")
         .col-sm-9
-          = render 'shared/time_inputs', field_name: :actual_start_time, time: @run.actual_start_time, f: f
+          = render 'shared/time_inputs', field_name: :actual_start_time, time: @run.actual_start_time, f: f, required: false
       .form-group.col-sm-12
         .col-sm-3
           = f.label :actual_end_time, translate_helper("actual_end_time")
         .col-sm-9
-          = render 'shared/time_inputs', field_name: :actual_end_time, time: @run.actual_end_time, f: f
+          = render 'shared/time_inputs', field_name: :actual_end_time, time: @run.actual_end_time, f: f, required: false
 
 - if edit_mode != :show 
   = render "shared/date_time_picker_javascript"

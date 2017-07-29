@@ -15,16 +15,22 @@ module DispatchHelper
         comments: trip.notes,
         result: trip.trip_result.try(:name) || 'Pending'
       }
+      pickup_sort_key = trip.pickup_time.try(:to_i).to_s + "_1"
       itins << trip_data.merge(
         id: "trip_#{trip.id}_leg_1",
         leg_flag: 1,
         time: trip.pickup_time,
+        sort_key: pickup_sort_key,
         address: trip.pickup_address.try(:one_line_text)
       )
+
+      dropoff_sort_time = trip.appointment_time ? trip.appointment_time : trip.pickup_time
+      dropoff_sort_key = dropoff_sort_time.try(:to_i).to_s + "_2"
       itins << trip_data.merge(
         id: "trip_#{trip.id}_leg_2",
         leg_flag: 2,
         time: trip.appointment_time,
+        sort_key: dropoff_sort_key,
         address: trip.dropoff_address.try(:one_line_text)
       )
     end
@@ -32,11 +38,12 @@ module DispatchHelper
     if run.manifest_order && run.manifest_order.any?
       itins.sort_by { |itin| 
         ordinal = run.manifest_order.index(itin[:id]) 
+        itin[:is_new] = true unless ordinal
         # put unindexed itineraries at the bottom
-        ordinal ? "a_#{ordinal}" : "b" 
+        ordinal ? "a_#{ordinal}" : "b_#{itin[:sort_key]}" 
       }
     else
-      itins.sort_by { |itin| itin[:time] }
+      itins.sort_by { |itin| itin[:sort_key] }
     end
   end
 

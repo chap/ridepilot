@@ -472,7 +472,7 @@ class Trip < ActiveRecord::Base
       run_start_time = run.scheduled_start_time
       run_end_time = run.scheduled_end_time
 
-      if run_start_time && run_end_time
+      if run_start_time && run_end_time && pickup_time
         is_valid = (time_portion(self.pickup_time) >= time_portion(run_start_time)) && 
         (self.appointment_time.nil? || time_portion(self.appointment_time) <= time_portion(run_end_time))
 

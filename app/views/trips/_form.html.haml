@@ -152,9 +152,15 @@
       $('.trip_form').submit(function(e) {
         var form = this;
         e.preventDefault();
-        check_run_disruption(function() {
+        var callback = function() {
           form.submit();
-        });
+        };
+        // first check run disruption warning
+        if(typeof check_run_disruption != 'undefined') {
+          check_run_disruption(callback);
+        } else {
+          callback();
+        }
       });
     });
 
@@ -196,10 +202,10 @@
         }
 
         // first check run disruption warning
-        if(check_run_disruption) {
+        if(typeof check_run_disruption != 'undefined') {
           check_run_disruption(callback);
         } else {
-          check_run_disruption();
+          callback();
         }
         
       });

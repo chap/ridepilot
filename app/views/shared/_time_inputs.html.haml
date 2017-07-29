@@ -4,10 +4,18 @@
     is_pm = hour >= 12
   end
 
+  required = true if local_assigns[:required].nil?
+
+  hour_input_field_attrs = { size: 3, maxlength: 2, placeholder: 'HH', class: 'form-control time_field_hour'}
+  hour_input_field_attrs[:required] = true if required
+
+  minute_input_field_attrs = { size: 3, maxlength: 2, placeholder: 'MM', class: 'form-control time_field_minute'}
+  minute_input_field_attrs[:required] = true if required
+
 .form-inline.time-field{class: field_name}
   = f.hidden_field field_name, value: time.try(:to_s, :time_only), class: 'time_field_value'
-  = text_field_tag :hour, time.try(:strftime, "%I"), placeholder: 'HH', size: 3, maxlength: 2, class: 'form-control time_field_hour'
+  = text_field_tag :hour, time.try(:strftime, "%I"),  hour_input_field_attrs
   %b= ':'
-  = text_field_tag :minute, time.try(:strftime, "%M"), placeholder: 'MM', size: 3, maxlength: 2, class: 'form-control time_field_minute'
+  = text_field_tag :minute, time.try(:strftime, "%M"), minute_input_field_attrs
   %button.form-control.am-pm{type: 'button', role: 'button', data: {is_pm: is_pm ? 'true' : 'false'}}
     = is_pm ? 'PM' : 'AM'
