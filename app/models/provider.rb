@@ -51,6 +51,8 @@ class Provider < ActiveRecord::Base
   DEFAULT_ELIGIBLE_AGE = 65
   
   validates :name, :uniqueness => { :case_sensitive => false, conditions: -> { where(deleted_at: nil)} }, :length => { :minimum => 2 }
+  normalize_attribute :name, :with => [ :strip ]
+  
   validates_numericality_of :oaa3b_per_ride_reimbursement_rate,               :greater_than => 0, :allow_blank => true
   validates_numericality_of :ride_connection_per_ride_reimbursement_rate,     :greater_than => 0, :allow_blank => true
   validates_numericality_of :trimet_per_ride_reimbursement_rate,              :greater_than => 0, :allow_blank => true

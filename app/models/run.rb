@@ -40,6 +40,8 @@ class Run < ActiveRecord::Base
   before_validation :fix_dates, :set_complete
 
   validate                  :name_uniqueness
+  normalize_attribute :name, :with => [ :strip ]
+  
   validates_date            :date
   validates_datetime        :actual_start_time, allow_blank: true
   validates_datetime        :actual_end_time, after: :actual_start_time, allow_blank: true

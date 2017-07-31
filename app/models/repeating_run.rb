@@ -14,6 +14,8 @@ class RepeatingRun < ActiveRecord::Base
 
   validates :comments, :length => { :maximum => 30 }
   validate :name_uniqueness
+  normalize_attribute :name, :with => [ :strip ]
+  
   validate :driver_availability
   validate :vehicle_availability
   validate :repeating_schedule_day_present

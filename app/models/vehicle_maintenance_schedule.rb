@@ -7,6 +7,8 @@ class VehicleMaintenanceSchedule < ActiveRecord::Base
                     scope: :vehicle_maintenance_schedule_type, 
                     case_sensitive: false,
                     message: 'should be unique within a schedule type' }
+  normalize_attribute :name, :with => [ :strip ]
+
   validates :mileage, presence: true, 
                     numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
