@@ -18,6 +18,8 @@ class User < ActiveRecord::Base
   validates :username, :email, uniqueness: { :case_sensitive => false, conditions: -> { where(deleted_at: nil) } }
   validates_presence_of :first_name, :last_name, :username
   validate :valid_phone_number
+
+  normalize_attribute :username, :email, :first_name, :last_name, :with => [ :strip ]
   
   # Let Devise handle the password length requirement
   validates :password, confirmation: true, format: {

@@ -9,6 +9,7 @@ module Lookupable
     # Eligibility is a special case, because its value column is named as code, so value_column_name should be 'code'
     validates_presence_of :name, :caption, :value_column_name
     validates_uniqueness_of :name
+    normalize_attribute :name, :with => [ :strip ]
 
     def model
       (model_name || name.classify).constantize

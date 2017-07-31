@@ -42,6 +42,8 @@ class Vehicle < ActiveRecord::Base
   validates :ownership, inclusion: { in: OWNERSHIPS.map(&:to_s), allow_blank: true }
   validates :initial_mileage, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10000000 }
   validate  :valid_phone_number
+
+  normalize_attribute :name, :vin, :license_plate, :with => [ :strip ]
   
   scope :for_provider,  -> (provider_id) { where(provider_id: provider_id) }
   scope :reportable,    -> { where(reportable: true) }
