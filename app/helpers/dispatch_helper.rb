@@ -58,8 +58,8 @@ module DispatchHelper
         "#{trip_count} trips"
       end
 
-      vehicle_part = "Vehicle: #{run.vehicle.try(:name) || (empty)}"
-      driver_part = "Driver: #{run.driver.try(:name) || (empty)}"
+      vehicle_part = "Vehicle: #{run.vehicle.try(:name) || '(empty)'}"
+      driver_part = "Driver: #{run.driver.try(:user_name) || '(empty)'}"
       run_time_part = if !run.scheduled_start_time && !run.scheduled_end_time
         "Run time: (not specified)"
       else
