@@ -70,3 +70,18 @@
 .dispatch-action a:hover, a:focus {
   text-decoration: none !important;
 }
+
+span.run_summary p {
+  display: inline;
+  padding: 0px !important;
+  margin: 0px !important;
+  line-height: normal;
+}
+
+span.run_summary .overdue-danger, span.run_summary .overdue-warning {
+  padding: 5px !important;
+}
+
+span.run_summary .overdue-warning {
+  color: black;
+}

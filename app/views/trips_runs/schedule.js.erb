@@ -3,7 +3,7 @@ var prev_run_id = <%= params[:prev_run_id] || false %> || null;
   var trip_id = <%= params[:trip_id] || false %> || null;
   <% if @prev_run.present? %>
     $('#run_trips_panel_' + prev_run_id).find('tr[data-trip-id=' + trip_id + ']').remove();
-    $('#run_trips_panel_' + prev_run_id).find('span.run_summary').html("<%= run_summary(@prev_run) %>")
+    $('#run_trips_panel_' + prev_run_id).find('span.run_summary').html("<%= j simple_format(run_summary(@prev_run)) %>")
     $('#runs_panel table tbody tr[data-run-id=' + prev_run_id + '] td.trips_count').html(<%= @prev_run.reload.trips.count%>);
   <% else %>
     $('#unassigned_trips_table').find('tr[data-trip-id=' + trip_id + ']').remove();

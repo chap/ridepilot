@@ -27,7 +27,7 @@
       .pull-left
         = run.name
       %span.run_summary{style: 'font-size: small;'}
-        = run_summary(run)
+        = simple_format run_summary(run)
   .panel-body
     = render 'trips_runs/run_manifest_table', run: run, trips: run.trips
 

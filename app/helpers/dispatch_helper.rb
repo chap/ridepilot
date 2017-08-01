@@ -58,8 +58,22 @@ module DispatchHelper
         "#{trip_count} trips"
       end
 
-      vehicle_part = "Vehicle: #{run.vehicle.try(:name) || '(empty)'}"
-      driver_part = "Driver: #{run.driver.try(:user_name) || '(empty)'}"
+      vehicle = run.vehicle
+      if vehicle 
+        vehicle_overdue_check = get_vehicle_warnings(vehicle, run.date)
+        vehicle_part = "<span class='#{vehicle_overdue_check[:class_name]}' title='#{vehicle_overdue_check[:tips]}'>Vehicle: #{vehicle.try(:name) || '(empty)'}</span>"
+      else
+        vehicle_part = "<span>Vehicle: (empty)</span>"
+      end
+
+      driver = run.driver
+      if driver 
+        driver_overdue_check = get_driver_warnings(driver, run.date)
+        driver_part = "<span class='#{driver_overdue_check[:class_name]}' title='#{driver_overdue_check[:tips]}'>Driver: #{driver.try(:user_name) || '(empty)'}</span>"
+      else
+        driver_part = "<span>Driver: (empty)</span>"
+      end
+
       run_time_part = if !run.scheduled_start_time && !run.scheduled_end_time
         "Run time: (not specified)"
       else
