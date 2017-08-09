@@ -205,32 +205,53 @@ class TrackerActionLog < PublicActivity::Activity
     }  
   end
 
-  def self.trips_added_to_run(run, trips, user)
+  def self.trips_added_to_run(run, trips, user, day_of_week = nil)
     return if !run || !trips || trips.empty?
-
-    run.create_activity :trip_added, owner: user, params: {
+    params = {
       count: trips.size
     } 
+    if day_of_week
+      params[:day_of_week] = day_of_week
+    end
+
+    run.create_activity :trip_added, owner: user, params: params
   end
 
-  def self.trips_removed_from_run(run, trips, user)
+  def self.trips_removed_from_run(run, trips, user, day_of_week = nil)
     return if !run || !trips || trips.empty?
 
-    run.create_activity :trip_removed, owner: user, params: {
+    params = {
       count: trips.size
-    }
+    } 
+    if day_of_week
+      params[:day_of_week] = day_of_week
+    end
+
+    run.create_activity :trip_removed, owner: user, params: params
   end
 
-  def self.rearrange_trip_itineraries(run, user)
+  def self.rearrange_trip_itineraries(run, user, day_of_week = nil)
     return if !run
 
-    run.create_activity :itinerary_rearranged, owner: user
+    if day_of_week
+      run.create_activity :itinerary_rearranged, owner: user, params: {
+        day_of_week: day_of_week
+      }
+    else
+      run.create_activity :itinerary_rearranged, owner: user
+    end
   end
 
-  def self.cancel_run(run, user)
+  def self.cancel_run(run, user, day_of_week = nil)
     return if !run
 
-    run.create_activity :run_cancelled, owner: user
+    if day_of_week
+      run.create_activity :run_cancelled, owner: user, params: {
+        day_of_week: day_of_week
+      }
+    else
+      run.create_activity :run_cancelled, owner: user
+    end
   end
 
   private

@@ -8,12 +8,12 @@ class RepeatingRun < ActiveRecord::Base
   include RecurringRideCoordinatorScheduler
   include PublicActivity::Common
 
-  serialize :manifest_order, Array
-
   has_paper_trail
 
   has_many :repeating_trips, through: :weekday_assignments
   has_many :weekday_assignments, dependent: :destroy
+
+  has_many :repeating_run_manifest_orders, dependent: :destroy
 
   validates :comments, :length => { :maximum => 30 }
   validate :name_uniqueness

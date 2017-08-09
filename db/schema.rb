@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170802212800) do
+ActiveRecord::Schema.define(version: 20170809222718) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -620,6 +620,16 @@ ActiveRecord::Schema.define(version: 20170802212800) do
 
   add_index "regions", ["deleted_at"], :name => "index_regions_on_deleted_at"
   add_index "regions", ["the_geom"], :name => "index_regions_on_the_geom", :spatial => true
+
+  create_table "repeating_run_manifest_orders", force: true do |t|
+    t.integer  "repeating_run_id"
+    t.integer  "wday"
+    t.text     "manifest_order"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "repeating_run_manifest_orders", ["repeating_run_id"], :name => "index_repeating_run_manifest_orders_on_repeating_run_id"
 
   create_table "repeating_runs", force: true do |t|
     t.text     "schedule_yaml"

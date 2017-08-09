@@ -169,9 +169,9 @@ module TrackerActionLogHelper
         count = params[:count].try(:to_i)
         if count
           if count > 1
-            "#{count} trips added."
+            (params[:day_of_week].blank? ? "" : "#{params[:day_of_week].titleize}: ") + "#{count} trips added."
           else
-            "1 trip added."
+            (params[:day_of_week].blank? ? "" : "#{params[:day_of_week].titleize}: ") + "1 trip added."
           end
         end
       end
@@ -183,19 +183,23 @@ module TrackerActionLogHelper
         count = params[:count].try(:to_i)
         if count
           if count > 1
-            "#{count} trips removed."
+            (params[:day_of_week].blank? ? "" : "#{params[:day_of_week].titleize}: ") + "#{count} trips removed."
           else
-            "1 trip removed."
+            (params[:day_of_week].blank? ? "" : "#{params[:day_of_week].titleize}: ") + "1 trip removed."
           end
         end
       end
     when "run.itinerary_rearranged", "repeating_run.itinerary_rearranged"
       run = log.trackable
-      "Trip itineraries rearranged" if run.present?
+      params = log.parameters || {}
+      if run.present?
+        (params[:day_of_week].blank? ? "" : "#{params[:day_of_week].titleize}: ") + "Trip itineraries rearranged" 
+      end
     when "run.run_cancelled", "repeating_run.run_cancelled"  
       run = log.trackable
+      params = log.parameters || {}
       if run.present?
-        "Run cancelled." 
+        (params[:day_of_week].blank? ? "" : "#{params[:day_of_week].titleize}: ") + "Run cancelled." 
       end
     end
 

@@ -55,6 +55,7 @@ class Run < ActiveRecord::Base
 
   scope :after,                  -> (date) { where('runs.date > ?', date) }
   scope :after_today,            -> { where('runs.date > ?', Date.today) }
+  scope :today_and_future,       -> { where('runs.date >= ?', Date.today) }
   scope :prior_to,               -> (date) { where('runs.date < ?', date) }
   scope :today_and_prior,        -> { where('runs.date <= ?', Date.today) }
   scope :for_date,               -> (date) { where(date: date) }
@@ -76,8 +77,8 @@ class Run < ActiveRecord::Base
   scope :repeating_based_on,     ->(scheduler) { where(repeating_run_id: scheduler.try(:id)) }
   scope :other_than,             -> (run) { run.new_record? ? all : where.not(id: run.id) }
   scope :not_a_child_of,         -> (repeating_run) { where.not(repeating_run_id: [repeating_run.id].compact) }
-  scope :daily,              -> {where(repeating_run_id: nil)}
-  scope :recurring,                  -> {where.not(repeating_run_id: nil)}
+  scope :daily,                  -> {where(repeating_run_id: nil)}
+  scope :recurring,              -> {where.not(repeating_run_id: nil)}
 
   scope :other_overlapped_runs, -> (run) { overlapped(run).other_than(run) }
 
@@ -86,6 +87,16 @@ class Run < ActiveRecord::Base
   STANDBY_RUN_ID = -3 # standby queue id
   TRIP_UNMET_NEED_ID = -4 # put trip to unmet need
   
+  # based on recurring dispatching, assign recurring trip instances to recurring run instances
+  def dispatch_recurring_trips!
+    recurring.each do |r|
+      rr = r.repeating_run
+      next unless rr.present?
+
+      
+    end
+  end
+
   # "Cancels" a run: removes any trips from that run
   def cancel!
     trips.clear # Doesn't actually destroy the records, just removes the association

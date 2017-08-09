@@ -106,7 +106,7 @@ class DispatchersController < ApplicationController
 
   def cancel_run
     @run = Run.find_by_id params[:run_id]
-    if @run
+    if @run && @run.trips.any?
       @run.cancel! 
       TrackerActionLog.cancel_run(@run, current_user)
     end

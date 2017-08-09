@@ -40,10 +40,15 @@ module DispatchHelper
         address: trip.dropoff_address.try(:one_line_text)
       )
     end
-
-    if run.manifest_order && run.manifest_order.any?
+    
+    manifest_order = if is_recurring
+      run.repeating_run_manifest_orders.for_wday(recurring_dispatch_wday).first.try(:manifest_order)
+    else
+      run.manifest_order
+    end
+    if manifest_order && manifest_order.any?
       itins.sort_by { |itin| 
-        ordinal = run.manifest_order.index(itin[:id]) 
+        ordinal = manifest_order.index(itin[:id]) 
         itin[:is_new] = true unless ordinal
         # put unindexed itineraries at the bottom
         ordinal ? "a_#{ordinal}" : "b_#{itin[:sort_key]}" 
