@@ -186,40 +186,45 @@ module ApplicationHelper
   end
 
   def get_vehicle_warnings(vehicle, run = nil)
-    return {} unless vehicle
-
     class_name = ''
     warning_msg = ''
+    overdue_msg = ''
 
-    if run && run.date && !vehicle.active_for_date?(run.date)
+    unless vehicle
       class_name = "overdue-danger"
-      warning_msg = "Inactive for the run date."
-    end
+      warning_msg = "No vehicle assigned."
+    else
+      if run && run.date && !vehicle.active_for_date?(run.date)
+        class_name = "overdue-danger"
+        warning_msg = "Inactive for the run date."
+      end
+      
+      tips = []
+
+      if vehicle.vehicle_compliances.legal.overdue.any?
+        tips << "legal requirement"
+        class_name = 'overdue-danger'
+      end
+
+      if vehicle.vehicle_maintenance_compliances.has_overdue?
+        tips << "maintenance compliance"
+        class_name = 'overdue-warning' if class_name.blank?
+      end
+
+      if vehicle.vehicle_compliances.non_legal.overdue.any?
+        tips << "compliance event"
+        class_name = 'overdue-warning' if class_name.blank?
+      end
+
+      if vehicle.expired?
+        tips << "warranty"
+        class_name = 'overdue-warning' if class_name.blank?
+      end
+
+      overdue_msg = "Overdue: " + tips.join(', ') if tips.any?
     
-    tips = []
-
-    if vehicle.vehicle_compliances.legal.overdue.any?
-      tips << "legal requirement"
-      class_name = 'overdue-danger'
     end
 
-    if vehicle.vehicle_maintenance_compliances.has_overdue?
-      tips << "maintenance compliance"
-      class_name = 'overdue-warning' if class_name.blank?
-    end
-
-    if vehicle.vehicle_compliances.non_legal.overdue.any?
-      tips << "compliance event"
-      class_name = 'overdue-warning' if class_name.blank?
-    end
-
-    if vehicle.expired?
-      tips << "warranty"
-      class_name = 'overdue-warning' if class_name.blank?
-    end
-
-    overdue_msg = "Overdue: " + tips.join(', ') if tips.any?
-    
     {
       class_name: class_name,
       tips: warning_msg ? warning_msg + " " + overdue_msg.to_s : overdue_msg.to_s
@@ -227,42 +232,46 @@ module ApplicationHelper
   end 
 
   def get_driver_warnings(driver, run = nil)
-    return {} unless driver
-
     class_name = ''
     warning_msg = ''
-
-    if run && run.date
-      if !driver.active_for_date?(run.date)
-        class_name = "overdue-danger"
-        warning_msg = "Inactive for the run date. "
-      elsif run.scheduled_start_time && run.scheduled_end_time
-        unless driver.available_between?(run.date.wday, run.scheduled_start_time, run.scheduled_end_time)
+    overdue_msg = ''
+    
+    unless driver 
+      class_name = "overdue-danger"
+      warning_msg = "No driver assigned."
+    else 
+      if run && run.date
+        if !driver.active_for_date?(run.date)
           class_name = "overdue-danger"
-          warning_msg += "Unavailable for the whole run time range. "
-        end
-      elsif 
-        unless driver.available?(run.date.wday)
-          class_name = "overdue-danger"
-          warning_msg += "Unavailable for the run time. "
+          warning_msg = "Inactive for the run date. "
+        elsif run.scheduled_start_time && run.scheduled_end_time
+          unless driver.available_between?(run.date.wday, run.scheduled_start_time, run.scheduled_end_time)
+            class_name = "overdue-danger"
+            warning_msg += "Unavailable for the whole run time range. "
+          end
+        elsif 
+          unless driver.available?(run.date.wday)
+            class_name = "overdue-danger"
+            warning_msg += "Unavailable for the run time. "
+          end
         end
       end
+
+      tips = []
+      
+      if driver.driver_compliances.legal.overdue.any?
+        tips << "legal requirement"
+        class_name = 'overdue-danger'
+      end
+
+      if driver.driver_compliances.non_legal.overdue.any?
+        tips << "compliance event"
+        class_name = 'overdue-warning' if class_name.blank?
+      end
+
+      overdue_msg = "Overdue: " + tips.join(', ') if tips.any?
     end
 
-    tips = []
-    
-    if driver.driver_compliances.legal.overdue.any?
-      tips << "legal requirement"
-      class_name = 'overdue-danger'
-    end
-
-    if driver.driver_compliances.non_legal.overdue.any?
-      tips << "compliance event"
-      class_name = 'overdue-warning' if class_name.blank?
-    end
-
-    overdue_msg = "Overdue: " + tips.join(', ') if tips.any?
-    
     {
       class_name: class_name,
       tips: warning_msg ? warning_msg + " " + overdue_msg.to_s : overdue_msg.to_s
