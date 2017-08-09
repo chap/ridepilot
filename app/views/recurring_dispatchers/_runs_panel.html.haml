@@ -3,7 +3,7 @@
     .pull-right{style: 'padding-right: 0px;'}
       - if can?(:new, RepeatingRun)
         %span.dispatch-action
-          = link_to new_repeating_run_path(from_dispatch: true), style: 'color: white;', title: translate_helper("new_repeating_run_link_text") do 
+          = link_to new_repeating_run_path(from_dispatch: true), style: 'color: white;', title: translate_helper("new_repeating_run_text") do 
             %i.fa.fa-plus
       %span.panel-close-all-runs.dispatch-action{title: 'Close opened run panels'}
         %i.fa.fa-remove

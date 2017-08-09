@@ -19,7 +19,7 @@
 
       - if can?(:new, RepeatingTrip)
         %span.dispatch-action
-          = link_to new_repeating_trip_path(from_dispatch: true, run_id: run.id), style: 'color: white;', title: translate_helper("new_repeating_trip_link_text") do 
+          = link_to new_repeating_trip_path(from_dispatch: true, run_id: run.id), style: 'color: white;', title: translate_helper("new_repeating_trip_text") do 
             %i.fa.fa-plus
       %span.panel-close.dispatch-action{title: 'Close'}
         %i.fa.fa-remove
