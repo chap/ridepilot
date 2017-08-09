@@ -3,7 +3,7 @@ require 'active_support/concern'
 module RecurringRideCoordinator
   extend ActiveSupport::Concern
 
-  DAYS_OF_WEEK = %w{monday tuesday wednesday thursday friday saturday sunday}
+  DAYS_OF_WEEK = %w{sunday monday tuesday wednesday thursday friday saturday}
 
   included do
     before_validation   :update_schedule_attributes
