@@ -111,8 +111,7 @@ class Run < ActiveRecord::Base
 
   def self.update_prior_run_complete_status!
     
-    Run.prior_to(Date.today).incomplete.each do |r|
-      next unless r.provider.try(:active?)  
+    Run.where(provider_id: Provider.active.pluck(:id)).prior_to(Date.today).incomplete.each do |r|
       completed = r.check_complete_status
       r.update(complete: true) if completed
     end
