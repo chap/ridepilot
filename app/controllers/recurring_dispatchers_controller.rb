@@ -103,6 +103,11 @@ class RecurringDispatchersController < ApplicationController
       TrackerActionLog.rearrange_trip_itineraries(@run, current_user, RepeatingRun::DAYS_OF_WEEK[@day_of_week])
     end
   end
+
+  def batch_update_daily_dispatch_action
+    @run = RepeatingRun.find_by_id params[:run_id]
+    Run.repeating_based_on(@run).today_and_future.batch_update_recurring_trip_assignment!
+  end
   
   private
 

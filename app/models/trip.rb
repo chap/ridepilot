@@ -317,10 +317,8 @@ class Trip < ActiveRecord::Base
   end
 
   def self.move_to_unmet!
-    return unless self.first.provider.try(:active?)
-    
     unmet = TripResult.find_by_code('UNMET')
-    self.update_all(is_stand_by: false, trip_result_id: unmet.id) if unmet.present?
+    self.where(provider: Provider.active.pluck(:id)).update_all(is_stand_by: false, trip_result_id: unmet.id) if unmet.present?
   end
 
   def scheduled?

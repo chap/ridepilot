@@ -1,0 +1,3 @@
+<% if @run %>
+  $('#run_trips_panel_' + <%= @run.id || ""%> + " .batch_update_daily_dispatch_action").remove();
+<% end %>

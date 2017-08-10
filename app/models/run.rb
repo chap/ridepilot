@@ -87,13 +87,79 @@ class Run < ActiveRecord::Base
   STANDBY_RUN_ID = -3 # standby queue id
   TRIP_UNMET_NEED_ID = -4 # put trip to unmet need
   
-  # based on recurring dispatching, assign recurring trip instances to recurring run instances
-  def dispatch_recurring_trips!
+  # based on recurring dispatching, batch assign recurring trip instances to recurring run instances
+  def self.batch_update_recurring_trip_assignment!
     recurring.each do |r|
-      rr = r.repeating_run
-      next unless rr.present?
-
+      next unless r && r.manifest_order.empty?
       
+      r.update_recurring_trip_assignment!
+    end
+  end
+
+  # based on recurring dispatching, assign recurring trip instances to recurring run instances
+  def update_recurring_trip_assignment!
+    return unless self.date
+
+    rr = self.repeating_run
+    return unless rr.present? 
+
+    day_of_week = self.date.wday
+
+    rr_manifest_order = rr.repeating_run_manifest_orders.for_wday(day_of_week).first.try(:manifest_order) || []
+  
+    run_manifest_order = []
+
+    if rr_manifest_order.any?
+      rr_manifest_order.each do |mo|
+        next if mo.blank?
+        # mo format: "trip_{trip_id}_leg_{leg_id}", e.g., "trip_14_leg_!"
+        mo_pieces = mo.split('_')
+        # get recurring trip id
+        rtrip_id = mo_pieces[1].try(:to_i)
+
+        # get recurring trip
+        rtrip = RepeatingTrip.find_by_id(rtrip_id)
+        next unless rtrip.present?
+
+        # get trip instance for run date
+        trip = rtrip.trips.for_date(date).first
+
+        next unless trip.present?
+
+        # make a copy and update run manifest order
+        new_mo_pieces = mo_pieces.dup
+        new_mo_pieces[1] = trip.id
+        run_manifest_order << new_mo_pieces.join("_")
+
+        unless trip.run_id.present?
+          # assign trip to run
+          trip.run = self
+          trip.save(validate: false)
+        end
+      end
+    else
+      rr_weekday_assignments = rr.weekday_assignments.for_wday(day_of_week)
+      if rr_weekday_assignments.any?
+        rr_weekday_assignments.each do |assignment|
+          rtrip = assignment.repeating_trip
+          next unless rtrip.present?
+
+          # get trip instance for run date
+          trip = rtrip.trips.for_date(date).first
+          next unless trip.present?
+
+          unless trip.run_id.present?
+            # assign trip to run
+            trip.run = self
+            trip.save(validate: false)
+          end
+        end
+      end
+    end
+
+    if run_manifest_order.any?
+      self.manifest_order = run_manifest_order 
+      self.save(validate: false)
     end
   end
 
@@ -132,8 +198,7 @@ class Run < ActiveRecord::Base
 
   def self.update_prior_run_complete_status!
     
-    Run.prior_to(Date.today).incomplete.each do |r|
-      next unless r.provider.try(:active?)  
+    Run.prior_to(Date.today).where(provider: Provider.active.pluck(:id)).incomplete.each do |r|
       completed = r.check_complete_status
       r.update(complete: true) if completed
     end

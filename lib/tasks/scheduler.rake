@@ -13,7 +13,7 @@ namespace :scheduler do
     RepeatingTrip.active.generate!
 
     # Assign trips to runs
-    Run.today_and_future.dispatch_recurring_trips!
+    Run.today_and_future.batch_update_recurring_trip_assignment!
 
     # Update run status
     Run.update_prior_run_complete_status!

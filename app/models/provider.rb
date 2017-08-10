@@ -74,6 +74,7 @@ class Provider < ActiveRecord::Base
   after_initialize :init
 
   scope :active, -> { where("inactivated_date is NULL") }
+  scope :inactive, -> { where("inactivated_date is not NULL") }
   scope :customer_sharable, -> { where("customer_nonsharable is NULL or customer_nonsharable != ?", true) }
 
   def init
