@@ -33,9 +33,6 @@
         %td
           = link_to repeating_run_path(run, from_dispatch: true), style: 'padding-right: 5px;', title: "View details" do 
             %i.fa.fa-external-link
-          - if can?(:new, Trip)
-            = link_to new_repeating_trip_path(from_dispatch: true, run_id: run.id), style: 'padding-right: 5px;', title: "New Trip" do 
-              %i.fa.fa-plus
           - if can?(:edit, run)
             = link_to edit_repeating_run_path(run, from_dispatch: true), style: 'padding-right: 5px;', title: 'Edit' do 
               %i.fa.fa-pencil
