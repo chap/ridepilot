@@ -16,7 +16,7 @@
 
 :javascript
   var run_ids = #{@runs.pluck(:id) || []};
-  var target_run_id = #{params[:run_id] || false} || null;
+  var target_run_id = #{params[:run_id].try(:to_i) || nil.to_json};
   var dropping_to_trips = false;
   // Local Storages
   // dispatch_loaded_run_ids = [] (list of run panels that are open)
