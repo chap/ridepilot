@@ -49,7 +49,6 @@ class RepeatingTripsController < ApplicationController
       if @trip.is_all_valid?(current_provider_id) && @trip.save
         TrackerActionLog.create_subscription_trip(@trip, current_user)
         format.html {
-          redirect_to @trip, :notice => 'Subscription trip template was successfully created.'
           if params[:from_dispatch] == 'true'
             redirect_to recurring_dispatchers_path(run_id: params[:run_id]), :notice => 'TrSubscription trip templateip was successfully created.'
           else
