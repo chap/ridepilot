@@ -13,9 +13,9 @@
           = translate_helper(:ask_for_creating_return_trip_message)
           .col-sm-12{style: 'padding: 5px;'}
             = f.label :pickup_time, translate_helper("pickup_time")
-            = render 'shared/time_inputs', field_name: :pickup_time, time: nil, f: f
+            = render 'shared/time_inputs', field_name: :pickup_time, time: nil, f: f, required: false
           .col-sm-12{style: 'padding: 5px;'}
             = f.label :appointment_time, translate_helper("appointment_time")
-            = render 'shared/time_inputs', field_name: :appointment_time, time: nil, f: f
+            = render 'shared/time_inputs', field_name: :appointment_time, time: nil, f: f, required: false
 
   = render "shared/time_inputs_javascript"

@@ -36,7 +36,7 @@
       .col-sm-3
         = f.label :appointment_time, translate_helper("appointment_time")
       .col-sm-9
-        = render 'shared/time_inputs', field_name: :appointment_time, time: @trip.appointment_time, f: f
+        = render 'shared/time_inputs', field_name: :appointment_time, time: @trip.appointment_time, f: f, required: false
     - if edit_mode != :show  # JavaScript for generating date and time pickers
       = render "shared/date_time_picker_javascript"
       :javascript
