@@ -30,6 +30,7 @@
         %td= format_time_for_listing run.scheduled_start_time
         %td= format_time_for_listing run.scheduled_end_time
         %td.trips_count
+          = run.weekday_assignments.for_wday(@day_of_week).count
         %td
           = link_to repeating_run_path(run, from_dispatch: true), style: 'padding-right: 5px;', title: "View details" do 
             %i.fa.fa-external-link

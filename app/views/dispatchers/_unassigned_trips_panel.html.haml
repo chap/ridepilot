@@ -16,7 +16,7 @@
         %span.dispatch-action
           = link_to new_trip_path(from_dispatch: true, run_id: session[:unassigned_trip_status_id].try(:to_i)), style: 'color: white;', title: translate_helper("new_trip_link_text") do 
             %i.fa.fa-plus
-      %span.panel-expand-collapse-reverse.dispatch-action
+      %span.panel-expand-collapse-reverse.dispatch-action{title: 'Collapse/expand'}
         %i.fa.fa-chevron-down
     %h3.panel-title.text-center
       = render 'unassigned_trips_panel_title'

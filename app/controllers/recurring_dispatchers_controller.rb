@@ -126,14 +126,13 @@ class RecurringDispatchersController < ApplicationController
     trip_ids = RepeatingTrip.for_provider(current_provider_id).active
       .collect{|rr| rr.id if rr.try("repeats_#{RepeatingTrip::DAYS_OF_WEEK[@day_of_week]}s")}
       .compact
-
     total_trips = RepeatingTrip.where(id: trip_ids)
     @trips = total_trips
       .includes(:customer, :pickup_address)
       .references(:customer, :pickup_address)
       .order("repeating_trips.pickup_time::time")
 
-    @scheduled_trips = total_trips.joins(:weekday_assignments).distinct
+    @scheduled_trips = total_trips.joins(:weekday_assignments).where(weekday_assignments: {wday: @day_of_week}).distinct
 
     @unscheduled_trips = @trips.where.not(id: @scheduled_trips.pluck(:id))
   end

@@ -9,10 +9,6 @@
     $('#runs_panel table tbody tr[data-run-id=' + prev_run_id + '] td.trips_count').html(<%= @prev_run.reload.weekday_assignments.for_wday(@day_of_week).count%>);
   <% end %>
 
-  <% if @need_to_update_trips_panel %>
-    $('#unassigned_trips_panel').replaceWith("<%= j render('recurring_dispatchers/unassigned_trips_panel') %>");
-    configure_unassigned_trips_table();
-  <% else %>
-    $('#unassigned_trips_panel .panel-title').html("<%= j render('recurring_dispatchers/unassigned_trips_panel_title') %>");
-  <% end%>
+  $('#unassigned_trips_panel').replaceWith("<%= j render('recurring_dispatchers/unassigned_trips_panel') %>");
+  configure_unassigned_trips_table();
 <% end %>

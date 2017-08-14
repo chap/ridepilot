@@ -5,7 +5,7 @@
   .panel-heading
     .pull-right{style: 'padding-right: 0px;'}
       = render 'unschedule_trip_dropdown'
-      - if assignments.any? && Trip.where(run_id: Run.today_and_future.repeating_based_on(run)).empty?
+      - if assignments.any?
         %span.dispatch-action
           = link_to batch_update_daily_dispatch_action_recurring_dispatchers_path(run_id: run.id), remote: true, style: 'color: red;', title: "Apply manifest to daily runs" , data: {confirm: 'Have you finished trip scheduling for this run? Clicking this would apply the manifest to all daily runs. You can only use this button once.'}, class: 'batch_update_daily_dispatch_action' do 
             %i.fa.fa-check-circle-o

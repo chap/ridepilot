@@ -4,9 +4,9 @@
       = render 'unassigned_trips_schedule_dropdown'
       - if can?(:new, RepeatingTrip)
         %span.dispatch-action
-          = link_to new_repeating_trip_path(from_dispatch: true), style: 'color: white;', title: translate_helper("new_repeating_trip_link_text") do 
+          = link_to new_repeating_trip_path(from_dispatch: true), style: 'color: white;', title: translate_helper("new_repeating_trip_text") do 
             %i.fa.fa-plus
-      %span.panel-expand-collapse-reverse.dispatch-action
+      %span.panel-expand-collapse-reverse.dispatch-action{title: 'Collapse/expand'}
         %i.fa.fa-chevron-down
     %h3.panel-title.text-center
       = render 'unassigned_trips_panel_title'

@@ -225,9 +225,10 @@ module ApplicationHelper
     
     end
 
+    tips = warning_msg ? warning_msg + " " + overdue_msg.to_s : overdue_msg.to_s
     {
       class_name: class_name,
-      tips: warning_msg ? warning_msg + " " + overdue_msg.to_s : overdue_msg.to_s
+      tips: tips.blank? ? nil : tips
     }
   end 
 
@@ -272,9 +273,10 @@ module ApplicationHelper
       overdue_msg = "Overdue: " + tips.join(', ') if tips.any?
     end
 
+    tips = warning_msg ? warning_msg + " " + overdue_msg.to_s : overdue_msg.to_s
     {
       class_name: class_name,
-      tips: warning_msg ? warning_msg + " " + overdue_msg.to_s : overdue_msg.to_s
+      tips: tips.blank? ? nil : tips
     }
   end 
 
