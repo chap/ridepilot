@@ -330,7 +330,7 @@ class TripsController < ApplicationController
       if @trip.is_all_valid?(current_provider_id) && @trip.save
         @trip.update_donation current_user, params[:customer_donation].to_f if params[:customer_donation].present?
         TripDistanceCalculationWorker.perform_async(@trip.id) #sidekiq needs to run
-        @ask_for_return_trip = true if @trip.is_outbound? && !from_dispatch
+        @ask_for_return_trip = true if @trip.is_outbound?
         if @trip.is_return?
           TrackerActionLog.create_return_trip(@trip, current_user)
         else

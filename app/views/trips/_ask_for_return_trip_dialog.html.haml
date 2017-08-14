@@ -1,5 +1,6 @@
 #askCreatingReturnTripDialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1", data: {"backdrop": "static", "keyboard": false }}
   = form_for :trip, url: return_trip_path(@trip), :method => :get do |f|
+    = hidden_field_tag :from_dispatch, params[:from_dispatch]
     .modal-dialog
       .modal-content
         .modal-header
