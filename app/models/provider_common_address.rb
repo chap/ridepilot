@@ -27,16 +27,15 @@ class ProviderCommonAddress < Address
       provider.address_upload_flag.uploading!
 
       address_group_lookups = AddressGroup.pluck("lower(name)", :id).to_h
-      default_address_group = AddressGroup.default_address_group
+      default_address_group_id = AddressGroup.default_address_group.try(:id)
 
       open(filename) do |f|
         CSV.new(f, {:col_sep => ",", :headers => true}).each do |row|
-          # address_type_name = row[9] # TODO: whether to add POI_TYPE into Ridepilot
           address_name = row[2]
           address_city = row[6]
-          address_group = address_group_lookups[row[13].try(:to_s).downcase] || default_address_group
+          address_group_id = address_group_lookups[row[10].to_s.downcase] || default_address_group_id
           #If we have already created this common address, don't create it again.
-          if !address_group || ProviderCommonAddress.exists?(address_group: address_group, name: address_name, city: address_city)
+          if !address_group_id || ProviderCommonAddress.exists?(address_group_id: address_group_id, name: address_name, city: address_city)
             #Rails.logger.info "Possible duplicate: #{row}"
             count_possible_existing += 1
             next
@@ -52,9 +51,9 @@ class ProviderCommonAddress < Address
                 city: address_city,
                 state: row[7],
                 zip: row[8],
-                trip_purpose: row[11].to_s.blank? ? nil : TripPurpose.find_by_name(row[11].to_s),
-                notes: row[12],
-                address_group: address_group
+                trip_purpose: row[9].to_s.blank? ? nil : TripPurpose.find_by_name(row[9].to_s),
+                notes: row[11],
+                address_group_id: address_group_id
               })
               count_good += 1
             else
