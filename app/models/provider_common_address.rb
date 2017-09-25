@@ -33,9 +33,10 @@ class ProviderCommonAddress < Address
         CSV.new(f, {:col_sep => ",", :headers => true}).each do |row|
           address_name = row[2]
           address_city = row[6]
+          address_state = row[7]
           address_group_id = address_group_lookups[row[9].to_s.downcase] || default_address_group_id
           #If we have already created this common address, don't create it again.
-          if !address_group_id || ProviderCommonAddress.exists?(address_group_id: address_group_id, name: address_name, city: address_city)
+          if !address_group_id || ProviderCommonAddress.exists?(["address_group_id = ? and provider_id = ? and lower(name) = ? and lower(city) = ? and lower(state) = ?", address_group_id, provider.try(:id), address_name, address_city, address_state])
             #Rails.logger.info "Possible duplicate: #{row}"
             count_possible_existing += 1
             next
@@ -49,7 +50,7 @@ class ProviderCommonAddress < Address
                 building_name: row[3],
                 address: row[4].to_s + row[5].to_s,
                 city: address_city,
-                state: row[7],
+                state: address_state,
                 zip: row[8],
                 address_group_id: address_group_id,
                 notes: row[10]
