@@ -36,7 +36,7 @@ class ProviderCommonAddress < Address
           address_state = row[7]
           address_group_id = address_group_lookups[row[9].to_s.downcase] || default_address_group_id
           #If we have already created this common address, don't create it again.
-          if !address_group_id || ProviderCommonAddress.exists?(["address_group_id = ? and provider_id = ? and lower(name) = ? and lower(city) = ? and lower(state) = ?", address_group_id, provider.try(:id), address_name, address_city, address_state])
+          if !address_group_id || ProviderCommonAddress.exists?(["address_group_id = ? and provider_id = ? and lower(name) = ? and lower(city) = ? and lower(state) = ?", address_group_id, provider.try(:id), address_name.try(:downcase), address_city.try(:downcase), address_state.try(:downcase)])
             #Rails.logger.info "Possible duplicate: #{row}"
             count_possible_existing += 1
             next
