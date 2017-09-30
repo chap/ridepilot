@@ -2,7 +2,6 @@ class CabTripsController < ApplicationController
   before_filter :set_date_params
 
   def index
-    authorize! :manage, current_provider
     @dates_in_range = (@week_start.to_date..@week_end.to_date).to_a
     @cab_trips = Trip.for_provider(current_provider_id).for_cab.for_date_range(@week_start, @week_end)
     @grouped_cab_trips = @cab_trips.group_by{|t| t.date.to_s}
@@ -16,7 +15,7 @@ class CabTripsController < ApplicationController
   end
   
   def edit_multiple
-    authorize! :manage, current_provider
+    authorize! :manage, :cab_trip
     @drivers = Driver.where(:provider_id => current_provider_id)
     @vehicles = Vehicle.active.where(:provider_id => current_provider_id)
     @trip_results = TripResult.by_provider(current_provider).pluck(:name, :id)
@@ -28,7 +27,7 @@ class CabTripsController < ApplicationController
   end
 
   def update_multiple
-    authorize! :manage, current_provider
+    authorize! :manage, :cab_trip
     @trips = Trip.update(params[:cab_trips].keys, params[:cab_trips].values)
     @errors = @trips.delete_if { |t| t.errors.any? }
     respond_to do |format|

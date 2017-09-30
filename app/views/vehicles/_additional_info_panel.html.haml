@@ -1,0 +1,29 @@
+.panel.panel-primary
+  .panel-heading
+    = translate_helper("vehicle_form_information_heading") 
+  .panel-body.form-horizontal
+    .form-group
+      = f.label :ownership, translate_helper("vehicle_form_ownership_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.select :ownership, Vehicle::OWNERSHIPS.map(&:to_s), { selected: @vehicle.ownership, include_blank: true }, class: "form-control", disabled: @readonly 
+    .form-group
+      = f.label :responsible_party, translate_helper("vehicle_form_responsible_party_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :responsible_party, class: "form-control", disabled: @readonly 
+    .form-group
+      = f.label :registration_expiration_date, translate_helper("vehicle_form_registration_expiration_date_label"), class: "col-md-2 control-label"
+      .col-md-10
+        .input-group.datepicker-icon
+          = f.text_field :registration_expiration_date, class: "form-control datepicker", disabled: @readonly 
+          - unless @readonly
+            .input-group-btn
+              %button.btn.btn-default{type:"button"}
+                = image_tag "calendar-clock.png"
+    .form-group
+      = f.label :insurance_coverage_details, translate_helper("vehicle_form_insurance_coverage_details_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_area :insurance_coverage_details, class: "form-control", rows: 3, disabled: @readonly 
+    .form-group
+      = f.label :accessibility_equipment, translate_helper("vehicle_form_accessibility_equipment_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_area :accessibility_equipment, class: "form-control", rows: 3, disabled: @readonly 

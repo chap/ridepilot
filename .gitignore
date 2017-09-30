@@ -8,7 +8,8 @@
 /cookbooks
 /config/app_config.yml
 /config/database.yml
-/config/deploy.rb
+/config/prod_deploy.rb
+/config/uat_deploy.rb
 /config/unicorn.production.rb
 /db/*.sqlite3
 /db/*.sqlite3-journal

@@ -1,10 +1,13 @@
 <script type='text/javascript'>
 
   function populate_address_form(field, address) {
+    if(!address) {
+      return;
+    }
     form = $("#" + field + "-address-form");
     form.find('#address_id').val(address.id);
     form.find('#' + field + '_name').val(address.name);
-    form.find('#' + field + '_building_name').val(address.building_name);
+    //form.find('#' + field + '_building_name').val(address.building_name);
     form.find('#' + field + '_address').val(address.address);
     form.find('#' + field + '_full_address').val(address.label);
     form.find('#' + field + '_city').val(address.city);
@@ -50,8 +53,9 @@
     // an id should be returned, and then the form should close.
     // if no id is returned, error messages are filled in. 
     $("body").on('ajax:success', '.address-validate', function(evt, data, status, xhr){
+        console.log('test');
       if (data.success) {
-        $( $(this)[0].parentNode ).dialog( "close" );
+        $('#addAddressDialog').modal('hide');
 
         //insert a new address row
         updateAddressRow(data.attributes, data.address_text);
@@ -74,13 +78,13 @@
                   form = $( this )[0].children[0];
                   $(form).trigger('submit'); 
               },
-              Cancel: function() {
+              "Cancel": function() {
                 $( this ).dialog( "close" );
               }
           }
       });
     };
     
-    makeDialogs();
+    //makeDialogs();
   });
 </script>

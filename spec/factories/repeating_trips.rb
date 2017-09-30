@@ -6,5 +6,6 @@ FactoryGirl.define do
     appointment_time { pickup_time + 30.minutes }
     provider
     customer
+    trip_purpose
   end
 end

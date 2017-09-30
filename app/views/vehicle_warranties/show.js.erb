@@ -1,0 +1,5 @@
+var $new_form = $("<%= j (render partial: 'form', locals: {remote: true}) %>");
+
+$('#modal-dialog .modal-body .container-fluid').html($new_form);
+$('#modal-dialog .modal-title').html("<%= @vehicle_warranty.description %>");
+$('#modal-dialog').modal('show');

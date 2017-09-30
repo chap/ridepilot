@@ -1,0 +1,21 @@
+%h2.section-header= translate_helper("configure_provider_vehicle_requirement_templates")
+= link_to translate_helper("provider_vehicle_requirement_templates_link_text"), vehicle_requirement_templates_path(provider_id: current_provider_id), target: '_blank'
+%hr
+
+%h2.section-header= translate_helper("configure_provider_vehicle_maintenance_types")
+= link_to translate_helper("provider_vehicle_maintenance_types_link_text"), vehicle_maintenance_schedule_types_path, target: '_blank'
+%hr
+
+- vehicle_warranty_table = ProviderLookupTable.find_by_name('vehicle_warranty_templates')
+- if vehicle_warranty_table
+  %h2.section-header= translate_helper("configure_provider_vehicle_warranties")
+  = link_to translate_helper("provider_vehicle_warranties_link_text"), provider_lookup_table_path(vehicle_warranty_table), target: '_blank'
+  %hr
+  
+%h2.section-header
+  = translate_helper("manage_vehicles")
+  - if @provider.vehicles.empty?
+    %span.badge
+      0
+    %i.fa.fa-exclamation-triangle{style: 'color: red'}
+= link_to translate_helper("manage_vehicles_link_text"), vehicles_path, target: '_blank'

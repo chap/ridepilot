@@ -1,0 +1,21 @@
+-document = local_assigns[:document] || Document.new
+-hidden = local_assigns[:hidden] || false
+=f.fields_for :documents, document, wrapper: false do |doc_f|
+  %tr.document-row{class: hidden ? 'hidden' : ''}
+    %td.hidden
+      =doc_f.hidden_field :id, value: document.id
+    %td
+      - if @readonly 
+        = document.description
+      - else
+        =doc_f.text_field :description, value: document.description
+    %td
+      -if document.document_file_name
+        =link_to document.document_file_name, document.document.url, target: :blank
+      -else
+        =doc_f.file_field :document, disabled: @readonly 
+    - unless @readonly   
+      %td
+        .btn.btn-danger.btn-sm.delete-document-row
+          %i.fa.fa-remove{'aria-hidden' => true}
+        =doc_f.check_box :_destroy, class: 'destroy-document hidden'

@@ -31,12 +31,12 @@ RSpec.describe CustomersController, type: :routing do
       expect(:delete => "/customers/1").to route_to("customers#destroy", :id => "1")
     end
 
-    it "routes to #create" do
-      expect(:post => "/customers/1/inactivate").to route_to("customers#inactivate", :customer_id => "1")
+    it "routes to #increate" do
+      expect(:post => "/customers/1/inactivate").to route_to("customers#inactivate", :id => "1")
     end
 
-    it "routes to #create" do
-      expect(:post => "/customers/1/activate").to route_to("customers#activate", :customer_id => "1")
+    it "routes to #reactivate" do
+      expect(:post => "/customers/1/reactivate").to route_to("customers#reactivate", :id => "1")
     end
 
     it "routes to #autocomplete" do

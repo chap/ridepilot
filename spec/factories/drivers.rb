@@ -1,11 +1,13 @@
 require 'faker'
 
+# Note that every once in a while we may randomly generate two drivers with the
+# same name, which will cause spec to fail.
 FactoryGirl.define do
   factory :driver do
-    name { Faker::Lorem.words(2).join(' ') }
+    name { Faker::Lorem.words(3).join(' ') }
     provider
     user
-    address
-    phone_number { Faker::PhoneNumber.phone_number }
+    association :address, factory: :driver_address
+    phone_number '(801)4567890'
   end
 end

@@ -1,15 +1,18 @@
 class CustomersController < ApplicationController
-  load_and_authorize_resource :except=>[:autocomplete, :found, :edit, :show, :update]
+  load_and_authorize_resource :except=>[:autocomplete, :found, :edit, :create, :show, :update, :delete_photo, :inactivate, :reactivate]
 
   def autocomplete
     customers = Customer.for_provider(current_provider_id).by_term( params['term'].downcase, 10 ).accessible_by(current_ability)
-    customers = customers.where(inactivated_date: nil) if params[:active_only] == 'true'
+    customers = customers.active if params[:active_only] == 'true'
     render :json => customers.map { |customer| customer.as_autocomplete }
   end
 
   def data_for_trip
     @customer = Customer.for_provider(current_provider_id).where(id: params[:customer_id]).first
     render :json => @customer ? @customer.trip_related_data : {}
+  end
+
+  def get_eligibilities_for_trip
   end
 
   def found
@@ -34,7 +37,7 @@ class CustomersController < ApplicationController
     @customers = Customer.for_provider(current_provider_id).accessible_by(current_ability)
     @customers = @customers.by_letter(params[:letter]) if params[:letter].present?
 
-    @customers = @customers.where(:inactivated_date => nil) if @active_only
+    @customers = @customers.active if @active_only
 
     respond_to do |format|
       format.html { @customers = @customers.paginate :page => params[:page], :per_page => PER_PAGE }
@@ -62,7 +65,7 @@ class CustomersController < ApplicationController
       @read_only_customer = true if @customer.provider_id != current_provider.id
     end
 
-    prep_edit
+    prep_edit(true)
 
     @trips    = @customer.trips.reorder('pickup_time desc').paginate :page => params[:page], :per_page => PER_PAGE
 
@@ -107,23 +110,23 @@ class CustomersController < ApplicationController
       middle_initial = @customer.middle_initial
       last_name = @customer.last_name
       dup_customers = Customer.accessible_by(current_ability).where([
-"(middle_initial = ? or middle_initial = '' or ? = '') and 
+        "(middle_initial = ? or middle_initial = '' or ? = '') and 
 
-(dmetaphone(last_name) = dmetaphone(?) or
- dmetaphone(last_name) = dmetaphone_alt(?) or 
- dmetaphone_alt(last_name) = dmetaphone(?) or 
- dmetaphone_alt(last_name) = dmetaphone_alt(?)) and
+        (dmetaphone(last_name) = dmetaphone(?) or
+         dmetaphone(last_name) = dmetaphone_alt(?) or 
+         dmetaphone_alt(last_name) = dmetaphone(?) or 
+         dmetaphone_alt(last_name) = dmetaphone_alt(?)) and
 
-(dmetaphone_alt(first_name) = dmetaphone_alt(?) or
- dmetaphone_alt(first_name) = dmetaphone(?) or
- dmetaphone(first_name) = dmetaphone(?)  or
- dmetaphone(first_name) = dmetaphone_alt(?)) or
-(email = ? and email !=  '' and email is not null and ? != '')
-", 
-middle_initial, middle_initial, 
-last_name, last_name, last_name, last_name, 
-first_name, first_name, first_name, first_name,
-@customer.email, @customer.email]).limit(1)
+        (dmetaphone_alt(first_name) = dmetaphone_alt(?) or
+         dmetaphone_alt(first_name) = dmetaphone(?) or
+         dmetaphone(first_name) = dmetaphone(?)  or
+         dmetaphone(first_name) = dmetaphone_alt(?)) or
+        (email = ? and email !=  '' and email is not null and ? != '')
+        ", 
+        middle_initial, middle_initial, 
+        last_name, last_name, last_name, last_name, 
+        first_name, first_name, first_name, first_name,
+        @customer.email, @customer.email]).limit(1)
 
       if dup_customers.size > 0
         dup = dup_customers[0]
@@ -135,16 +138,22 @@ first_name, first_name, first_name, first_name,
     end
 
     providers = []
-    params[:customer][:authorized_provider_ids].each do |authorized_provider_id|
-      providers.push(Provider.find(authorized_provider_id)) if authorized_provider_id.present?
+    if params[:customer][:authorized_provider_ids].present?
+      params[:customer][:authorized_provider_ids].each do |authorized_provider_id|
+        providers.push(Provider.find(authorized_provider_id)) if authorized_provider_id.present?
+      end
     end
 
     @customer.authorized_providers = (providers << @customer.provider).uniq
 
     respond_to do |format|
       if @customer.is_all_valid?(current_provider_id) && @customer.save
+        TrackerActionLog.customer_comments_created(@customer, current_user) unless @customer.comments.blank?
         edit_donations
+        edit_travel_trainings
+        edit_funding_authorization_numbers
         edit_eligibilities
+        edit_ada_questions
         format.html { redirect_to(@customer, :notice => 'Customer was successfully created.') }
         format.xml  { render :xml => @customer, :status => :created, :location => @customer }
       else
@@ -156,23 +165,50 @@ first_name, first_name, first_name, first_name,
   end
 
   def inactivate
-    @customer = Customer.find(params[:customer_id])
-    authorize! :edit, @customer
+    @customer = Customer.find_by_id(params[:id])
 
-    @customer.inactivated_date = Date.today
-    @customer.inactivated_reason = params[:customer][:inactivated_reason]
-    @customer.save
-    redirect_to action: :index
+    authorize! :update, @customer
+    
+    prev_active_text = @customer.active_status_text
+    prev_reason = @customer.active_status_changed_reason
+
+    @customer.assign_attributes customer_inactivate_params
+
+    if @customer.inactivated?
+      if @customer.permanent_inactivated?
+        @customer.inactivated_date = Date.today
+        @customer.inactivated_start_date = nil
+        @customer.inactivated_end_date = nil
+      else
+        if @customer.inactivated_end_date.present? && !@customer.inactivated_start_date.present?
+          @customer.inactivated_start_date = Date.today.in_time_zone
+        end
+      end
+    else
+      @customer.active_status_changed_reason = nil  
+    end
+
+    if @customer.changed?
+      TrackerActionLog.customer_active_status_changed(@customer, current_user, prev_active_text, prev_reason)
+    end
+
+    @customer.save(validate: false)
+
+    redirect_to @customer
   end
 
-  def activate
-    @customer = Customer.find(params[:customer_id])
+  def reactivate
+    @customer = Customer.find(params[:id])
     authorize! :edit, @customer
 
-    @customer.inactivated_date = nil
-    @customer.inactivated_reason = nil
-    @customer.save
-    redirect_to action: :index
+    prev_active_text = @customer.active_status_text
+    prev_reason = @customer.active_status_changed_reason
+
+    @customer.reactivate!
+
+    TrackerActionLog.customer_active_status_changed(@customer, current_user, prev_active_text, prev_reason)
+
+    redirect_to @customer
   end
 
   def update
@@ -180,7 +216,10 @@ first_name, first_name, first_name, first_name,
 
     authorize! :update, @customer if !@customer.authorized_for_provider(current_provider.id)
 
-    @customer.assign_attributes customer_params
+    customer_attrs = customer_params
+    customer_attrs.except!(:photo_attributes) if customer_attrs[:photo_attributes].blank?
+
+    @customer.assign_attributes customer_attrs
     edit_addresses
 
     #save address changes
@@ -190,15 +229,23 @@ first_name, first_name, first_name, first_name,
     end
 
     providers = []
-    params[:customer][:authorized_provider_ids].each do |authorized_provider_id|
-      providers.push(Provider.find(authorized_provider_id)) if authorized_provider_id.present?
+    if params[:customer][:authorized_provider_ids].present?
+      params[:customer][:authorized_provider_ids].each do |authorized_provider_id|
+        providers.push(Provider.find(authorized_provider_id)) if authorized_provider_id.present?
+      end
     end
     @customer.authorized_providers = (providers << @customer.provider).uniq
 
+    customer_comments_updated = @customer.comments_changed?
+
     respond_to do |format|
       if @customer.is_all_valid?(current_provider_id) && @customer.save
+        TrackerActionLog.customer_comments_updated(@customer, current_user) if customer_comments_updated
         edit_donations
+        edit_travel_trainings
+        edit_funding_authorization_numbers
         edit_eligibilities
+        edit_ada_questions
         format.html { redirect_to(@customer, :notice => 'Customer was successfully updated.') }
         format.xml  { head :ok }
       else
@@ -221,6 +268,23 @@ first_name, first_name, first_name, first_name,
       redirect_to customers_url, :notice => "#{@customer.name} was successfully deleted."
     end
   end
+
+  def delete_photo
+    @customer = Customer.find(params[:id])
+
+    authorize! :update, @customer if !@customer.authorized_for_provider(current_provider.id)
+
+    @customer.photo.try(:destroy!)
+
+    redirect_to @customer, :notice => "Photo has been deleted."
+  end
+  
+  # Displays a report of customer comments for a given customer
+  def customer_comments_report
+    @customer = Customer.find(params[:id])
+    
+    render layout: false
+  end
   
   private
   
@@ -228,6 +292,7 @@ first_name, first_name, first_name, first_name,
     params.require(:customer).permit(
       :gender,
       :ada_eligible,
+      :ada_ineligible_reason,
       :birth_date,
       :default_funding_source_id,
       :service_level_id,
@@ -249,6 +314,10 @@ first_name, first_name, first_name, first_name,
       :authorized_provider_ids,
       :is_elderly,
       :message,
+      :comments,
+      :travel_trainings,
+      :funding_authorization_numbers,
+      photo_attributes: [:image],
       :address_attributes => [
         :address,
         :building_name,
@@ -258,7 +327,16 @@ first_name, first_name, first_name, first_name,
         :state,
         :zip,
         :notes
-      ],
+      ]
+    )
+  end
+
+  def customer_inactivate_params
+    params.require(:customer).permit(
+      :active,
+      :inactivated_start_date,
+      :inactivated_end_date,
+      :active_status_changed_reason
     )
   end
 
@@ -291,12 +369,16 @@ first_name, first_name, first_name, first_name,
     end || {}
   end
   
-  def prep_edit
+  def prep_edit(readonly = false)
     @mobilities = Mobility.by_provider(current_provider)
     @ethnicity_names = (Ethnicity.by_provider(current_provider).collect(&:name) + [@customer.ethnicity]).compact.sort.uniq
     @funding_sources = FundingSource.by_provider(current_provider)
     @service_levels = ServiceLevel.by_provider(current_provider).pluck(:name, :id)
-    @customer.address ||= @customer.build_address provider: current_provider
+    
+    unless readonly
+      @customer.address ||= @customer.build_address provider: current_provider
+      @customer.build_photo unless @customer.photo.present?
+    end
 
     get_donations
   end
@@ -328,9 +410,27 @@ first_name, first_name, first_name, first_name,
       @customer.edit_donations donations, current_user
     end
   end
+  
+  def edit_travel_trainings
+    if params[:travel_trainings]
+      travel_trainings = JSON.parse(params[:travel_trainings], symbolize_names: true)
+      @customer.edit_travel_trainings(travel_trainings)
+    end
+  end
+
+  def edit_funding_authorization_numbers
+    if params[:funding_authorization_numbers]
+      funding_numbers = JSON.parse(params[:funding_authorization_numbers], symbolize_names: true)
+      @customer.edit_funding_authorization_numbers(funding_numbers)
+    end
+  end
 
   def edit_eligibilities
     @customer.edit_eligibilities params[:eligibilities]
+  end
+
+  def edit_ada_questions
+    @customer.edit_ada_questions params[:ada_questions]
   end
 
 end

@@ -1,0 +1,18 @@
+.panel.panel-primary
+  .panel-heading
+    = translate_helper("vehicle_documents_heading") 
+  %table.table.table-striped.table-condensed#documents-table
+    %thead
+      %tr
+        %th.col-sm-3
+          = translate_helper("document_form_upload_date")
+        %th= translate_helper("document_form_description") 
+        %th.col-sm-2= translate_helper("document_form_file_size") 
+        %th.col-sm-1
+    %tbody
+      - if @readonly and @vehicle.documents.empty? 
+        %tr
+          %td{colspan:"4"}
+            = translate_helper("vehicle_documents_empty") 
+      = render partial: 'documents/document', collection: @vehicle.documents.default_order
+   

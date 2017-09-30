@@ -11,7 +11,7 @@ module RecurringComplianceEventScheduler
   
     after_update :update_children
 
-    scope :default_order, -> { order("start_date DESC") }
+    scope :default_order, -> { order(:start_date) }
   
     validates :provider, presence: true
     validates :event_name, presence: true

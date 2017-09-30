@@ -1,0 +1,80 @@
+:ruby
+  edit_mode = :edit if !defined? edit_mode
+  @is_repeating_run = @run.is_a?(RepeatingRun)
+
+= render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'runs' 
+
+= form_for @run, :html => (@remote ? {"data-remote" => true, class: 'run_form'} : {class: 'run_form'} ) do |f| 
+  - if @is_repeating_run
+    = render 'repeating_runs/form_header', edit_mode: edit_mode, f: f 
+  - else  
+    = render 'runs/form_header', edit_mode: edit_mode, f: f 
+  - if @run.errors.any? 
+    #error_explanation
+      %h2= translate_helper("run_form_error_message", count: @run.errors.count)
+
+      %ul
+        - @run.errors.full_messages.each do |msg| 
+          %li= msg
+
+  .col-sm-12
+    .col-sm-12.col-md-6.form-group
+      .col-sm-3
+        = f.label :name, translate_helper("name") 
+      .col-sm-9
+        = f.text_field :name, class: 'form-control' 
+
+  .col-sm-12.col-md-6
+    = render 'runs/date_time_panel', f: f, edit_mode: edit_mode
+    - if !@is_repeating_run && current_provider.run_tracking? && edit_mode == :show
+      = render 'runs/tracking_panel'
+  .col-sm-12.col-md-6
+    = render 'repeating_runs/repetition_panel', f: f if @is_repeating_run
+    = render 'runs/vehicle_panel', f: f 
+    = render 'runs/driver_panel', f: f 
+    - if edit_mode == :show
+      - logs = TrackerActionLog.for(@run).order(created_at: :desc)
+      = render 'shared/action_log_panel', logs: logs if logs.any?
+
+  - unless @is_repeating_run
+    .col-sm-12
+      - if edit_mode != :new 
+        = render 'runs/trip_list', f: f, edit_mode: edit_mode 
+
+- if edit_mode != :show
+  :javascript
+    $(document).ready(function(){
+      makeDatePickers();
+    });
+
+- if !@is_repeating_run && edit_mode != :show
+  = render 'unavailable_driver_vehicle_warning_dialog'
+  :javascript
+    $(function() {
+      $('.run_form input[type=submit]').click(function() {
+        var driver_id = $('#run_driver_id').val();
+        var vehicle_id = $('#run_vehicle_id').val();
+        var date = $('#run_date').val();
+        var start_time = $('#run_scheduled_start_time').val();
+        var end_time = $('#run_scheduled_end_time').val();
+        if(date) {
+          var url = "#{check_driver_vehicle_availability_runs_path(format: :js)}";
+          $.ajax({
+            url: url,
+            data: {
+              driver_id: driver_id,
+              vehicle_id: vehicle_id,
+              date: date,
+              start_time: start_time,
+              end_time: end_time
+            }
+          });
+          return false;
+        }
+      })
+    });
+
+- if @is_repeating_run
+  = render 'shared/hide_invisible_form_fields_js', model_name: "repeatingrun", table_name: 'repeating_runs', provider_id:  current_provider.try(:id) 
+- else
+  = render 'shared/hide_invisible_form_fields_js', model_name: "run", table_name: 'runs', provider_id:  current_provider.try(:id) 

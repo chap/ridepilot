@@ -1,0 +1,13 @@
+%tr
+  %td
+    = link_to_if can?(:read, driver), driver.user_name, driver
+  %td
+    = driver.active_status_text
+  %td
+    = driver.paid? ? translate_helper("driver_paid") : translate_helper("volunteer")
+  %td
+    = !driver.active? ? translate_helper("n_a") : (driver.available? ? translate_helper("driver_available") : translate_helper("driver_unavailable"))
+  %td
+    = driver.compliant? ? translate_helper("no") : translate_helper("yes")
+  %td
+    = driver.run_hours

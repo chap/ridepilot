@@ -8,6 +8,7 @@ module ComplianceEvent
     validates_date :compliance_date, on_or_before: -> { Date.current }, allow_blank: true
 
     scope :incomplete, -> { where(compliance_date: nil) }
+    scope :complete, -> { where.not(compliance_date: nil) }
   end
   
   def complete?

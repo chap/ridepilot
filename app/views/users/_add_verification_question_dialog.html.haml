@@ -1,0 +1,23 @@
+#add-verification-question-dialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      = form_for @user.verification_questions.build, :url=>'#' do |f|
+        .modal-header
+          .pull-right
+            = button_tag translate_helper(:ok), type: :submit, style: "margin-right: 5px;", class: "btn action-button"
+            = button_tag class: 'btn action-button', data: {dismiss: 'modal'} do
+              = translate_helper(:cancel)
+          .modal-title{:style => "text-align:left;"}
+            %strong
+              = translate_helper(:add_verification_question_dialog_title)
+        .modal-body.row{:style => "text-align:left;"}
+          .form-group.col-sm-12
+            .col-sm-3
+              = f.label :question, translate_helper(:verification_question_question)
+            .col-sm-9  
+              = f.text_field :question, class: 'form-control', required: true
+          .form-group.col-sm-12
+            .col-sm-3
+              = f.label :answer, translate_helper(:verification_question_answer) 
+            .col-sm-9
+              = f.text_field :answer, class: 'form-control', required: true

@@ -1,3 +1,23 @@
+var schedule_mileages = <%= @vehicle_maintenance_schedules.pluck(:id, :mileage).to_h.to_json.html_safe || {}%>;
+var last_compliance_mileage_per_schedule = <%= @vehicle.vehicle_maintenance_compliances.complete.group(:vehicle_maintenance_schedule_id).maximum(:compliance_mileage).to_json.html_safe || {}%>;
+var base_mileage = <%= @vehicle.last_odometer_reading || @vehicle.initial_mileage || 0 %>;
+
+function set_default_due_mileage(schedule_id) {
+  if(schedule_id) {
+    var mileage = schedule_mileages[schedule_id] || 0;
+    var last_compliance_mileage = last_compliance_mileage_per_schedule[schedule_id] || base_mileage;
+    $('#vehicle_maintenance_compliance_due_mileage').val(last_compliance_mileage + mileage);
+  }
+}
+
+set_default_due_mileage(<%= @vehicle_maintenance_compliance.vehicle_maintenance_schedule_id %>);
+
+$('#vehicle_maintenance_schedule').change(function() {
+    var schedule_id = $(this).val();
+    $('#vehicle_maintenance_compliance_event').val($(this).find('option:selected').text());
+    set_default_due_mileage(schedule_id);
+});
+
 $("#vehicle_maintenance_compliance_due_type").on("change", function() {
   var $this = $(this);
   if ($this.val() == "date") {

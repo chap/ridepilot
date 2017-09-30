@@ -8,11 +8,12 @@ RSpec.describe VehicleMaintenanceEventsController, type: :controller do
       @vehicle = create :vehicle, provider: @current_user.current_provider
     end
 
-    it_behaves_like "a controller that accepts nested attributes for a document association" do
-      before do
-        @owner = @vehicle
-      end
-    end
+    # Document Associations have been refactored
+    # it_behaves_like "a controller that accepts nested attributes for a document association" do
+    #   before do
+    #     @owner = @vehicle
+    #   end
+    # end
 
     # This should return the minimal set of attributes required to create a 
     # valid VehicleMaintenanceEvent. As you add validations to

@@ -3,11 +3,11 @@
 .col-sm-12{style: 'padding: 10px 0px;'}
   - if current_user.super_admin?
     - if table.add_value_allowed
-      = render partial: 'add_value_button', locals: {table: table}
+      = render partial: 'add_value_button', locals: {table: table, is_provider_only: false}
     - if table.edit_value_allowed
-      = render partial: 'edit_value_button', locals: {table: table}
+      = render partial: 'edit_value_button', locals: {table: table, is_provider_only: false}
     - if table.delete_value_allowed
-      = render partial: 'delete_value_button', locals: {table: table}
+      = render partial: 'delete_value_button', locals: {table: table, is_provider_only: false}
   = render partial: 'hide_value_button', locals: {table: table}
   = render partial: 'show_value_button', locals: {table: table}
 

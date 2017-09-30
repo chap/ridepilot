@@ -1,0 +1,78 @@
+- edit_mode = :edit if !defined? edit_mode
+- is_editing = edit_mode == :edit || edit_mode == :new
+
+.panel.panel-primary#customer_funding_authorization_numbers_panel
+  .panel-heading
+    %h3.panel-title
+      = translate_helper(:customer_funding_authorization_numbers_panel)
+  .panel-body{style: 'padding: 5px;'}
+    %table.table.table-striped.table-bordered#customerFundingAuthorizationNumbersTable
+      %thead
+        %tr
+          - if is_editing
+            %th{width: 50}
+          %th
+            = translate_helper(:funding_authorization_number_name)
+          %th
+            = translate_helper(:funding_authorization_number_funding_source)
+          %th
+            = translate_helper(:funding_authorization_number_contact_info)
+      %tbody
+        - @customer.funding_authorization_numbers.order(:number).each do |funding_number|
+          %tr{data: {funding_number: funding_number.to_json}}
+            - if is_editing
+              %td
+                = button_tag :type => 'button', class: 'deleteCustomerFundingAuthorizationNumber btn-danger' do 
+                  = translate_helper(:delete)
+            %td
+              = funding_number.number
+            %td
+              = funding_number.funding_source.try(:name)
+            %td
+              = simple_format funding_number.contact_info
+    - if is_editing
+      .pull-right
+        = button_tag :type => 'button', 
+          id: 'addCustomerFundingAuthorizationNumber', 
+          "data-target" => "#addFundingAuthorizationNumberDialog", 
+          "data-toggle" => "modal", 
+          :class => "btn action-button" do
+          = translate_helper(:add_funding_authorization_number)
+
+:javascript
+  $(document).ready(function() {
+    $('#customerFundingAuthorizationNumbersTable').on('click', '.deleteCustomerFundingAuthorizationNumber', function(e) {
+      e.preventDefault();
+
+      $(this).parents('tr').remove();
+    });
+    $('#addFundingAuthorizationNumberDialog').on('show.bs.modal', function () {
+      $('#addFundingAuthorizationNumberDialog form')[0].reset();
+    });
+
+    function insertFundingNumberRow(fundingNumberData) {
+      $('#customerFundingAuthorizationNumbersTable').append("<tr data-funding-number='" + escapeQuotes(JSON.stringify(fundingNumberData)) + "'>" +
+          '<td><button class="deleteCustomerFundingAuthorizationNumber btn-danger" name="button" type="button">Delete</button></td>' +
+          "<td>" + fundingNumberData.number + '</td>' +
+          "<td>" + fundingNumberData.funding_source_text + '</td>' +
+          "<td style='white-space: pre-wrap;'>" + fundingNumberData.contact_info + "</td>" +
+          "</tr>");
+    }
+
+    $('#addFundingAuthorizationNumberDialog form').submit(function() {
+      var fundingNumberData = {
+        number: $('#funding_authorization_number_number').val(),
+        funding_source_text: $('#funding_authorization_number_funding_source option:selected').text(),
+        funding_source_id: $('#funding_authorization_number_funding_source').val(),
+        contact_info: $('#funding_authorization_number_contact_info').val()
+      };
+      //insert new row
+      $('#addFundingAuthorizationNumberDialog').modal('hide');
+      insertFundingNumberRow(fundingNumberData);
+
+      return false; //no http submission
+    });
+  });
+
+
+    

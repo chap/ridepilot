@@ -1,0 +1,10 @@
+$('#modal-dialog').modal('hide');
+<% if @vehicle_compliance.legal?%>
+  $("<%= j (render @vehicle_compliance) %>").hide().appendTo('#legal_vehicle_compliances_table tbody').slideDown('slow');
+<% else %>
+  $("<%= j (render @vehicle_compliance) %>").hide().appendTo('#vehicle_compliances_table tbody').slideDown('slow');
+<% end %>
+
+<% if @vehicle_compliance.complete? && @vehicle_compliance.vehicle_requirement_template.try(:reoccuring?)%>
+  <%= render 'ask_for_reoccuring', vehicle: @vehicle, legal: @vehicle_compliance.legal?, vehicle_requirement_template_id: @vehicle_compliance.vehicle_requirement_template_id %>
+<% end %>

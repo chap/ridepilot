@@ -15,20 +15,28 @@ ActiveRecord::Base.transaction do
     provider = Provider.new(:name => 'Utah Transit Authority', :dispatch => true)
     provider.logo = File.open(Rails.root.join("public", "uta_logo.png"))
     provider.save!
-  
+
     puts "Creating first User..."
+    email = Rails.application.secrets.system_admin_email
+    username = Rails.application.secrets.system_admin_username || email.split('@').first
     password = Rails.application.secrets.system_admin_password
+    first_name = Rails.application.secrets.system_admin_first_name || "Admin"
+    last_name = Rails.application.secrets.system_admin_last_name || "User"
+
     user = User.create!(
-      :email => Rails.application.secrets.system_admin_email,
+      :email => email,
+      :username => username,
       :password => password,
       :password_confirmation => password,
-      :current_provider => provider
+      :current_provider => provider,
+      :first_name => first_name,
+      :last_name => last_name
     )
-  
+
     puts "Setting first user up as a super admin..."
     Role.create!(
       :user => user,
-      :provider => provider, 
+      :provider => provider,
       :level => 200
     )
   end
@@ -38,9 +46,13 @@ ActiveRecord::Base.transaction do
 
   puts "Creating lookup tables..."
   Rake::Task["ridepilot:seed_lookup_tables"].invoke
+  Rake::Task["ridepilot:seed_provider_lookup_tables"].invoke
 
   puts "Seeding eligibilities"
   Rake::Task["ridepilot:seed_eligibilities"].invoke
+
+  puts "Seeding address groups"
+  Rake::Task["ridepilot:seed_address_groups"].invoke
 
   puts "Seeding custom reports"
   Rake::Task["ridepilot:seed_custom_reports"].invoke

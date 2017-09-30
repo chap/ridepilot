@@ -14,7 +14,7 @@
   <%= trip.dropoff_address.try :address_text %>
 </td>
 <td>
-  <%= format_time_for_listing trip.appointment_time %>
+  <%= format_time_for_listing trip.appointment_time if trip.appointment_time%>
 </td>
 <td>
   <%= trip.trip_purpose_name %>

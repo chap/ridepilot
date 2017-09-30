@@ -8,25 +8,39 @@
         = f.label :customer_informed, translate_helper("trip_called_back")
       .col-sm-9
         = f.check_box :customer_informed
-        - if @trip.customer_informed
+        - if !@is_repeating_trip &&@trip.customer_informed
           = "on #{@trip.called_back_at}" if @trip.called_back_at.present?
           = "by #{@trip.called_back_by.email}" if @trip.called_back_by.present?
-    .form-group.col-sm-12
-      .col-sm-3
-        = f.label :trip_result, translate_helper("trip_result")
-      .col-sm-9
-        = f.select :trip_result_id, @trip_results,  { :include_blank => true }, {class: 'form-control'} 
-    .form-group.col-sm-12.result_reason{style: @trip.is_no_show_or_turn_down? ? '' : 'display: none;'}
-      .col-sm-3
-        = f.label :result_reason, translate_helper("trip_result_reason")
-      .col-sm-9
-        = f.text_area :result_reason, class: 'form-control'
+    - unless @is_repeating_trip
+      .form-group.col-sm-12
+        .col-sm-3
+          = f.label :trip_result, translate_helper("trip_result")
+        .col-sm-9
+          = f.select :trip_result_id, @trip_results,  { :include_blank => true }, {class: 'form-control'}
+      .form-group.col-sm-12.result_reason{style: @trip.result_need_reason? ? '' : 'display: none;'}
+        .col-sm-3
+          = f.label :result_reason, translate_helper("trip_result_reason")
+        .col-sm-9
+          = f.text_area :result_reason, class: 'form-control'
 
-    .form-group.col-sm-12.donation
-      .col-sm-3
-        = f.label :customer_donation, translate_helper("trip_donation")
-      .col-sm-6.col-md-3
-        = number_field_tag :customer_donation, nil, min: 0, step: 0.01, :size => 8, class: 'form-control', value: params[:customer_donation] || @trip.donation.try(:amount)
+      .form-group.col-sm-12.donation
+        .col-sm-3
+          = f.label :customer_donation, translate_helper("trip_donation")
+        .col-sm-6.col-md-3
+          = number_field_tag :customer_donation, nil, min: 0, step: 0.01, :size => 8, class: 'form-control', value: params[:customer_donation] || @trip.donation.try(:amount)
+
+      :javascript
+        $(document).ready(function() {
+          var reasonNeededCodes = #{TripResult.reason_needed_result_ids.map(&:to_s)};
+          $('#trip_trip_result_id').change(function() {
+            if (reasonNeededCodes.indexOf($(this).val()) >= 0) {
+              $('.result_reason').show();
+            } else {
+              $('.result_reason').hide();
+              $('#trip_result_reason').val('');
+            }
+          });
+        });
 
     .form-group.col-sm-12
       .col-sm-3
@@ -38,16 +52,4 @@
       .col-sm-3
         = f.label :service_level, translate_helper("trip_service_level")
       .col-sm-9
-        = f.select :service_level_id, @service_levels, { :include_blank => true }, {class: 'form-control'} 
-:javascript
-  $(document).ready(function() {
-    var noShowOrTurnDownIds = #{TripResult.where(code: ['NS', 'TD']).pluck(:id).map(&:to_s)};
-    $('#trip_trip_result_id').change(function() {
-      if (noShowOrTurnDownIds.indexOf($(this).val()) >= 0) {
-        $('.result_reason').show();
-      } else {
-        $('.result_reason').hide();
-        $('#trip_result_reason').val('');
-      }
-    });
-  });
+        = f.select :service_level_id, @service_levels, { :include_blank => true }, {class: 'form-control'}

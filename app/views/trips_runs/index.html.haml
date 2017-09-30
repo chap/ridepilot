@@ -1,25 +1,13 @@
 = render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'trips_runs'
 .clearfix.row#page-header{style: 'padding: 0px;'}
-  = link_to translate_helper("new_run_link_text"), new_run_path, :class=>'btn action-button pull-right'
+  - if can?(:edit, Run)
+    = link_to translate_helper("new_run_link_text"), new_run_path, :class=>'btn action-button pull-right'
   %h1= translate_helper("trips_runs") + ": " + format_time_as_title_for_listing_day(@run_trip_day)
   .clearfix
 
-.col-md-3{style: 'padding: 0px 15px 0px 0px;'}
+.col-md-2{style: 'padding: 0px 15px 0px 0px;'}
   = render :partial => 'filters'
-.col-md-9{style: 'padding: 0px;'}
-  .checkbox.pull-right
-    %label
-      %input#hide_trip_run_calendar{type: 'checkbox'}
-      %b
-        = translate_helper("hide_calendar")
-  = render 'trips/calendar', base_path: trips_path, resources: @runs_json, events: @trips_json,  currentDate: @run_trip_day
-  .col-sm-12{style: 'padding: 0px 0px 10px 0px;'}
-    .pull-left
-      %button.btn.action-button#scheduleButton{style: 'display: none;'}
-        = translate_helper(:schedule)
-    .pull-right
-      %button.btn.action-button#unscheduleButton{style: 'display: none;'}
-        = translate_helper(:unschedule)
+.col-md-10{style: 'padding: 0px;'}
   = render :partial => 'trip_list'
 
 :javascript
@@ -44,12 +32,6 @@
             // update data-run-id for run dropdown in trips table 
             $('.trip-run-options[data-trip-id='+ tripId + '][data-run-id=' + prevRunId+ ']').attr('data-run-id',runId); 
             $('.trip-run-options[data-trip-id='+ tripId + '][data-run-id=' + runId+ ']').val(runId); 
-
-            var calendar = $('#calendar').data('fullCalendar');
-            calendar.removeEvents(resp.trip_event_json.id);
-            calendar.renderEvent(resp.trip_event_json);
-
-            manageSchedulingButtons();
           }
         },
         failure: function() {
@@ -61,10 +43,6 @@
 
     function resetTripSchedule(tripId, prevRunId) {
       $('.trip-run-options[data-run-id=' + prevRunId+ ']').val(prevRunId);
-    }
-
-    function getSelectedRunId() {
-      return parseInt($('#calendar input[name=run_records]:checked').val());
     }
 
     function getSelectedTripId() {
@@ -79,70 +57,13 @@
       return parseInt($('#tripsTable input[name=trip_records]:checked').parents('tr').find('.trip-run-options').attr('data-run-id') );
     }
 
-    $('#scheduleButton').click(function() {
-      assignTripToRun(getSelectedTripId(), getSelectedRunId(), getSelectedTripPrevRunId());
-    });
-
-    $('#unscheduleButton').click(function() {
-      assignTripToRun(getSelectedTripId(), unscheduledRunId, getSelectedTripPrevRunId());
-    });
-
     $('#tripsTable').on('change', '.trip-run-options', function() {
       assignTripToRun(parseInt($(this).attr('data-trip-id') ), parseInt($(this).val()), parseInt($(this).attr('data-run-id') ) );
-    });
-
-    function manageSchedulingButtons() {
-      var selectedRunId = getSelectedRunId();
-      var selectedTripRunId = getSelectedTripRunId();
-
-      if(
-        $.isNumeric(selectedRunId) && $.isNumeric(selectedTripRunId) &&
-        selectedRunId != unscheduledRunId && selectedTripRunId != selectedRunId) {
-        $('#scheduleButton').show();
-      } else {
-        $('#scheduleButton').hide();
-      }
-
-      if(
-        $.isNumeric(selectedTripRunId) && selectedTripRunId != unscheduledRunId) {
-        $('#unscheduleButton').show();
-      } else {
-        $('#unscheduleButton').hide();
-      }
-    }
-
-    $('#calendar').on('change', 'input[name=run_records]', function() {
-      $('#calendar tr.row-highlight').removeClass('row-highlight');
-      $('#calendar input[name=run_records]:checked').parents('tr').addClass('row-highlight');
-
-      manageSchedulingButtons();
     });
 
     $('#tripsTable').on('change', 'input[name=trip_records]', function() {
       $('#tripsTable tr.row-highlight').removeClass('row-highlight');
       $('#tripsTable input[name=trip_records]:checked').parents('tr').addClass('row-highlight');
-
-      manageSchedulingButtons();
     });
-
-    // hide/unhide calendar
-    function manage_calendar_hidden_status() {
-      var is_calendar_hidden = (localStorage.getItem('trip_run_calendar_hidden') == 'true');
-      if(is_calendar_hidden) {
-        $('#calendar').hide();
-      } else {
-        $('#calendar').show();
-      }
-    }
-
-    $('#hide_trip_run_calendar').change(function() {
-      var checked = $(this).prop('checked');
-      localStorage.setItem('trip_run_calendar_hidden', checked || false);
-
-      manage_calendar_hidden_status();
-    });
-
-    manage_calendar_hidden_status();
-    $('#hide_trip_run_calendar').prop('checked', (localStorage.getItem('trip_run_calendar_hidden') == 'true'));
   });
 

@@ -1,0 +1,19 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'provider'
+#page-header.row
+  .pull-right
+    = link_to translate_helper(:vehicle_maintenance_schedule_types), vehicle_maintenance_schedule_types_path, class: "btn action-button"
+    - if can? :create, VehicleMaintenanceSchedule
+      = link_to translate_helper("new_vehicle_maintenance_schedule_link_text"), polymorphic_path([@vehicle_maintenance_schedule_type, VehicleMaintenanceSchedule], action: :new), class: "btn action-button", remote: true
+  %h1= @vehicle_maintenance_schedule_type.name
+  .col-sm-12{style: "padding-top: 10px;"}
+    %table#schedules_table.table.table-striped.table-bordered
+      %thead
+        %tr
+          %th= translate_helper("vehicle_maintenance_schedule_name")
+          %th= translate_helper("vehicle_maintenance_schedule_mileage")
+          %th= translate_helper("vehicle_maintenance_schedule_document")
+          %th
+      %tbody
+        = render partial: 'vehicle_maintenance_schedule', collection: @vehicle_maintenance_schedules
+
+= render 'shared/modal_dialog', modal_id: "modal-dialog" 

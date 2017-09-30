@@ -9,5 +9,5 @@ class VehicleMaintenanceEvent < ActiveRecord::Base
   validates :services_performed, presence: true
   validates_date :service_date
 
-  scope :default_order, -> { order("service_date DESC") }
+  scope :default_order, -> { order(:service_date) }
 end

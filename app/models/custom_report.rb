@@ -4,6 +4,8 @@ class CustomReport < ActiveRecord::Base
 
   validates :name, presence: true, uniqueness: true
 
+  normalize_attribute :name, :with => [ :strip ]
+
   scope :active_per_provider, -> (provider_id) { 
     includes(:provider_reports).references(:provider_reports)
     .where("provider_reports.provider_id is NULL or (provider_reports.provider_id = ? and provider_reports.inactive = ?)", provider_id, false)

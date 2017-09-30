@@ -5,20 +5,21 @@ RSpec.describe "VehicleWarranties" do
     before :each do
       @admin = create(:admin)
       visit new_user_session_path
-      fill_in 'Email', :with => @admin.email
+      fill_in 'user_username', :with => @admin.username
       fill_in 'Password', :with => @admin.password
       click_button 'Log In'
       
       @vehicle = create :vehicle, :provider => @admin.current_provider
       @vehicle_warranty = create :vehicle_warranty, vehicle: @vehicle
     end
-    
-    it_behaves_like "it accepts nested attributes for document associations" do
-      before do
-        @owner = @vehicle
-        @example = @vehicle_warranty
-      end
-    end
+
+    # Document Associations have been refactored    
+    # it_behaves_like "it accepts nested attributes for document associations" do
+    #   before do
+    #     @owner = @vehicle
+    #     @example = @vehicle_warranty
+    #   end
+    # end
 
     describe "GET /vehicles/:id" do
       it "shows the description of the warranty" do

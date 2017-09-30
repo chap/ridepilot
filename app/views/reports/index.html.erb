@@ -68,7 +68,7 @@
   <fieldset>
     <h3><%= translate_helper("daily_manifest_label") %> </h3>
     <%= f.date_select  :start_date rescue nil%>
-    <%= f.collection_select :driver_id, @drivers_with_cab, :id, :name %>
+    <%= f.collection_select :driver_id, @drivers_with_cab, :id, :user_name %>
     <%= f.submit translate_helper("show") %>
   </fieldset>
 <% end %>
@@ -77,7 +77,7 @@
   <fieldset>
     <h3><%= translate_helper("daily_manifest_with_cab_summary_label") %></h3>
     <%= f.date_select  :start_date rescue nil%>
-    <%= f.collection_select :driver_id, @drivers, :id, :name %>
+    <%= f.collection_select :driver_id, @drivers, :id, :user_name %>
     <%= f.submit translate_helper("show") %>
   </fieldset>
 <% end %>
@@ -86,7 +86,7 @@
   <fieldset>
     <h3><%= translate_helper("daily_manifest_by_half_hour_label") %></h3>
     <%= f.date_select  :start_date rescue nil%>
-    <%= f.collection_select :driver_id, @drivers_with_cab, :id, :name %>
+    <%= f.collection_select :driver_id, @drivers_with_cab, :id, :user_name %>
     <%= f.submit translate_helper("show") %>
   </fieldset>
 <% end %>
@@ -95,7 +95,7 @@
   <fieldset>
     <h3><%= translate_helper("daily_manifest_by_half_hour_with_cab_summary_label") %></h3>
     <%= f.date_select  :start_date rescue nil%>
-    <%= f.collection_select :driver_id, @drivers, :id, :name %>
+    <%= f.collection_select :driver_id, @drivers, :id, :user_name %>
     <%= f.submit translate_helper("show") %>
   </fieldset>
 <% end %>

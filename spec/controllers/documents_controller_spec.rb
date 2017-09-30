@@ -12,8 +12,7 @@ RSpec.describe DocumentsController, type: :controller do
   }}
 
   let(:invalid_attributes) {{
-    description: "",
-    document: ""
+    document: nil
   }}
 
   describe "nested on drivers" do

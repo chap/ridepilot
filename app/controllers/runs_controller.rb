@@ -15,24 +15,16 @@ class RunsController < ApplicationController
     @runs = Run.for_provider(current_provider_id).includes(:driver, :vehicle).order(:date)
     filter_runs
     
-    @drivers = Driver.where(:provider_id=>current_provider_id)
-    @vehicles = Vehicle.where(:provider_id=>current_provider_id)
-    @start_pickup_date = Time.zone.at(session[:start].to_i).to_date
-    @end_pickup_date = Time.zone.at(session[:end].to_i).to_date
+    @drivers = Driver.where(:provider_id=>current_provider_id).default_order
+    @vehicles = Vehicle.where(:provider_id=>current_provider_id).default_order
+    @start_pickup_date = Time.zone.at(session[:runs_start].to_i).to_date
+    @end_pickup_date = Time.zone.at(session[:runs_end].to_i).to_date
     @days_of_week = run_sessions[:days_of_week].blank? ? [0,1,2,3,4,5,6] : run_sessions[:days_of_week].split(',').map(&:to_i)
-
-    @runs_json = @runs.has_scheduled_time.map(&:as_calendar_json).to_json # TODO: sql refactor to improve performance
-    @day_resources = []
 
     if @start_pickup_date > @end_pickup_date
       flash.now[:alert] = TranslationEngine.translate_text(:from_date_cannot_later_than_to_date)
     else
       flash.now[:alert] = nil
-      @day_resources = (@start_pickup_date..@end_pickup_date).select{|d| @days_of_week.index(d.wday)}.map{|d| {
-        id:   d.to_s(:js), 
-        name: d.strftime("%a, %b %d,%Y"),
-        isDate: true
-        } }.to_json
     end
 
 
@@ -67,14 +59,15 @@ class RunsController < ApplicationController
   end
 
   def create
-    authorize! :manage, current_provider
+    authorize! :manage, @run
  
     @run = Run.new(run_params)
     @run.provider = current_provider
     
     respond_to do |format|
       if @run.is_all_valid?(current_provider_id) && @run.save
-        format.html { redirect_to(runs_path(date_range(@run)), :notice => 'Run was successfully created.') }
+        TrackerActionLog.create_run(@run, current_user)
+        format.html { redirect_to @run, :notice => 'Run was successfully created.' }
         format.xml  { render :xml => @run, :status => :created, :location => @run }
       else
         setup_run
@@ -85,7 +78,7 @@ class RunsController < ApplicationController
     end
   end
 
-  def update
+  def update    
     authorize! :manage, @run
     
     # Massage trip_attributes. We're not using a nested form so that we can use
@@ -98,10 +91,11 @@ class RunsController < ApplicationController
       end
       params[:run][:trips_attributes] = corrected_trip_attributes
     end
-                
+    
+    @run.assign_attributes run_params            
     respond_to do |format|
-      if @run.is_all_valid?(current_provider_id) && @run.update_attributes(run_params)
-        format.html { redirect_to(runs_path(date_range(@run)), :notice => 'Run was successfully updated.') }
+      if @run.is_all_valid?(current_provider_id) && @run.save
+        format.html { redirect_to @run, :notice => 'Run was successfully updated.' }
         format.xml  { head :ok }
       else
         setup_run
@@ -124,17 +118,60 @@ class RunsController < ApplicationController
   def for_date
     date = Date.parse params[:date]
     @runs = @runs.for_provider(current_provider_id).incomplete_on date
-    cab_run = Run.new :cab => true
-    cab_run.id = -1
-    @runs = @runs + [cab_run] 
+    if current_provider.try(:cab_enabled?)
+      cab_run = Run.new :cab => true
+      cab_run.id = -1
+      @runs = @runs + [cab_run] 
+    end
     render :json =>  @runs.to_json 
   end
+  
+  # Cancels multiple runs by id, removing associations with any trips on those runs
+  def cancel_multiple
+    @runs = Run.where(id: cancel_multiple_params[:run_ids].split(',').map(&:to_i))
+    trips_removed = @runs.cancel_all
+    respond_to do |format|
+      format.html { redirect_to(runs_path, notice: "#{trips_removed} trips successfully unscheduled from #{@runs.count} runs.")}
+    end
+  end
+  
+  # Destroys multiple runs by id, deleting them from the database
+  def delete_multiple
+    @runs = Run.where(id: delete_multiple_params[:run_ids].split(',').map(&:to_i))
+    runs_destroyed = can?(:delete, Run) ? @runs.destroy_all : Run.none
+    if runs_destroyed
+      respond_to do |format|
+        format.html { redirect_to(runs_path, notice: "#{runs_destroyed.count} runs successfully deleted.") }
+      end
+    end
+  end
+
+  def check_driver_vehicle_availability
+    date = Date.parse params[:date] if !params[:date].blank?
+    start_time = DateTime.parse params[:start_time] if !params[:start_time].blank?
+    end_time = DateTime.parse params[:end_time] if !params[:end_time].blank?
+
+    @is_vehicle_active = @is_driver_active = @is_driver_available = true
+
+    @vehicle = Vehicle.find_by_id(params[:vehicle_id])
+    if @vehicle && date
+      @is_vehicle_active = @vehicle.active_for_date?(date)
+    end
+
+    @driver = Driver.find_by_id(params[:driver_id])
+    if @driver && date 
+      @is_driver_active = @driver.active_for_date?(date)
+      if start_time && end_time
+        @is_driver_available = @driver.available_between?(date.wday, start_time.strftime('%H:%M'), end_time.strftime('%H:%M')) 
+      end
+    end
+  end 
   
   private
   
   def setup_run
-    @drivers = Driver.active.where(:provider_id=>@run.provider_id)
-    @vehicles = Vehicle.active.where(:provider_id=>@run.provider_id)
+    @drivers = Driver.active.where(:provider_id=>@run.provider_id).default_order
+    @vehicles = Vehicle.active.where(:provider_id=>@run.provider_id).default_order
   end
 
   def date_range(run)
@@ -145,8 +182,6 @@ class RunsController < ApplicationController
   end
   
   def run_params
-    params[:run][:repetition_driver_id] = params[:run][:driver_id]
-    params[:run][:repetition_vehicle_id] = params[:run][:vehicle_id]
     params.require(:run).permit(
       :name, 
       :date, 
@@ -173,41 +208,7 @@ class RunsController < ApplicationController
       :repetition_vehicle_id,
       :trips_attributes => [
         :id,
-        :appointment_time,
-        :attendant_count,
-        :customer_id,
-        :customer_informed,
-        :donation,
-        :driver_id,
-        :dropoff_address_id,
-        :funding_source_id,
-        :group_size,
-        :guest_count,
-        :medicaid_eligible,
-        :mileage,
-        :mobility_id,
-        :notes,
-        :pickup_address_id,
-        :pickup_time,
-        :repeats_sundays,
-        :repeats_mondays,
-        :repeats_tuesdays,
-        :repeats_wednesdays,
-        :repeats_thursdays,
-        :repeats_fridays,
-        :repeats_saturdays,
-        :repetition_customer_informed,
-        :repetition_driver_id,
-        :repetition_interval,
-        :repetition_vehicle_id,
-        :run_id,
-        :service_level_id,
-        :trip_purpose_id,
-        :trip_result_id,
-        :result_reason,
-        :vehicle_id,
-        :mobility_device_accommodations,
-        customer_attributes: [:id]
+        :trip_result_id
       ]
     )
   end
@@ -229,18 +230,26 @@ class RunsController < ApplicationController
 
   def update_sessions(params = {})
     params.each do |key, val|
-      session[key] = val if !val.nil?
+      session["runs_#{key}"] = val if !val.nil?
     end
   end
 
   def run_sessions
     {
-      start: session[:start],
-      end: session[:end], 
-      driver_id: session[:driver_id], 
-      vehicle_id: session[:vehicle_id],
-      run_result_id: session[:run_result_id], 
-      days_of_week: session[:days_of_week]
+      start: session[:runs_start],
+      end: session[:runs_end], 
+      driver_id: session[:runs_driver_id], 
+      vehicle_id: session[:runs_vehicle_id],
+      run_result_id: session[:runs_run_result_id], 
+      days_of_week: session[:runs_days_of_week]
     }
+  end
+  
+  def cancel_multiple_params
+    params.require(:cancel_multiple_runs).permit(:run_ids)
+  end
+  
+  def delete_multiple_params
+    params.require(:delete_multiple_runs).permit(:run_ids)
   end
 end

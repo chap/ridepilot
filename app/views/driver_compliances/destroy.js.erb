@@ -1,1 +1,5 @@
-$('#driver_compliances-table .driver_compliance-<%= @driver_compliance.id %>').fadeOut(350).delete();
+<% if @driver_compliance.legal? %>
+$('#legal_driver_compliances_table .driver_compliance-<%= @driver_compliance.id %>').fadeOut(350).delete();
+<% else %>
+$('#driver_compliances_table .driver_compliance-<%= @driver_compliance.id %>').fadeOut(350).delete();
+<% end %>

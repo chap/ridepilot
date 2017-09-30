@@ -17,9 +17,6 @@ elsif ENV['AWS_REGION'] && ENV['AWS_KEY_ID'] && ENV['AWS_ACCESS_KEY']
     'Cache-Control' => 'max-age=315576000',
     'Expires'       => 10.years.from_now.httpdate
   }
-  Paperclip::Attachment.default_options[:path]    = "system/:class/:attachment/:id_partition/:style/:hash.:extension"
 else
   Paperclip::Attachment.default_options[:storage] = :filesystem
-  Paperclip::Attachment.default_options[:url]     = "/system/:class/:attachment/:id_partition/:style/:hash.:extension"
-  Paperclip::Attachment.default_options[:path]    = ":rails_root/public:url"
 end

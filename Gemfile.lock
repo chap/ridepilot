@@ -24,6 +24,15 @@ GIT
       simple_form
 
 GIT
+  remote: git://github.com/camsys/twitter-typeahead-rails.git
+  revision: b9e407f9a4224f0840b60a523a2df42eeca7dfe7
+  specs:
+    twitter-typeahead-rails (0.10.2)
+      actionpack (>= 3.1)
+      jquery-rails
+      railties (>= 3.1)
+
+GIT
   remote: git://github.com/phatworx/devise_security_extension.git
   revision: 2132a72dad0cfec5956ba64463c7a1a70ffe8e61
   ref: 2132a72d
@@ -272,6 +281,11 @@ GEM
       haml (>= 4.0.6, < 5.0)
       html2haml (>= 1.0.1)
       railties (>= 4.0.1)
+    handlebars_assets (0.23.1)
+      execjs (~> 2.0)
+      multi_json (~> 1.0)
+      sprockets (>= 2.0.0)
+      tilt (>= 1.2)
     hike (1.2.3)
     hitimes (1.2.2)
     honeybadger (2.1.3)
@@ -338,8 +352,17 @@ GEM
     paranoia (2.1.3)
       activerecord (~> 4.0)
     pg (0.18.2)
+    phony (2.15.42)
+    phony_rails (0.14.5)
+      activesupport (>= 3.0)
+      phony (~> 2.15)
     polyamorous (1.2.0)
       activerecord (>= 3.0)
+    public_activity (1.5.0)
+      actionpack (>= 3.0.0)
+      activerecord (>= 3.0)
+      i18n (>= 0.5.0)
+      railties (>= 3.0.0)
     rack (1.5.5)
     rack-test (0.6.3)
       rack (>= 1.0)
@@ -397,6 +420,7 @@ GEM
     redis-store (1.1.6)
       redis (>= 2.2)
     ref (2.0.0)
+    remotipart (1.3.1)
     request_store (1.2.0)
     responders (1.1.2)
       railties (>= 3.2, < 4.2)
@@ -515,6 +539,7 @@ DEPENDENCIES
   fog (~> 1.32.0)
   font-awesome-rails
   haml
+  handlebars_assets
   ice_cube (~> 0.6.8)
   jc-validates_timeliness (~> 3.1.1)
   jquery-datatables-rails (~> 3.3.0)
@@ -528,6 +553,8 @@ DEPENDENCIES
   paperclip (~> 4.3.0)
   paranoia (~> 2.0)
   pg
+  phony_rails
+  public_activity
   rack-timeout
   rails (~> 4.1.0)
   rails-fullcalendar-resourceviews (~> 1.6.5.7)!
@@ -535,6 +562,7 @@ DEPENDENCIES
   rails-settings-cached (~> 0.4.1)
   rails_12factor
   redis-rails (~> 4.0.0)
+  remotipart (~> 1.2)
   reporting!
   rgeo
   rspec-rails (~> 3.2)
@@ -548,10 +576,11 @@ DEPENDENCIES
   therubyracer
   timecop (~> 0.8)
   translation_engine!
+  twitter-typeahead-rails!
   uglifier (>= 1.3.0)
   unicorn
   whenever (~> 0.9.4)
   will_paginate (~> 3.0.7)
 
 BUNDLED WITH
-   1.10.6
+   1.14.6

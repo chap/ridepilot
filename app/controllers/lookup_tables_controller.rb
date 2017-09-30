@@ -13,29 +13,29 @@ class LookupTablesController < ApplicationController
 
   def add_value
     @item = @lookup_table.add_value(params[:lookup_table])
-    render :show
+    redirect_to @lookup_table
   end
 
   def update_value
     @item = @lookup_table.update_value(params[:model_id], params[:lookup_table])
-    render :show
+    redirect_to @lookup_table
   end
 
   def destroy_value
     @item = @lookup_table.destroy_value(params[:model_id])
-    render :show
+    redirect_to @lookup_table
   end
 
   def hide_value
     @lookup_table.hide_value(params[:model_id], current_provider_id)
     @item = @lookup_table.get_value params[:model_id]
-    render :show
+    redirect_to @lookup_table
   end
 
   def show_value
     @lookup_table.show_value(params[:model_id], current_provider_id)
     @item = @lookup_table.get_value params[:model_id]
-    render :show
+    redirect_to @lookup_table
   end
 
   private

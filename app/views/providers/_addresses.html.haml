@@ -1,0 +1,19 @@
+.panel.panel-default
+  .panel-heading
+    .row
+      .col-sm-12
+        %h3.panel-title
+          .btns.pull-right
+            =link_to translate_helper("create_provider_address_text"), '#', id: 'addProviderCommonAddress', class:'btn action-button'
+          = translate_helper(:show_provider_address_heading)
+          - if ProviderCommonAddress.where(provider: @provider).empty?
+            %span.badge
+              0
+            %i.fa.fa-exclamation-triangle{style: 'color: red'}
+  .panel-body
+    .row.col-sm-12
+      = render 'addresses_table'
+    
+
+= render 'add_address_dialog'
+= render 'addresses/upload_form', provider: @provider 

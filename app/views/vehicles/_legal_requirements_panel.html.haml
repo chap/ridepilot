@@ -1,0 +1,20 @@
+.panel.panel-primary
+  .panel-heading
+    = translate_helper("legal_vehicle_compliances_heading")
+  .panel-body{style: 'padding: 0px;'}
+    .col-sm-12
+      .checkbox.pull-right
+        %label
+          %input#show_past_legal{type: 'checkbox'}
+            %b= translate_helper(:show_past)
+    = render 'vehicle_compliances_table', vehicle_compliances: @vehicle.vehicle_compliances.incomplete.legal.default_order, legal: true
+  - unless @readonly
+    .panel-footer
+      .clearfix
+        = link_to translate_helper("vehicle_legal_requirements_add_link_title"), new_vehicle_vehicle_compliance_path(@vehicle, legal: true), class: "btn action-button pull-right", remote: true
+:javascript
+  $(function() {
+    $('#show_past_legal').change(function() {
+      $.ajax({url: "#{vehicle_vehicle_compliances_path(@vehicle)}?readonly=#{@readonly}&legal=true&show_past=" + $(this).is(':checked')});
+    });
+  });

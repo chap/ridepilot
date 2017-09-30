@@ -1,0 +1,5 @@
+<% if params[:legal] == 'true' %>
+  $('#legal_vehicle_compliances_table').html("<%= j (render 'vehicles/vehicle_compliances_table', vehicle_compliances: @vehicle_compliances, legal: true) %>");
+<% else %>
+  $('#vehicle_compliances_table').html("<%= j (render 'vehicles/vehicle_compliances_table', vehicle_compliances: @vehicle_compliances, legal: false) %>");
+<% end %>

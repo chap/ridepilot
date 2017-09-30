@@ -58,7 +58,7 @@ RSpec.describe RunsController, type: :controller do
 
       it "redirects to the created run" do
         post :create, {:run => valid_attributes}
-        expect(response).to redirect_to(runs_path(date_range(Run.new(valid_attributes))))
+        expect(response).to redirect_to(run_path(assigns(:run)))
       end
     end
 
@@ -104,12 +104,12 @@ RSpec.describe RunsController, type: :controller do
 
       it "accepts nested trip attributes" do        
         run = create(:run, :provider => @current_user.current_provider)
-        trip = create(:trip, :provider => @current_user.current_provider, :run => run, :trip_purpose => create(:trip_purpose, name: "Shopping"))
+        trip = create(:trip, :provider => @current_user.current_provider, :run => run, :trip_result => create(:trip_result, name: "Missing"))
         expect {
           put :update, {:id => run.to_param, :run => new_attributes.merge({
-            :trips_attributes => { "0" => { :id => trip.id, :trip_purpose_id => create(:trip_purpose, name: "Eating").id }}}
+            :trips_attributes => { "0" => { :id => trip.id, :trip_result_id => create(:trip_result, name: "No Show").id }}}
           )}
-        }.to change{ trip.reload.trip_purpose.name }.from("Shopping").to("Eating")
+        }.to change{ trip.reload.trip_result.name }.from("Missing").to("No Show")
       end
 
       it "assigns the requested run as @run" do
@@ -121,7 +121,7 @@ RSpec.describe RunsController, type: :controller do
       it "redirects to the run" do
         run = create(:run, :provider => @current_user.current_provider)
         put :update, {:id => run.to_param, :run => valid_attributes}
-        expect(response).to redirect_to(runs_path(date_range(run)))
+        expect(response).to redirect_to(run_path(run))
       end
     end
 
@@ -205,6 +205,47 @@ RSpec.describe RunsController, type: :controller do
       get :uncompleted_runs, {}
       expect(response).to render_template("index")
     end
+  end
+  
+  describe "PATCH #cancel_multiple, DELETE #delete_multiple" do
+    
+    let(:run_1) { create(:run) }
+    let(:run_2) { create(:run) }
+    let(:run_3) { create(:run) }
+    let(:trip_1) { create(:trip) }
+    let(:trip_2) { create(:trip) }
+    let(:trip_3) { create(:trip) }
+    before(:each) do
+      run_1.trips << trip_1
+      run_1.trips << trip_2
+      run_2.trips << trip_3
+    end
+    
+    it "can cancel/unschedule multiple runs" do      
+      expect(run_1.trips.count).to eq(2)
+      expect(run_2.trips.count).to eq(1)
+      expect(run_3.trips.count).to eq(0)
+      trip_count = Trip.count
+      
+      patch :cancel_multiple, { cancel_multiple_runs: { run_ids: Run.pluck(:id).join(',') } }
+    
+      expect(run_1.trips.count).to eq(0)
+      expect(run_2.trips.count).to eq(0)
+      expect(run_3.trips.count).to eq(0)
+      expect(Trip.count).to eq(trip_count)
+    end
+    
+    it "can delete multiple runs" do
+      trip_count = Trip.count      
+      expect(Run.where(id: [run_1.id, run_2.id, run_3.id]).count).to eq(3)
+      
+      delete :delete_multiple, { delete_multiple_runs: { run_ids: Run.pluck(:id).join(',') } }
+      
+      expect(Run.where(id: [run_1.id, run_2.id, run_3.id]).count).to eq(0)
+      expect(Trip.count).to eq(trip_count)
+      
+    end
+    
   end
 
   private

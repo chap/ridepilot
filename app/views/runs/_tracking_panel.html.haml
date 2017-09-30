@@ -1,0 +1,36 @@
+:ruby
+  number_of_one_way_trips_for_senior = @run.number_of_one_way_trips(:senior)
+  number_of_senior_passengers_served = @run.number_of_passengers_served(:senior)
+  number_of_one_way_trips_for_disabled = @run.number_of_one_way_trips(:disabled)
+  number_of_disabled_passengers_served = @run.number_of_passengers_served(:disabled)
+  number_of_one_way_trips_for_low_income = @run.number_of_one_way_trips(:low_income)
+  number_of_low_income_passengers_served = @run.number_of_passengers_served(:low_income)
+
+:css
+  #run_tracking_table td {
+    border: none;
+  }
+
+  #run_tracking_table tr {
+    background: none;
+  }
+.panel.panel-primary#run_driver_panel
+  .panel-heading
+    %h3.panel-title
+      = translate_helper(:run_tracking)
+  .panel-body{style: 'padding: 5px;'}
+    .col-sm-12
+      %table.table#run_tracking_table{style: "margin-bottom: 0px;"}
+        %tbody
+          %tr
+            %td= translate_helper(:run_tracking_senior)
+            %td= "#{translate_helper(:number_of_one_way_trips)} (#{number_of_one_way_trips_for_senior})"
+            %td= "#{translate_helper(:number_of_passengers_served)} (#{number_of_senior_passengers_served})"
+          %tr
+            %td= translate_helper(:run_tracking_disabled)
+            %td= "#{translate_helper(:number_of_one_way_trips)} (#{number_of_one_way_trips_for_disabled})"
+            %td= "#{translate_helper(:number_of_passengers_served)} (#{number_of_disabled_passengers_served})"
+          %tr
+            %td= translate_helper(:run_tracking_low_income)
+            %td= "#{translate_helper(:number_of_one_way_trips)} (#{number_of_one_way_trips_for_low_income})"
+            %td= "#{translate_helper(:number_of_passengers_served)} (#{number_of_low_income_passengers_served})"

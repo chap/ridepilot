@@ -1,4 +1,14 @@
 $('#modal-dialog').modal('hide');
 var $new_row = $("<%= j (render @driver_compliance) %>").hide();
-$('#driver_compliances-table .driver_compliance-<%= @driver_compliance.id %>').slideUp('fast').replaceWith($new_row);
+<% if @driver_compliance.legal? %>
+$('#legal_driver_compliances_table .driver_compliance-<%= @driver_compliance.id %>').slideUp('fast').replaceWith($new_row);
+<% else %>
+$('#driver_compliances_table .driver_compliance-<%= @driver_compliance.id %>').slideUp('fast').replaceWith($new_row);
+<% end %>
+
+
 $new_row.slideDown('slow');
+
+<% if @is_newly_completed && @driver_compliance.driver_requirement_template.try(:reoccuring?)%>
+  <%= render 'ask_for_reoccuring', driver: @driver, legal: @driver_compliance.legal?, driver_requirement_template_id: @driver_compliance.driver_requirement_template_id %>
+<% end %>

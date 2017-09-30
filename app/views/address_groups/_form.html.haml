@@ -1,0 +1,10 @@
+= form_for @address_group do |f|
+  - if @address_group.errors.any?
+    #error_explanation
+      %h2= "#{pluralize(@address_group.errors.count, "error")} prohibited this address_group from being saved:"
+      %ul
+        - @address_group.errors.full_messages.each do |msg|
+          %li= msg
+
+  .actions
+    = f.submit 'Save'

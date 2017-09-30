@@ -1,6 +1,6 @@
 .form-group.col-sm-12
   .col-sm-7.control-label{id: "#{item.code}_label", for: "eligibility_#{item.code}"}
-    = item.description
+    %b= item.description
   .col-sm-5
     - customer_eligibility = @customer.customer_eligibilities.where(eligibility_id: item.id).first
     - is_ineligible = customer_eligibility.try(:eligible) == false
@@ -10,4 +10,4 @@
     .col-sm-4.control-label{id: "#{item.code}_ineligible_label", for: "eligibility_#{item.code}_ineligible_reason"}
       = translate_helper(:ineligible_reason)
     .col-sm-8
-      = text_area_tag "eligibilities[#{item.code}][ineligible_reason]", ineligible_reason, class: 'form-control', id: "eligibility_#{item.code}_ineligible_reason"
+      = text_area_tag "eligibilities[#{item.code}][ineligible_reason]", ineligible_reason, class: 'form-control ineligible-reason-text', id: "eligibility_#{item.code}_ineligible_reason"

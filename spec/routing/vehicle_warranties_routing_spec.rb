@@ -7,8 +7,8 @@ RSpec.describe VehicleWarrantiesController, type: :routing do
         expect(:get => "/vehicles/1/vehicle_warranties").not_to route_to("vehicle_warranties#index", vehicle_id: "1")
       end
 
-      it "does not route to #show" do
-        expect(:get => "/vehicles/1/vehicle_warranties/1").to_not route_to("vehicle_warranties#show", vehicle_id: "1", :id => "1")
+      it "routes to #show" do
+        expect(:get => "/vehicles/1/vehicle_warranties/1").to route_to("vehicle_warranties#show", vehicle_id: "1", :id => "1")
       end
 
       it "routes to #new" do

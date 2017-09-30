@@ -1,0 +1,1 @@
+$('#run_trip_filters_run_id').html("<%= j options_for_select( [['All', nil]] + @runs.pluck(:name, :id) ) %>");

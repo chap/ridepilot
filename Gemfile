@@ -57,6 +57,7 @@ gem 'jc-validates_timeliness', '~> 3.1.1'
 # AWS SDK v2 separately for other tasks.
 gem 'paperclip', '~> 4.3.0'
 gem 'fog', '~> 1.32.0'
+gem 'remotipart', '~> 1.2' # allows remote multipart (file upload) forms
 
 gem 'will_paginate', '~> 3.0.7'
 gem 'attribute_normalizer', '~> 1.2.0'
@@ -70,6 +71,9 @@ gem 'aws-sdk', '~> 2.1.8'
 gem 'paper_trail', '~> 4.0.0.rc'
 
 gem 'rails-jquery-autocomplete', '~> 1.0.0'
+# needed for trip address picker
+gem 'twitter-typeahead-rails', github: 'camsys/twitter-typeahead-rails'
+gem 'handlebars_assets'
 
 # RADAR Not updated since 2011, used by RecurringTrip model
 # TODO could recurring_select gem replace this?
@@ -118,6 +122,12 @@ gem 'bootstrap-kaminari-views'
 
 # momentjs for datetime parsing
 gem 'momentjs-rails'
+
+# phone number validation and display
+gem 'phony_rails'
+
+# logging activities for Tracker Action Log
+gem 'public_activity' 
 
 # twitter typeahed
 #gem 'twitter-typeahead-rails'

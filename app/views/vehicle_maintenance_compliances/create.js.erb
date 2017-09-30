@@ -1,2 +1,6 @@
 $('#modal-dialog').modal('hide');
 $("<%= j (render @vehicle_maintenance_compliance) %>").hide().appendTo('#vehicle_maintenance_compliances-table tbody').slideDown('slow');
+
+<% if @vehicle_maintenance_compliance.complete? && @vehicle_maintenance_compliance.vehicle_maintenance_schedule%>
+  <%= render 'create_next_event', vehicle: @vehicle, schedule_id: @vehicle_maintenance_compliance.vehicle_maintenance_schedule.id %>
+<% end %>

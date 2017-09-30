@@ -1,0 +1,19 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: (params[:provider_id].blank? ? 'admin' : 'provider')
+#page-header.row
+  .col-sm-12.col-md-6
+    %h1= translate_helper("new_driver_requirement_template_heading")
+  .col-sm-12.col-md-6
+    .pull-right
+      %button.btn.action-button#driver_requirement_template_form_submit
+        = translate_helper("driver_requirement_template_form_submit")
+      = link_to translate_helper("cancel"), driver_requirement_templates_path(provider_id: params[:provider_id]), class: "btn action-button"
+= render partial: "form"
+
+:javascript
+  $(document).ready(function(){
+    $("form.new_driver_requirement_template .form-actions").hide();
+    
+    $("#driver_requirement_template_form_submit").on("click", function(){
+      $("form.new_driver_requirement_template").submit();
+    });
+  });

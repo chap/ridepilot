@@ -1,0 +1,243 @@
+<h2 class="section-header" id="hour_settings">
+  <%=translate_helper("configure_provider_operating_hours")%>
+  <% if @provider.operating_hours.empty? %>
+    <i class="fa fa-exclamation-triangle" style='color: red'></i>
+  <% end %>
+</h2>
+<fieldset style="padding: 0px;">
+<%= form_for current_provider, url: save_operating_hours_provider_path(current_provider) do |f| %>
+  <% if current_provider.errors.any? %>
+    <div class="panel panel-danger">
+      <div class="panel-heading"><%= translate_helper("driver_form_error", count: current_provider.errors.count) %></div>
+      <div class="panel-body">
+        <ul>
+          <% current_provider.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+  <%= render 'shared/operating_hours' %>
+  <div style="padding: 10px 15px;">
+    <%= submit_tag translate_helper("update_provider_operating_hours"), class: 'btn action-button' %>
+  </div>
+<% end %>
+</fieldset>
+
+<hr />
+
+<h2 class="section-header">
+  <%= translate_helper("lookup_table") %>
+</h2>
+<fieldset>
+  <div class="row col-sm-12">
+    <label> <%= translate_helper(:configure_provider_lookup_tables) %>: </label>
+    <div class="col-sm-12">
+      <%= link_to translate_helper("manage_provider_lookup_tables_link_text"), provider_lookup_tables_path, target: '_blank' %> 
+    </div>
+  </div>
+  <div class="row col-sm-12" style="padding-top: 10px;">
+    <label> <%= translate_helper(:show_hide_system_lookup_tables) %>: </label>
+    <div class="col-sm-12">
+      <%= link_to translate_helper("open_system_lookup_tables_link_text"), lookup_tables_path, target: '_blank' %>
+    </div>
+  </div>
+</fieldset>
+<hr>
+
+<h2 class="section-header" id="advance_day_settings"><%=translate_helper("advance_day_scheduling")%></h2>
+<% if can? :edit, @provider %>
+  <%= form_tag change_advance_day_scheduling_provider_path(@provider) do %>
+    <fieldset>
+      <ol class="section fourth">
+        <li>
+          <%= label_tag translate_helper("days_in_advance") %>
+          <%= select_tag "advance_day_scheduling", options_for_select( [[7, 7], [14, 14], [21, 21]], @provider.get_advance_day_scheduling), { :onchange => "form.submit();" } %>
+        </li>
+      </ol>
+    </fieldset>
+  <% end %>
+<% end %>
+
+<hr />
+
+
+<h2 class="section-header" id="run_tracking_settings"><%=translate_helper("provider_form_run_tracking")%></h2>
+<% if can? :edit, @provider %>
+  <%= form_tag change_run_tracking_provider_path(@provider) do %>
+    <fieldset>
+      <ol class="section fourth">
+        <li>
+          <%= label_tag translate_helper("enabled") %>
+          <%= select_tag "run_tracking", options_for_select( [["No", false], ["Yes", true]], @provider.run_tracking? ), { :onchange => "form.submit();" } %>
+        </li>
+      </ol>
+    </fieldset>
+  <% end %>
+<% end %>
+
+<hr />
+
+<h2 class="section-header" id="cab_settings"><%=translate_helper("cab")%></h2>
+<% if can? :edit, @provider %>
+  <%= form_tag change_cab_enabled_provider_path(@provider) do %>
+    <fieldset>
+      <ol class="section fourth">
+        <li>
+          <%= label_tag translate_helper("enabled") %>
+          <%= select_tag "cab_enabled", options_for_select( [["No", false], ["Yes", true]], @provider.try(:cab_enabled?) ), { :onchange => "form.submit();" } %>
+        </li>
+      </ol>
+    </fieldset>
+  <% end %>
+<% end %>
+
+<hr />
+
+<h2 class="section-header" id="scheduling_settings"><%=translate_helper("provider_form_scheduling")%></h2>
+<% if can? :edit, @provider %>
+  <%= form_tag change_scheduling_provider_path(@provider) do %>
+    <fieldset>
+      <ol class="section fourth">
+        <li>
+          <%= label_tag translate_helper("enabled") %>
+          <%= select_tag "scheduling", options_for_select( [["No", false], ["Yes", true]], @provider.scheduling? ), { :onchange => "form.submit();" } %>
+        </li>
+      </ol>
+    </fieldset>
+  <% end %>
+<% end %>
+
+<hr />
+
+<h2 class="section-header" id="run_fields_settings"><%= translate_helper("provider_form_fields_required_for_run_completion") %></h2>
+<% if can? :edit, @provider %>
+  <%= form_tag change_fields_required_for_run_completion_provider_path(@provider) do %>
+    <fieldset>
+      <% field_groups = Run::FIELDS_FOR_COMPLETION.map(&:to_s).sort.in_groups(2) %>
+      <% %w(first second).each do |group| %>
+        <ol class="section <%= group %>">
+          <% field_groups.send(group).each do |field| %>
+            <% if field.present? %>
+              <li>
+                <%= label_tag do %>
+                  <%= check_box_tag "fields_required_for_run_completion[]", field, @provider.fields_required_for_run_completion.include?(field) %>
+                  <%= field.humanize %>
+                <% end %>
+              </li>
+            <% end %>
+          <% end %>
+        </ol>
+      <% end %>
+      <div class="actions">
+        <%= submit_tag translate_helper("submit_fields_required_for_run_completion"), class: 'btn action-button' %>
+      </div>
+    </fieldset>
+  <% end %>
+<% end %>
+
+<hr />
+
+<% google_maps_callbacks = [] %>
+
+<h2 class="section-header"  id="region_map"><%= translate_helper("region_heading") %></h2>
+<fieldset style="padding: 0px;">
+<div id="region">
+  <div id="region-form">
+    <% if @provider.region_nw_corner
+         nw_y = @provider.region_nw_corner.y
+         nw_x = @provider.region_nw_corner.x
+       else
+         nw_y = ''
+         nw_x = ''
+       end
+       if @provider.region_se_corner
+         se_y = @provider.region_se_corner.y
+         se_x = @provider.region_se_corner.x
+       else
+         se_y = ''
+         se_x = ''
+       end
+    %>
+    <%= form_tag save_region_provider_path, class: "form-inline" do %>
+      <table>
+      <tr>
+        <th colspan="2"><%= translate_helper("northwest_corner") %></th>
+      </tr>
+      <tr>
+        <td><%= label_tag translate_helper("latitude") %></td>
+        <td>
+          <%= text_field_tag :region_north, nw_y, class: 'form-control' %>
+          <span class="hint">(e.g. <%= GOOGLE_MAP_DEFAULTS[:bounds][:north] %>)</span>
+        </td>
+      <tr>
+        <td><%= label_tag translate_helper("longitude") %></td>
+        <td>
+          <%= text_field_tag :region_west, nw_x, class: 'form-control' %>
+          <span class="hint">(e.g. <%= GOOGLE_MAP_DEFAULTS[:bounds][:west] %>)</span>
+        </td>
+      </tr>
+      <tr><th colspan="2"><%= translate_helper("southeast_corner") %></th></tr>
+      <tr>
+        <td><%= label_tag translate_helper("latitude") %></td>
+        <td>
+          <%= text_field_tag :region_south, se_y, class: 'form-control' %>
+          <span class="hint">(e.g. <%= GOOGLE_MAP_DEFAULTS[:bounds][:south] %>)</span>
+        </td>
+      </tr>
+      <tr>
+        <td><%= label_tag translate_helper("longitude") %></td>
+        <td>
+          <%= text_field_tag :region_east, se_x, class: 'form-control' %>
+          <span class="hint">(e.g. <%= GOOGLE_MAP_DEFAULTS[:bounds][:east] %>)</span>
+        </td>
+      </tr>
+      <tr>
+        <td rowspan="2"><%= submit_tag translate_helper("save_region_submit"), class: 'btn action-button' %></td>
+      </tr>
+      </table>
+    <% end %>
+  </div>
+  <% if @provider.region_nw_corner and @provider.region_se_corner %>
+    <div id="region-preview"></div>
+    <%= javascript_tag do %>
+      function readyRegionPreview () {
+        // Size the map to be the same as the form height.
+        $("#region-preview").height($("#region-form").height() - 15);
+    
+        var region_preview = new GoogleMap($("#region-preview"), {
+          north: <%= @provider.region_nw_corner.y %>,
+          west:  <%= @provider.region_nw_corner.x %>,
+          south: <%= @provider.region_se_corner.y %>,
+          east:  <%= @provider.region_se_corner.x %>
+        }, GoogleMapDefaults.viewport);
+
+        if (region_preview.errors.length > 0) {
+          html = "<h3>Boundary Errors</h3><ul>";
+          for (i in region_preview.errors) {
+            html += '<li>' + region_preview.errors[i] + '</li>';
+          }
+          html += '</ul>';
+          $("#region-preview").css("border", "none").addClass("error").append(html);
+        } else {
+          region_preview.display_region();
+        }
+      }
+    <% end %>
+    <% google_maps_callbacks << "readyRegionPreview" %>
+  <% end %>
+</div>
+
+<div class="clearfix"></div>
+<% content_for :footer do %>
+  <%= javascript_tag do %>
+    $(document).ready(function() {
+      <% google_maps_callbacks.each do |callback| %>
+        <%= "#{callback}();" %>
+      <% end %>
+    });
+  <% end %>
+  <%= render "shared/google_maps/content_for_footer" %>
+<% end %>
+</fieldset>

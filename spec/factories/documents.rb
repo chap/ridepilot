@@ -21,5 +21,10 @@ FactoryGirl.define do
     factory :vehicle_document do
       association :documentable, factory: :vehicle
     end
+    
+    factory :vehicle_maintenance_schedule_document do
+      association :documentable, factory: :vehicle_maintenance_schedule
+    end
+    
   end
 end

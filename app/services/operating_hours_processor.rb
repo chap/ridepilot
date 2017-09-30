@@ -45,9 +45,8 @@ class OperatingHoursProcessor
         errors = true
       end
     end
-    if errors
-      raise ActiveRecord::RecordInvalid.new(@operatable)
-    end
+
+    errors
   end
 
 end

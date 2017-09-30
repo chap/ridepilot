@@ -1,0 +1,26 @@
+- prefix = "vehicle_garage_address_attributes"
+- address = @vehicle.garage_address || @vehicle.build_garage_address(provider_id: current_provider_id)
+.panel.panel-primary
+  .panel-heading
+    = translate_helper("vehicle_form_garage_label") 
+  .panel-body.form-horizontal
+    = f.fields_for :garage_address, address do |address_form|
+      = address_form.hidden_field :provider_id
+      = address_form.hidden_field :address, class: 'address_text'
+      = address_form.hidden_field :city, class: 'address_city'
+      = address_form.hidden_field :state, class: 'address_state'
+      = address_form.hidden_field :zip, class: 'address_zip'
+      = hidden_field_tag :lat, address.latitude, class: 'address_lat'
+      = hidden_field_tag :lon, address.longitude, class: 'address_lon'
+      .form-group
+        = label_tag "#{prefix}_full_address", translate_helper("full_address_name"), class: "col-md-2 control-label"
+        .col-md-10
+          = text_field_tag "#{prefix}_full_address", address.try(:address_text), disabled: @readonly, class: "address_search form-control"
+      = render 'addresses/google_place_autocomplete_js'
+    .form-group
+      = f.label :garage_phone_number, translate_helper("phone_number"), class: "col-md-2 control-label"
+      .col-md-10
+        - if @readonly
+          = format_phone_number(@vehicle.garage_phone_number)
+        - else
+          = f.text_field :garage_phone_number, disabled: @readonly, class: "form-control"

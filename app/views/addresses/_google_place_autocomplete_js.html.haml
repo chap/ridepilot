@@ -1,0 +1,43 @@
+:javascript
+  $(document).ready(function() {
+
+    function fillInAddressDetails(form, address) {
+      $(form).find('.address_text').val(address.address);
+      $(form).find('.address_city').val(address.city);
+      $(form).find('.address_state').val(address.state);
+      $(form).find('.address_zip').val(address.zip);
+      $(form).find('.address_lat').val(address.lat);
+      $(form).find('.address_lon').val(address.lon);
+    }
+
+    function resetAddressDetails(form) {
+      $(form).find('.address_text').val('');
+      $(form).find('.address_city').val('');
+      $(form).find('.address_state').val('');
+      $(form).find('.address_zip').val('');
+      $(form).find('.address_lat').val('');
+      $(form).find('.address_lon').val('');
+    }
+
+    var autocompleteOptions = {
+      types: ['geocode'],
+      componentRestrictions: { country: 'us' }
+    };
+
+    var bounds = #{(Utility.new.get_provider_bounds(current_provider) || {}).to_json.to_s.html_safe};
+    if(bounds.hasOwnProperty('min_lat')) {
+      autocompleteOptions.bounds = new google.maps.LatLngBounds(
+        new google.maps.LatLng(bounds.min_lat, bounds.min_lon),
+        new google.maps.LatLng(bounds.max_lat, bounds.max_lon));
+    }
+
+    // reset values when there is a change
+    $(".address_search").change(function() {
+      resetAddressDetails($(this).parents('form'));
+    });
+
+    $(".address_search").geocomplete(autocompleteOptions)
+      .bind("geocode:result", function(event, result){
+        fillInAddressDetails($(this).parents('form'), googlePlaceParser(result));
+      });
+  });

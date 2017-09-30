@@ -7,13 +7,13 @@
   </td>
   <td>
     <% if trip.pickup_address.present? %>
-      <%= link_to (trip.pickup_address.in_district ? "Y" : "N"), edit_address_path(trip.pickup_address), :title => trip.pickup_address.text %>
+      <%= link_to (trip.pickup_address.in_district ? "Y" : "N"), edit_provider_common_address_path(trip.pickup_address), :title => trip.pickup_address.text %>
     <% else %>
       -
     <% end %>
     /
     <% if trip.dropoff_address.present? %>
-      <%= link_to (trip.dropoff_address.in_district ? "Y" : "N"), edit_address_path(trip.dropoff_address), :title => trip.dropoff_address.text %>
+      <%= link_to (trip.dropoff_address.in_district ? "Y" : "N"), edit_provider_common_address_path(trip.dropoff_address), :title => trip.dropoff_address.text %>
     <% else %>
       -
     <% end %>

@@ -1,0 +1,17 @@
+:css
+  .ada-questions {
+    margin: 10px;
+  }
+.form-group.col-sm-12
+  .col-sm-7.control-label
+    %b= translate_helper(:ada_eligible)
+  .col-sm-5
+    = f.select :ada_eligible, [[translate_helper(:eligible), true], [translate_helper(:not_eligible), false]], {include_blank: true}, {class: 'form-control customer-eligibility'}
+  .col-sm-10.pull-right.ineligible-reason{style: @customer.ada_eligible == false ? '' : 'display: none;'}
+    .col-sm-4.control-label
+      = translate_helper(:ineligible_reason)
+    .col-sm-8
+      = f.text_area :ada_ineligible_reason, class: 'form-control ineligible-reason-text'
+  %fieldset.col-sm-10.pull-right.ada-questions{style: @customer.ada_eligible == true ? '' : 'display: none;'}
+    - AdaQuestion.by_provider(current_provider_id).each do |question|
+      = render 'ada_question_item', item: question

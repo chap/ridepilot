@@ -7,7 +7,7 @@ class Role < ActiveRecord::Base
 
   # constants for role display names
   SYSTEM_ADMIN_NAME = 'System Admin'
-  ADMIN_NAME = 'Admin'
+  ADMIN_NAME = 'Provider Admin'
   EDITOR_NAME = 'Editor'
   USER_NAME = 'User'
   # constants for role levels
@@ -25,6 +25,7 @@ class Role < ActiveRecord::Base
 
   scope :system_admins, -> { where(level: SYSTEM_ADMIN_LEVEL) }
   scope :admins, -> { where(level: ADMIN_LEVEL) }
+  scope :admin_and_aboves, -> { where("level >= ?", ADMIN_LEVEL) }
   scope :editors, -> { where(level: EDITOR_LEVEL) }
 
   # TODO: need to discuss with Chris on using >= instead of == here

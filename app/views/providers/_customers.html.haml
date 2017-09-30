@@ -1,0 +1,27 @@
+%h2.section-header= translate_helper("age_eligibility")
+- if can? :edit, @provider
+  = form_tag change_eligible_age_provider_path(@provider) do
+    %fieldset
+      %ol.section.fourth
+        %li
+          = label_tag translate_helper("eligible_age")
+          = number_field_tag "eligible_age", @provider.eligible_age || Provider::DEFAULT_ELIGIBLE_AGE, { class: 'form-control' }
+      .actions
+        = submit_tag translate_helper("update")
+- else
+  %p= @provider.eligible_age || Provider::DEFAULT_ELIGIBLE_AGE
+%hr
+
+- ada_question_table = ProviderLookupTable.find_by_name('ada_questions')
+- if ada_question_table
+  %h2.section-header= translate_helper("configure_provider_ada_questions")
+  = link_to translate_helper("provider_ada_questions_link_text"), provider_lookup_table_path(ada_question_table), target: '_blank'
+  %hr
+
+%h2.section-header
+  = translate_helper("manage_customers")
+  - if Customer.for_provider(@provider.id).empty?
+    %span.badge
+      0
+    %i.fa.fa-exclamation-triangle{style: 'color: red'}
+= link_to translate_helper("manage_customers_link_text"), customers_path, target: '_blank'

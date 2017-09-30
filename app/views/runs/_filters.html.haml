@@ -18,13 +18,13 @@
         = render partial: 'trips/weekday_select'
       .col-sm-12{style: 'padding: 5px;'}
         = f.label :vehicle_id, translate_helper(:vehicle)
-        = f.select :vehicle_id, options_from_collection_for_select( @vehicles, :id, :name, session[:vehicle_id]), {:include_blank => translate_helper(:all) }, { :class => 'form-control' }
+        = f.select :vehicle_id, options_from_collection_for_select( @vehicles, :id, :name, session[:runs_vehicle_id]), {:include_blank => translate_helper(:all) }, { :class => 'form-control' }
       .col-sm-12{style: 'padding: 5px;'}
         = f.label :driver_id, translate_helper(:driver)
-        = f.select :driver_id, options_from_collection_for_select( @drivers, :id, :name, session[:driver_id]), {:include_blank => translate_helper(:all) }, { :class => 'form-control' }
+        = f.select :driver_id, options_from_collection_for_select( @drivers, :id, :user_name, session[:runs_driver_id]), {:include_blank => translate_helper(:all) }, { :class => 'form-control' }
       .col-sm-12{style: 'padding: 5px;'}
         = f.label :run_result_id, translate_helper(:run_result)
-        = f.select :run_result_id, options_for_select( [[translate_helper(:complete), 1], [translate_helper(:incomplete), 2]], session[:run_result_id]), {:include_blank => translate_helper(:all) }, { :class => 'form-control' }
+        = f.select :run_result_id, options_for_select( [[translate_helper(:complete), 1], [translate_helper(:incomplete), 2]], session[:runs_run_result_id]), {:include_blank => translate_helper(:all) }, { :class => 'form-control' }
 
 = render "shared/date_time_picker_javascript"
 :javascript

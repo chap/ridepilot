@@ -2,9 +2,7 @@
   #customer_flag_message.alert.alert-danger
     = @customer.message
 = render 'form', edit_mode: :show, is_group: @customer.group
-
-.col-sm-12
-  = render 'trips'
+= render 'shared/date_range_inactivate_dialog', resource: @customer, inactivation_url: inactivate_customer_path(@customer)
 
 :javascript
   $(document).ready(function() {

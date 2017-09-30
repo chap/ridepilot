@@ -1,6 +1,6 @@
 .row{style: (is_first_run ? '' : 'padding-top: 20px; border-top: solid 3px black;') }
   .pull-left{style: 'padding-left: 0px;font-size: 16px;font-weight: bold; max-width: 230px;'}
-    %p= run.driver.try(:name) || "(#{translate_helper('no_driver')})"
+    %p= run.driver.try(:user_name) || "(#{translate_helper('no_driver')})"
     %p
       = "#{translate_helper('driver_manifest_vehicle')} #"
       %u

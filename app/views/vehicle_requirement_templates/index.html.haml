@@ -1,0 +1,21 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: (params[:provider_id].blank? ? 'admin' : 'provider')
+#page-header.row
+  .col-sm-12{style: 'padding: 0px;'}
+    .pull-right
+      = link_to translate_helper("new_vehicle_requirement_template_link_text"), new_vehicle_requirement_template_path(provider_id: params[:provider_id]), class: "btn action-button"
+    %h1= params[:provider_id].blank? ? translate_helper("system_vehicle_requirement_templates_index_heading") : translate_helper("provider_vehicle_requirement_templates_index_heading")
+.row
+  .col-sm-12
+    %table.table.table-striped.table-bordered#vehicle_requirement_templates_table
+      %thead
+        %tr
+          %th.col-sm-4= translate_helper("vehicle_requirement_template_name")
+          %th.col-sm-2= translate_helper("vehicle_requirement_template_legal")
+          %th.col-sm-2= translate_helper("vehicle_requirement_template_reoccuring")
+      %tbody
+        = render partial: 'vehicle_requirement_template', collection: @vehicle_requirement_templates
+
+:javascript
+  $(function() {
+    $('#vehicle_requirement_templates_table').dataTable();
+  });

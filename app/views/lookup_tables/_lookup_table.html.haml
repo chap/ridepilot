@@ -1,0 +1,12 @@
+- if @item && @item.errors.any? 
+  %div#error_explanation
+    %h2
+      = translate_helper("lookup_table_error_message", count: @item.errors.count)
+    %ul
+      - @item.errors.full_messages.each do |msg|
+        %li
+          = msg 
+.col-sm-12
+  = render 'lookup_tables/dropdown', tables: @lookup_tables, table: @lookup_table, is_provider_only: is_provider_only
+.col-sm-12
+  = render 'table', table: @lookup_table

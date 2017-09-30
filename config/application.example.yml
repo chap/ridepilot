@@ -1,42 +1,25 @@
-# all configurable environments:
-#   development
-#   test
-#   integration
-#   qa
-#   production
-NEW_RELIC_LICENSE_KEY: 
-GOOGLE_API_KEY:
 development:
+  RIDEPILOT_HOST:
   SYSTEM_ADMIN_EMAIL:
   SYSTEM_ADMIN_PASSWORD:
-  RIDEPILOT_HOST:
   SYSTEM_SEND_FROM_ADDRESS:
-  SMTP_MAIL_ADDR:
-  SMTP_MAIL_PORT:
-  SMTP_MAIL_DOMAIN:
-  SMTP_MAIL_USER_NAME:
-  SMTP_MAIL_PASSWORD:
-  REDISCLOUD_URL:
-  AWS_BUCKET:
-  MAPREQUEST_API_KEY:
   OPEN_TRIP_PLANNER_URL:
-  
-  # For Sidekiq. You can typically leave this as-is (https://goo.gl/kg5fiU)
-  REDIS_PROVIDER: REDISCLOUD_URL
+  GOOGLE_API_KEY:
 
 test:
-  SYSTEM_ADMIN_EMAIL:
-  SYSTEM_ADMIN_PASSWORD:
   RIDEPILOT_HOST:
   SYSTEM_SEND_FROM_ADDRESS:
-  SMTP_MAIL_ADDR:
-  SMTP_MAIL_PORT:
-  SMTP_MAIL_DOMAIN:
-  SMTP_MAIL_USER_NAME:
-  SMTP_MAIL_PASSWORD:
-  REDISCLOUD_URL:
-  MAPREQUEST_API_KEY:
   OPEN_TRIP_PLANNER_URL:
-  
-  # For Sidekiq. You can typically leave this as-is (https://goo.gl/kg5fiU)
-  REDIS_PROVIDER: REDISCLOUD_URL
+
+production:   
+  RIDEPILOT_HOST:     
+  SYSTEM_ADMIN_EMAIL:    
+  SYSTEM_ADMIN_PASSWORD: 
+  SMTP_MAIL_ADDR:                 
+  SMTP_MAIL_DOMAIN:               
+  SMTP_MAIL_PASSWORD:             
+  SMTP_MAIL_PORT:                 
+  SMTP_MAIL_USER_NAME:            
+  SYSTEM_SEND_FROM_ADDRESS:       
+  OPEN_TRIP_PLANNER_URL:            
+  GOOGLE_API_KEY:

@@ -1,5 +1,5 @@
 - if defined? provider && provider
-  = simple_form_for :address, url: upload_addresses_path, html: {class: 'form-horizontal', multipart: true, method: 'patch' }, authenticity_token: true, wrapper: :horizontal_form do |f|
+  = simple_form_for :address, url: upload_provider_common_addresses_path, html: {class: 'form-horizontal', multipart: true, method: 'patch' }, authenticity_token: true, wrapper: :horizontal_form do |f|
     .row#address_upload_div
       .col-sm-12
         .panel.panel-default

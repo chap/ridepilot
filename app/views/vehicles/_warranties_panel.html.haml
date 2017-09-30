@@ -1,0 +1,18 @@
+.panel.panel-primary
+  .panel-heading= translate_helper("vehicle_warranties_heading")
+  %table#vehicle_warranties-table.table.table-striped.table-condensed
+    %thead
+      %tr
+        %th.col-sm-3= translate_helper("vehicle_warranty_form_expiration_date")
+        %th= translate_helper("vehicle_warranty_form_description")
+        - unless @readonly
+          %th.col-sm-1
+    %tbody
+      - if @readonly and @vehicle.vehicle_warranties.empty?
+        %tr
+          %td{:colspan => "2"}= translate_helper("vehicle_warranties_empty")
+      = render partial: 'vehicle_warranties/vehicle_warranty', collection: @vehicle.vehicle_warranties.default_order
+  - unless @readonly
+    .panel-footer
+      .clearfix
+        = link_to translate_helper("vehicle_warranties_add_link_title"), new_vehicle_vehicle_warranty_path(@vehicle), class: "btn action-button pull-right", remote: true

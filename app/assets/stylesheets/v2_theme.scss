@@ -123,3 +123,17 @@ table.dataTable tbody tr.selected {
 .address_search {
   width: 100%;
 }
+
+.place-picker-div .twitter-typeahead, .place-picker-div .tt-dropdown-menu {
+  width: 100% !important;
+}
+
+.height-constraint-panel {
+  max-height: 300px;
+}
+
+.height-constraint-panel .panel-body {
+  max-height: 250px;
+  overflow-y: auto;
+}
+

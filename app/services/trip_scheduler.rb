@@ -67,7 +67,8 @@ class TripScheduler
     run_end_time = @run.scheduled_end_time
 
     if run_start_time && run_end_time
-      @trip.pickup_time >= @run.scheduled_start_time && @trip.appointment_time <= @run.scheduled_end_time
+      (time_portion(@trip.pickup_time) >= time_portion(run_start_time)) && 
+      (@trip.appointment_time.nil? || time_portion(@trip.appointment_time) <= time_portion(run_end_time))
     else
       true
     end
@@ -78,8 +79,7 @@ class TripScheduler
   end
 
   def validate_driver_availability
-    trip_pickup_time = @trip.pickup_time
-    @run.driver ?  @run.driver.active && @run.driver.available?(trip_pickup_time.wday, trip_pickup_time.strftime('%H:%M')) : true
+    @run.driver && @run.driver.active
   end
 
   def response_as_json(is_success, error_text = '')
@@ -88,6 +88,12 @@ class TripScheduler
       message: error_text || '',
       trip_event_json: is_success ? @trip.as_run_event_json : nil
     }
+  end
+
+  private
+
+  def time_portion(time)
+    (time - time.beginning_of_day) if time
   end
 
 end

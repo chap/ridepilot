@@ -17,7 +17,7 @@ RSpec.describe CustomersController, type: :controller do
   describe "GET #index" do
     it "assigns all active customers as @customers" do
       customer_1 = create(:customer, :provider => @current_user.current_provider)
-      customer_2 = create(:customer, :provider => @current_user.current_provider, :inactivated_date => Date.today)
+      customer_2 = create(:customer, :provider => @current_user.current_provider, :active => false)
       get :index, {}
       expect(assigns(:customers)).to include(customer_1)
       expect(assigns(:customers)).to_not include(customer_2)
@@ -97,8 +97,8 @@ RSpec.describe CustomersController, type: :controller do
           :first_name => "MyString",
           :midle_initial => "MyString",
           :last_name => "MyString",
-          :phone_number_1 => "MyString",
-          :phone_number_2 => "MyString",
+          :phone_number_1 => "(801)4567890",
+          :phone_number_2 => "(801)4567891",
           :address_attributes => {
             :name => "Name",
             :building_name => "Building",
@@ -147,6 +147,45 @@ RSpec.describe CustomersController, type: :controller do
         put :update, {:id => customer.to_param, :customer => valid_attributes}
         expect(response).to redirect_to(customer)
       end
+      
+      it "updates customer's travel trainings" do
+        customer = create(:customer, :with_travel_trainings, provider: @current_user.current_provider)
+        tt_1 = customer.travel_trainings.first
+        tt_2 = build(:travel_training, customer: customer)
+        new_tt_json = [tt_1, tt_2].to_json
+
+        original_tt_ids = customer.travel_trainings.pluck(:id)
+        expect(customer.travel_trainings.count).to eq(3)
+        
+        put :update, id: customer.to_param, customer: new_attributes, travel_trainings: new_tt_json
+        customer.reload
+        
+        new_tt_ids = customer.travel_trainings.pluck(:id)
+        
+        expect(customer.travel_trainings.count).to eq(2)
+        expect(new_tt_ids.include?(original_tt_ids.delete(tt_1.id))).to be true
+        expect(original_tt_ids.none? {|id| new_tt_ids.include?(id)}).to be true
+        expect(customer.travel_trainings.where(comment: tt_2.comment).count).to eq(1)
+      end
+
+      it "updates customer's funding authorization numbers" do
+        customer = create(:customer, :with_funding_authorization_numbers, provider: @current_user.current_provider)
+        fn_1 = customer.funding_authorization_numbers.first
+        fn_2 = build(:funding_authorization_number, customer: customer)
+        new_fn_json = [fn_1, fn_2].to_json
+
+        original_fn_ids = customer.funding_authorization_numbers.pluck(:id)
+        expect(customer.funding_authorization_numbers.count).to eq(3)
+        
+        put :update, id: customer.to_param, customer: new_attributes, funding_authorization_numbers: new_fn_json
+        customer.reload
+        
+        new_fn_ids = customer.funding_authorization_numbers.pluck(:id)
+        
+        expect(customer.funding_authorization_numbers.count).to eq(2)
+        expect(new_fn_ids.include?(original_fn_ids.delete(fn_1.id))).to be true
+        expect(original_fn_ids.none? {|id| new_fn_ids.include?(id)}).to be true
+      end
     end
 
     context "with invalid params" do
@@ -180,45 +219,46 @@ RSpec.describe CustomersController, type: :controller do
   end
 
   describe "POST #inactivate" do
-    it "inactivates the requested Customer" do
-      customer = create(:customer, :provider => @current_user.current_provider)
+    it "permanently inactivates a customer" do 
+      customer = create(:customer, :provider => @current_user.current_provider, :active => true)
       expect {
-        post :inactivate, {:customer_id => customer.id, :customer => {:inactivated_reason => "because"}}
-      }.to change{ customer.reload.inactivated_date.try(:in_time_zone).to_i }.from(0).to(Date.today.in_time_zone.to_i)
+        post :inactivate, {:id => customer.id, customer: {active: false}}
+      }.to change{ customer.reload.permanent_inactivated? }.from(false).to(true)
     end
 
-    it "assigns the requested customer as @customer" do
-      customer = create(:customer, :provider => @current_user.current_provider)
-      post :inactivate, {:customer_id => customer.id, :customer => {:inactivated_reason => "because"}}
-      expect(assigns(:customer)).to eq(customer)
+    it "temporarily inactivates a customer" do 
+      customer = create(:customer, :provider => @current_user.current_provider, :active => true)
+      expect {
+        post :inactivate, {:id => customer.id, customer: {active: true, inactivated_start_date: Date.today}}
+      }.to change{ customer.reload.temporarily_inactivated? }.from(false).to(true)
     end
 
-    it "redirects to the :index" do
-      customer = create(:customer, :provider => @current_user.current_provider)
-      post :inactivate, {:customer_id => customer.id, :customer => {:inactivated_reason => "because"}}
-      expect(response).to redirect_to(customers_path)
+    it "removes temporary inactivation from a customer" do 
+      customer = create(:customer, :provider => @current_user.current_provider, :active => true, inactivated_start_date: Date.today)
+      expect {
+        post :inactivate, {:id => customer.id, customer: {active: true, inactivated_start_date: nil}}
+      }.to change{ customer.reload.temporarily_inactivated? }.from(true).to(false)
+    end
+
+    it "redirects to @customer" do
+      customer = create(:customer, :provider => @current_user.current_provider, :active => true)
+      post :inactivate, {:id => customer.id, customer: {active: false}}
+      expect(response).to redirect_to(customer)
     end
   end
 
-  describe "POST #activate" do
+  describe "POST #reactivate" do
     it "activates the requested Customer" do
-      yesterday = Date.yesterday
-      customer = create(:customer, :provider => @current_user.current_provider, inactivated_date: yesterday)
+      customer = create(:customer, :provider => @current_user.current_provider, :active => false)
       expect {
-        post :activate, {:customer_id => customer.id}
-      }.to change{ customer.reload.inactivated_date.try(:in_time_zone).to_i }.from(yesterday.in_time_zone.to_i).to(0)
+        post :reactivate, {:id => customer.id}
+      }.to change{ customer.reload.active }.from(false).to(true)
     end
 
-    it "assigns the requested customer as @customer" do
-      customer = create(:customer, :provider => @current_user.current_provider, inactivated_date: Date.yesterday)
-      post :activate, {:customer_id => customer.id }
-      expect(assigns(:customer)).to eq(customer)
-    end
-
-    it "redirects to the :index" do
-      customer = create(:customer, :provider => @current_user.current_provider, inactivated_date: Date.yesterday)
-      post :activate, {:customer_id => customer.id}
-      expect(response).to redirect_to(customers_path)
+    it "redirects to the @customer" do
+      customer = create(:customer, :provider => @current_user.current_provider, :active => false)
+      post :reactivate, {:id => customer.id}
+      expect(response).to redirect_to(customer)
     end
   end
   

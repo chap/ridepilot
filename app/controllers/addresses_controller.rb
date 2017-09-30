@@ -4,7 +4,8 @@ class AddressesController < ApplicationController
   load_resource :only => [:edit, :update, :destroy]
   authorize_resource
 
-  def autocomplete
+  # provider & customer common addresses
+  def trippable_autocomplete
     term = parse_search_term
 
     #three ways to match:
@@ -22,42 +23,33 @@ class AddressesController < ApplicationController
     end
 
     arel_table = Address.arel_table
-    base_arel = arel_table[:provider_id].eq(current_provider_id)
+
     if params[:customer_id].present? 
       customer = Customer.find_by_id(params[:customer_id])
-
-      # shared customer's addresses
-      base_arel = base_arel.or(arel_table[:id].in(customer.addresses.pluck(:id))) if customer && customer.provider_id != current_provider_id
+      base_arel = (arel_table[:customer_id].in(customer.id).and(arel_table[:type].eq('CustomerCommonAddress')))
+      if customer
+        base_arel = base_arel.or(arel_table[:provider_id].in(customer.authorized_provider_ids).and(arel_table[:type].eq('ProviderCommonAddress')))
+      end
+    else
+      base_arel = arel_table[:provider_id].eq(current_provider_id).and(arel_table[:type].eq('ProviderCommonAddress'))
     end
 
     addresses = Address.where(base_arel.to_sql)
-      .where(is_driver_associated: false, inactive: false)
+      .where('inactive is NULL or inactive != ?', true)
+      .where.not(the_geom: nil)
       .where(["((LOWER(address) like '%' || ? || '%' ) and  (city || ', ' || state || ' ' || zip like ? || '%')) or LOWER(building_name) like '%' || ? || '%' or LOWER(name) like '%' || ? || '%' ", address, city_state_zip, term, term])
-    if params[:customer_id].present?
-      addresses = addresses.where("customer_id is NULL or customer_id = ?", params[:customer_id]) 
-    else
-      addresses = addresses.where("customer_id is NULL") #only provider common addresses if customer is not given
-    end
-
-    if params[:geocoding_only] == 'true'
-      addresses = addresses.where.not(the_geom: nil)
-    end
 
     if params[:exclude].present?
       addresses = addresses.where.not(id: params[:exclude].split(','))
     end
 
     if addresses.size > 0
-
       #there are some existing addresses
       address_json = addresses.map { |address| address.json }
+    end
 
-      address_json << Address::NewAddressOption unless request.env["HTTP_REFERER"].try(:match, /addresses\/[0-9]+\/edit/)
-
-      render :json => address_json
-    else
-      #no existing addresses
-      return render :json => [Address::NewAddressOption]
+    respond_to do |format|
+      format.json { render json: address_json || [] }
     end
   end
 
@@ -69,44 +61,8 @@ class AddressesController < ApplicationController
     render :json => address_json
   end
 
-  def edit; end
-  
-  def create
-    the_geom       = params[:lat].to_s.size > 0 ? RGeo::Geographic.spherical_factory(srid: 4326).point(params[:lon].to_f, params[:lat].to_f) : nil
-    prefix         = params['prefix'] || ""
-    address_params = {}
-    
-    # Some kind of faux strong parameters...
-    for param in ['name', 'building_name', 'address', 'city', 'state', 'zip', 'phone_number', 'in_district', 'trip_purpose_id', 'notes']
-      address_params[param] = params[prefix][param]
-    end
 
-    address_params[:provider_id] = current_provider_id
-    address_params[:the_geom]    = the_geom if the_geom
-
-    if params[:address_id].present?
-      address = Address.find(params[:address_id])
-      authorize! :edit, address
-      address.attributes = address_params
-    else
-      address_params[:customer_id] = params[:customer_id] if params[:customer_id].present?
-      authorize! :new, Address
-      address = Address.new(address_params)
-    end
-
-    if address.save
-      attrs = address.attributes
-      attrs[:label] = address.text.gsub(/\s+/, ' ')
-      attrs[:prefix] = prefix
-      render :json => attrs.to_json
-    else
-      errors = address.errors.messages
-      errors['prefix'] = prefix
-      render :json => errors
-    end
-  end
-
-  def validate
+  def validate_customer_specific
     the_geom       = params[:lat].to_s.size > 0 ? RGeo::Geographic.spherical_factory(srid: 4326).point(params[:lon].to_f, params[:lat].to_f) : nil
     prefix         = params['prefix'] || ""
     address_params = {}
@@ -119,11 +75,11 @@ class AddressesController < ApplicationController
     address_params[:the_geom]    = the_geom if the_geom
 
     if params[:address_id].present?
-      address = Address.find(params[:address_id])
+      address = CustomerCommonAddress.find_by_id(params[:address_id])
       address.attributes = address_params
     else
       address_params[:provider_id] = current_provider_id
-      address = Address.new(address_params)
+      address = CustomerCommonAddress.new(address_params)
     end
 
     if address.valid?
@@ -141,104 +97,7 @@ class AddressesController < ApplicationController
     end
   end
 
-  def search
-    @term      = params[:name].downcase
-    @provider  = Provider.find params[:provider_id]
-    @addresses = Address.accessible_by(current_ability).for_provider(@provider).where(customer_id: nil).order(:address, :name).search_for_term(@term)
-
-    respond_to do |format|
-      format.json { render :text => render_to_string(:partial => "results.html") }
-    end
-  end
-
-  def update
-    new_addr_params = address_params.except(:provider_id) # don't want to overwrite provider
-    the_geom       = params[:lat].to_s.size > 0 ? RGeo::Geographic.spherical_factory(srid: 4326).point(params[:lon].to_f, params[:lat].to_f) : nil
-    new_addr_params[:the_geom] = the_geom if the_geom
-    
-    if @address.update_attributes new_addr_params
-      flash.now[:notice] = "Address '#{@address.name}' was successfully updated"
-      redirect_to provider_path(@address.provider)
-    else
-      render :action => :edit
-    end
-  end
-
-  def destroy
-    if @address.trips.present?
-      if new_address = @address.replace_with!(params[:address_id])
-        redirect_to new_address.provider, :notice => "Address #{@address.name} was successfully replaced with new address #{new_address.name}."
-      else
-        redirect_to edit_address_path(@address), :notice => "Address #{@address.name} can't be deleted without associating trips with another address."
-      end
-    else
-      @address.destroy
-      redirect_to current_provider, :notice => "Address #{@address.name} was successfully deleted."
-    end
-  end
-
-  def check_loading_status
-    status = {
-      is_loading: current_provider.address_upload_flag.is_loading 
-    }
-
-    status[:summary] = TranslationEngine.translate_text(:address_file_uploaded) if !status[:is_loading]
-
-    render json: status
-  end
-
-  def upload
-    error_msgs = []
-
-    if !can?(:load, Address)
-      error_msgs << TranslationEngine.translate_text(:not_authorized)
-    else
-      address_file = params[:address][:file] if params[:address]
-      
-      if !address_file.nil?
-        if File.extname(address_file.original_filename) != '.csv'
-          error_msgs << TranslationEngine.translate_text(:address_file_should_be_csv)
-        elsif current_provider.address_upload_flag.is_loading
-          error_msgs << TranslationEngine.translate_text(:address_file_being_uploading)
-        else
-          begin
-            if defined?(S3_BUCKET) && S3_BUCKET
-            # Make an object in your bucket for your upload
-              s3_file = S3_BUCKET.object("/provider_addresses/" + address_file.original_filename)
-              # Upload the file
-              s3_file.put(body: address_file, acl: 'public-read')
-
-              file_url = s3_file.public_url
-            else
-              file_url = address_file.path
-            end
-
-            AddressUploadWorker.perform_async(file_url, current_provider.id) #sidekiq needs to run
-          rescue Exception => ex
-            current_provider.address_upload_flag.uploaded!
-            error_msgs << ex.message
-          end
-        end
-      else
-        error_msgs << TranslationEngine.translate_text(:select_address_file_to_upload)
-      end
-    end
-
-    if error_msgs.size > 0
-      full_error_msg = error_msgs.join(' ')
-    end
-
-    respond_to do |format|
-      format.js
-      format.html {redirect_to provider_url(current_provider), alert: full_error_msg }
-    end
-  end
-
   private
-  
-  def address_params
-    params.require(:address).permit(:name, :building_name, :address, :city, :state, :zip, :in_district, :provider_id, :phone_number, :inactive, :trip_purpose_id, :notes)
-  end
 
   def parse_search_term
     term = params['term'].downcase.strip

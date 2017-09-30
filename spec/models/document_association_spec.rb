@@ -24,17 +24,17 @@ RSpec.describe DocumentAssociation, type: :model do
     expect(association.valid?).to be_truthy
   end
   
-  it "restricts documents from being assigned to the same associable more than once" do
-    document = create :document
-    associable_1 = create :driver_compliance, driver: document.documentable
-    associable_2 = create :driver_compliance, driver: document.documentable
-    create :document_association, document: document, associable: associable_1
-    association = build :document_association, document: document, associable: associable_1
-    
-    expect(association.valid?).to be_falsey
-    expect(association.errors.keys).to include :document_id
-    
-    association.associable = associable_2
-    expect(association.valid?).to be_truthy
-  end
+  # it "restricts documents from being assigned to the same associable more than once" do
+  #   document = create :document
+  #   associable_1 = create :driver_compliance, driver: document.documentable
+  #   associable_2 = create :driver_compliance, driver: document.documentable
+  #   create :document_association, document: document, associable: associable_1
+  #   association = build :document_association, document: document, associable: associable_1
+  #   
+  #   expect(association.valid?).to be_falsey
+  #   expect(association.errors.keys).to include :document_id
+  #   
+  #   association.associable = associable_2
+  #   expect(association.valid?).to be_truthy
+  # end
 end

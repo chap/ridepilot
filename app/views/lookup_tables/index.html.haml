@@ -1,1 +1,4 @@
-= render 'dropdown', tables: @lookup_tables, table: @first_lookup_table
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'admin'
+#page-header.clearfix
+  %h1= translate_helper(:lookup_table)
+= render 'dropdown', tables: @lookup_tables, table: @first_lookup_table, is_provider_only: false

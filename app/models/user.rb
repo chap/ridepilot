@@ -6,23 +6,30 @@ class User < ActiveRecord::Base
   belongs_to :current_provider, class_name: "Provider", foreign_key: :current_provider_id
   has_one    :driver
   has_one    :device_pool_driver, through: :driver
+  belongs_to :user_address, -> { with_deleted }, class_name: 'UserAddress', foreign_key: 'address_id'
+  accepts_nested_attributes_for :user_address, update_only: true
+  has_many :verification_questions, dependent: :destroy
   
   # Include default devise modules. Others available are:
   # :rememberable, :token_authenticatable, :confirmable, :lockable
   devise :database_authenticatable, :recoverable, :trackable, :validatable, 
     :timeoutable, :password_expirable, :password_archivable, :account_expireable
-
   # Let Devise handle the email format requirement
-  validates :email, uniqueness: { conditions: -> { where(deleted_at: nil) } }
+  validates :username, :email, uniqueness: { :case_sensitive => false, conditions: -> { where(deleted_at: nil) } }
+  validates_presence_of :first_name, :last_name, :username
+  validate :valid_phone_number
+
+  normalize_attribute :username, :email, :first_name, :last_name, :with => [ :strip ]
   
   # Let Devise handle the password length requirement
   validates :password, confirmation: true, format: {
     if: :password_required?,
-    with: /\A(?=.*[0-9])(?=.*[\W])(?=.*[a-zA-Z])(.*)\z/,
-    message: "must have at least one number and at least one non-alphanumeric character"
+    with: /\A(?=.*[0-9])(?=.*[A-Z])(.*)\z/,
+    message: "must have at least one number and at least one capital letter"
   }
   
   before_validation do
+    self.username = self.username.downcase if self.username.present?
     self.email = self.email.downcase if self.email.present?
   end
   
@@ -41,8 +48,8 @@ class User < ActiveRecord::Base
     m = (indices - [n]).sample
     # At least one number
     result[n] = '23456789'.chars.to_a.sample
-    # At least one special character
-    result[m] = '@#$%^&*()'.chars.to_a.sample
+    # At least one capital character
+    result[m] = ('A'..'Z').to_a.sample
     return result
   end
 
@@ -77,4 +84,45 @@ class User < ActiveRecord::Base
   def editor?
     super_admin? || roles.where(:provider_id => current_provider.id).first.try(:editor?)
   end
+
+  def name
+    "#{first_name} #{last_name}"
+  end
+
+  def display_name
+    name.blank? ? email : name
+  end
+
+  def name_with_username
+    "#{last_name}, #{first_name} (#{username})"
+  end
+  
+  # Edits/adds/deletes verification questions based on passed hashes
+  def edit_verification_questions(verification_question_objects)
+    # remove non-existing ones
+    prev_verification_question_ids = verification_questions.pluck(:id)
+    existing_verification_question_ids = verification_question_objects.select {|vq| vq[:id] != nil}.map{|vq| vq[:id]}
+    VerificationQuestion.where(id: prev_verification_question_ids - existing_verification_question_ids).delete_all
+  
+    # update verification questions
+    verification_question_objects.select {|vq| vq[:id].blank? }.each do |vq_hash|
+      vq = VerificationQuestion.parse(vq_hash, self)
+      vq.save
+    end
+  end
+  
+  # Returns a random question from the user's array of verification questions
+  def random_verification_question
+    verification_questions.shuffle.first
+  end
+
+  private
+
+  def valid_phone_number
+    util = Utility.new
+    if phone_number.present?
+      errors.add(:phone_number, 'is invalid') unless util.phone_number_valid?(phone_number) 
+    end
+  end
+
 end

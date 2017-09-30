@@ -6,15 +6,6 @@ RSpec.describe Provider do
       provider = build :provider
       expect(provider.fields_required_for_run_completion).to be_an Array
     end
-    
-    it "only accepts values from Runs::FIELDS_FOR_COMPLETION" do
-      provider = build :provider, fields_required_for_run_completion: ["foo"]
-      expect(provider.valid?).to be_falsey
-      expect(provider.errors.keys).to include :fields_required_for_run_completion
-      
-      provider.fields_required_for_run_completion = Run::FIELDS_FOR_COMPLETION
-      expect(provider.valid?).to be_truthy
-    end
   end
   
   describe "reimbursement rates" do
@@ -215,6 +206,25 @@ RSpec.describe Provider do
         p.stf_taxi_per_mile_wheelchair_reimbursement_rate = 1
         expect(p.valid?).to be_truthy
         expect(p.errors.keys.include?(:stf_taxi_per_mile_wheelchair_reimbursement_rate)).not_to be_truthy
+      end
+    end
+
+    describe ".active?" do
+      context "when inactived_date is set" do 
+        it "is not active" do 
+          p = build(:provider, inactivated_date: Date.yesterday)
+
+          expect(p.active?).to_not be_truthy
+        end
+      end
+
+      
+      context "when inactived_date is not set" do 
+        it "is active" do 
+          p = build(:provider, inactivated_date: nil)
+
+          expect(p.active?).to be_truthy
+        end
       end
     end
   end

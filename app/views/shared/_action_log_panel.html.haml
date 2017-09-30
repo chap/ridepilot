@@ -1,0 +1,18 @@
+.panel.panel-primary.height-constraint-panel
+  .panel-heading
+    %h3.panel-title
+      = translate_helper(:action_log)
+  .panel-body{style: 'padding: 5px;'}
+    .form-group.col-sm-12
+      %table.table.table-striped.table-bordered
+        %thead
+          %tr
+            %th= translate_helper("log_date_time")
+            %th= translate_helper("log_user")
+            %th= translate_helper("log_message")
+        %tbody
+          - logs.each do |log|
+            %tr
+              %td= format_simple_full_datetime(log.created_at)
+              %td= log.owner.try(:name_with_username)
+              %td{style: 'word-wrap: break-word;'}= formulate_log_message(log)

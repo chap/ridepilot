@@ -98,7 +98,7 @@ class ReportsController < ApplicationController
 
     @vehicles.each do |vehicle|
       month_runs = Run.for_vehicle(vehicle.id).for_date_range(@start_date, @end_date)
-      month_trips = Trip.for_vehicle(vehicle.id).for_date_range(@start_date.try(:in_time_zone), @end_date.try(:in_time_zone)).completed
+      month_trips = Trip.for_vehicle(vehicle.id).for_date_range(@start_date, @end_date).completed
 
       @total_hours[vehicle] = month_runs.sum("actual_end_time - actual_start_time").to_i
       @total_rides[vehicle] = month_trips.reduce(0){|total,trip| total + trip.trip_count}
@@ -129,7 +129,7 @@ class ReportsController < ApplicationController
     end
 
     #computes number of trips in and out of district by purpose
-    counts_by_purpose = Trip.for_provider(current_provider_id).for_date_range(@start_date.try(:in_time_zone), @end_date.try(:in_time_zone))
+    counts_by_purpose = Trip.for_provider(current_provider_id).for_date_range(@start_date, @end_date)
         .includes(:customer, :pickup_address, :dropoff_address).completed
 
     by_purpose = {}
@@ -163,13 +163,13 @@ class ReportsController < ApplicationController
     @total_miles_driven = 0
     mileage_runs.each {|run| @total_miles_driven += (run.max_odometer.to_i - run.min_odometer.to_i) }
 
-    @turndowns = Trip.turned_down.for_date_range(@start_date.try(:in_time_zone), @end_date.try(:in_time_zone)).for_provider(current_provider_id).count
+    @turndowns = Trip.turned_down.for_date_range(@start_date, @end_date).for_provider(current_provider_id).count
     @volunteer_driver_hours = hms_to_hours(runs.for_volunteer_driver.sum("actual_end_time - actual_start_time") || "0:00:00")
     @paid_driver_hours = hms_to_hours(runs.for_paid_driver.sum("actual_end_time - actual_start_time")  || "0:00:00")
 
     trip_customers = Trip.individual.select("DISTINCT customer_id").for_provider(current_provider_id).completed
-    prior_customers_in_fiscal_year = trip_customers.for_date_range(fiscal_year_start_date(@start_date).try(:in_time_zone), @start_date.try(:in_time_zone)).map {|x| x.customer_id}
-    customers_this_period = trip_customers.for_date_range(@start_date.try(:in_time_zone), @end_date.try(:in_time_zone)).map {|x| x.customer_id}
+    prior_customers_in_fiscal_year = trip_customers.for_date_range(fiscal_year_start_date(@start_date), @start_date).map {|x| x.customer_id}
+    customers_this_period = trip_customers.for_date_range(@start_date, @end_date).map {|x| x.customer_id}
     @undup_riders = (customers_this_period - prior_customers_in_fiscal_year).size
   end
 
@@ -179,7 +179,7 @@ class ReportsController < ApplicationController
     @trip_results = TripResult.by_provider(current_provider).pluck(:name, :id)
 
     unless @trips.present?
-      @trips = Trip.for_provider(current_provider_id).for_date_range(@query.start_date.try(:in_time_zone), @query.end_date.try(:in_time_zone)).
+      @trips = Trip.for_provider(current_provider_id).for_date_range(@query.start_date, @query.end_date).
                 includes(:customer,:run,:pickup_address,:dropoff_address)
       @trips = @trips.for_cab     if @query.trip_display == "Cab Trips"
       @trips = @trips.not_for_cab if @query.trip_display == "Not Cab Trips"
@@ -202,7 +202,7 @@ class ReportsController < ApplicationController
 
     @drivers  = Driver.active.where(:provider_id=>current_provider_id).default_order
     @vehicles = Vehicle.active.where(:provider_id=>current_provider_id)
-    @runs = Run.for_provider(current_provider_id).for_date_range(@query.start_date,@query.end_date) unless @runs.present?
+    @runs = Run.for_provider(current_provider_id).for_date_range(@query.start_date, @query.end_date) unless @runs.present?
   end
 
   def update_runs_for_verification
@@ -230,7 +230,7 @@ class ReportsController < ApplicationController
     query_params = params[:query] || {}
     @query = Query.new(query_params)
 
-    @trips = Trip.for_provider(current_provider_id).for_date_range(@query.start_date.try(:in_time_zone), @query.end_date.try(:in_time_zone)).for_cab.completed.order(:pickup_time)
+    @trips = Trip.for_provider(current_provider_id).for_date_range(@query.start_date, @query.end_date).for_cab.completed.order(:pickup_time)
   end
 
   def age_and_ethnicity
@@ -244,8 +244,8 @@ class ReportsController < ApplicationController
     # there was a previous trip for this customer this fy
 
     trip_customers = Trip.individual.select("DISTINCT customer_id").for_provider(current_provider_id).completed
-    prior_customers_in_fiscal_year = trip_customers.for_date_range(fiscal_year_start_date(@start_date).try(:in_time_zone), @start_date.try(:in_time_zone)).map {|x| x.customer_id}
-    customers_this_period = trip_customers.for_date_range(@start_date.try(:in_time_zone), @end_date.try(:in_time_zone)).map {|x| x.customer_id}
+    prior_customers_in_fiscal_year = trip_customers.for_date_range(fiscal_year_start_date(@start_date), @start_date).map {|x| x.customer_id}
+    customers_this_period = trip_customers.for_date_range(@start_date, @end_date).map {|x| x.customer_id}
 
     new_customers = Customer.where(:id => (customers_this_period - prior_customers_in_fiscal_year))
     earlier_customers = Customer.where(:id => prior_customers_in_fiscal_year)
@@ -319,7 +319,7 @@ class ReportsController < ApplicationController
       @runs = @runs.for_driver(@query.driver_id)
     end
 
-    @trips_by_customer = Trip.where("cab = TRUE or run_id in (?)", run_ids).for_provider(current_provider_id).for_date(@date.try(:in_time_zone)).group_by(&:customer)
+    @trips_by_customer = Trip.where("cab = TRUE or run_id in (?)", run_ids).for_provider(current_provider_id).for_date(@date).group_by(&:customer)
   end
 
   def daily_manifest
@@ -331,7 +331,7 @@ class ReportsController < ApplicationController
 
     cab = Driver.new(:name=>'Cab') #dummy driver for cab trips
 
-    trips = Trip.scheduled.for_provider(current_provider_id).for_date(@date.try(:in_time_zone)).includes(:pickup_address, :dropoff_address, :customer, :mobility, {run: :driver}).order(:pickup_time)
+    trips = Trip.empty_or_completed.for_provider(current_provider_id).for_date(@date).includes(:pickup_address, :dropoff_address, :customer, :mobility, {run: :driver}).order(:pickup_time)
     if @query.driver_id == -2 # All
       # No additional filtering
     elsif @query.driver_id == -1 # Cab
@@ -369,7 +369,7 @@ class ReportsController < ApplicationController
     @query = Query.new(query_params)
     @date = @query.start_date
 
-    @trips = Trip.for_provider(current_provider_id).for_date(@date.try(:in_time_zone)).includes(:pickup_address,:dropoff_address,:customer,:mobility,{:run => :driver}).order(:pickup_time)
+    @trips = Trip.for_provider(current_provider_id).for_date(@date).includes(:pickup_address,:dropoff_address,:customer,:mobility,{:run => :driver}).order(:pickup_time)
     @trips_by_customer = @trips.group_by(&:customer)
   end
 
@@ -377,7 +377,7 @@ class ReportsController < ApplicationController
     authorize! :read, Trip
 
     @query = Query.new(params[:query])
-    date_range = @query.start_date.try(:in_time_zone)..@query.end_date.try(:in_time_zone)
+    date_range = @query.start_date..@query.end_date
     columns = Trip.column_names.map{|c| "\"#{Trip.table_name}\".\"#{c}\" as \"#{Trip.table_name}.#{c}\""} + Customer.column_names.map{|c| "\"#{Customer.table_name}\".\"#{c}\" as \"#{Customer.table_name}.#{c}\""}
     sql = Trip.select(columns.join(',')).joins(:customer).where(:pickup_time => date_range).order(:pickup_time).to_sql
     trips = ActiveRecord::Base.connection.select_all(sql)
@@ -483,11 +483,11 @@ class ReportsController < ApplicationController
 
     trip_queries = {
       in_range: {
-        all: Trip.for_provider(@provider.id).for_date_range(@start_date.try(:in_time_zone), @end_date.try(:in_time_zone)),
+        all: Trip.for_provider(@provider.id).for_date_range(@start_date, @end_date),
         stf: {}
       },
       ytd: {
-        all: Trip.for_provider(@provider.id).for_date_range(Date.new(@start_date.year, 1, 1).try(:in_time_zone), @end_date.try(:in_time_zone))
+        all: Trip.for_provider(@provider.id).for_date_range(Date.new(@start_date.year, 1, 1), @end_date)
       }
     }
     trip_queries[:in_range][:rc]  = trip_queries[:in_range][:all].where(funding_source_id: FundingSource.pick_id_by_name("Ride Connection"))
@@ -685,8 +685,8 @@ class ReportsController < ApplicationController
     @query = Query.new(query_params)
     @date = @query.start_date
 
-    trips = Trip.scheduled.for_provider(current_provider_id).for_date(@date.try(:in_time_zone)).includes(:pickup_address,:dropoff_address,:customer,:mobility,{:run => :driver}).order(:pickup_time)
-    @cab_trips = Trip.for_cab.scheduled.for_provider(current_provider_id).for_date(@date.try(:in_time_zone)).includes(:pickup_address,:dropoff_address,:customer,:mobility,{:run => :driver}).order(:pickup_time)
+    trips = Trip.empty_or_completed.for_provider(current_provider_id).for_date(@date).includes(:pickup_address,:dropoff_address,:customer,:mobility,{:run => :driver}).order(:pickup_time)
+    @cab_trips = Trip.for_cab.scheduled.for_provider(current_provider_id).for_date(@date).includes(:pickup_address,:dropoff_address,:customer,:mobility,{:run => :driver}).order(:pickup_time)
 
     if @query.driver_id == -2 # All
       trips = trips.not_for_cab

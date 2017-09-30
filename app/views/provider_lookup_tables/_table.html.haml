@@ -1,0 +1,57 @@
+- is_code_column_configured = table.code_column_name.present?
+- is_description_column_configured = table.description_column_name.present?
+.col-sm-12{style: 'padding: 10px 0px;'}
+  = render partial: 'lookup_tables/add_value_button', locals: {table: table, is_provider_only: true}
+  = render partial: 'lookup_tables/edit_value_button', locals: {table: table, is_provider_only: true}
+  = render partial: 'lookup_tables/delete_value_button', locals: {table: table, is_provider_only: true}
+
+%table.table.table-condensed.table-striped.table-bordered.table-hover#lookupTable
+  %thead
+    %th
+      = table.value_column_name.titleize
+    - if is_code_column_configured
+      %th
+        = table.code_column_name.titleize
+    - if is_description_column_configured
+      %th
+        = table.description_column_name.titleize
+  %tbody
+    - table.values(current_provider_id).each do |item|
+      %tr{data: {"model-id": item.id}}
+        %td
+          = item[table.value_column_name]
+        - if is_code_column_configured
+          %td
+            = item[table.code_column_name]
+        - if is_description_column_configured
+          %td
+            = item[table.description_column_name]
+
+:javascript
+  $(document).ready(function(){
+    var enableEditingButtons = function() {
+      $('#editLookupTableValue').removeAttr('disabled');
+      $('#deleteLookupTableValue').removeAttr('disabled');
+    };
+
+    var disableEditingButtons = function() {
+      $('#editLookupTableValue').prop('disabled', 'disabled');
+      $('#deleteLookupTableValue').prop('disabled', 'disabled');
+    };
+
+    var table = $('#lookupTable').dataTable();
+
+    // select & deselect table row
+    $('#lookupTable tbody').on( 'click', 'tr', function () {
+      if ( $(this).hasClass('selected') ) {
+        $(this).removeClass('selected');
+        disableEditingButtons();
+      }
+      else {
+        table.$('tr.selected').removeClass('selected');
+        $(this).addClass('selected');
+        enableEditingButtons();
+      }
+    } );
+    
+  });

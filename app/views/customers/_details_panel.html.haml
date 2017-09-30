@@ -22,6 +22,15 @@
           = f.label :token, translate_helper(:customer_token_label) 
         .col-sm-9
           = @customer.token
+    .form-group.col-sm-12
+      .col-sm-3
+        = f.label :photo, translate_helper(:customer_form_photo) 
+      .col-sm-9
+        - if @customer.photo.present? && !@customer.photo.new_record?
+          = image_tag @customer.photo.image.url(:thumb)
+        - unless edit_mode == :show
+          = f.fields_for :photo do |image_upload| 
+            = image_upload.file_field :image, class: "form-control"  
     .form-group.col-sm-12.firstname
       .col-sm-3
         = f.label :first_name, translate_helper(:first_name) 
@@ -41,17 +50,23 @@
       .col-sm-3
         = f.label :gender, translate_helper(:gender) 
       .col-sm-9
-        = f.collection_select :gender, [[:male, translate_helper(:male)], [:female, translate_helper(:female)]], :first, :last, {include_blank: true}, {class: 'form-control'}
+        = f.collection_select :gender, [[:male, translate_helper(:male)], [:female, translate_helper(:female)], [:other, translate_helper(:other_gender)]], :first, :last, {include_blank: true}, {class: 'form-control'}
     .form-group.col-sm-12
       .col-sm-3
         = f.label :phone_number_1, translate_helper(:phone_number) 
       .col-sm-9
-        = f.text_field :phone_number_1, class: 'form-control'
+        - if edit_mode == :show
+          = format_phone_number(@customer.phone_number_1)
+        - else
+          = f.text_field :phone_number_1, class: 'form-control'
     .form-group.col-sm-12
       .col-sm-3
         = f.label :phone_number_2, translate_helper(:alternate_phone_number) 
       .col-sm-9
-        = f.text_field :phone_number_2, class: 'form-control'
+        - if edit_mode == :show
+          = format_phone_number(@customer.phone_number_2)
+        - else
+          = f.text_field :phone_number_2, class: 'form-control'
     .form-group.col-sm-12
       .col-sm-3
         = f.label :email, translate_helper(:email) 
@@ -116,5 +131,3 @@
           = f.label :inactivated_reason, translate_helper(:inactivated_reason) 
         .col-sm-9
           = f.text_field :inactivated_reason, class: 'form-control'
-
-

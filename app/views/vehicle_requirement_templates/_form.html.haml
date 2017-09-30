@@ -1,0 +1,23 @@
+= form_for @vehicle_requirement_template do |f|
+  = f.hidden_field :provider_id, value: params[:provider_id]
+  - if @vehicle_requirement_template.errors.any?
+    .panel.panel-danger
+      .panel-heading= translate_helper("vehicle_requirement_template_form_error", count: @vehicle_requirement_template.errors.count)
+      .panel-body
+        %ul
+          - @vehicle_requirement_template.errors.full_messages.each do |msg|
+            %li= msg
+  .row
+    .col-sm-12.col-md-6
+      .form-group.col-sm-12
+        = f.label :name, translate_helper("vehicle_requirement_template_name_field_label"), class: "col-md-2 control-label"
+        .col-md-10
+          = f.text_field :name, class: "form-control", disabled: @readonly
+      .form-group.col-sm-12
+        = f.label :legal, translate_helper("vehicle_requirement_template_legal_field_label"), class: "col-md-2 control-label"
+        .col-sm-10
+          = f.check_box :legal, disabled: @readonly
+      .form-group.col-sm-12
+        = f.label :reoccuring, translate_helper("vehicle_requirement_template_reoccuring_field_label"), class: "col-md-2 control-label"
+        .col-sm-10
+          = f.check_box :reoccuring, disabled: @readonly

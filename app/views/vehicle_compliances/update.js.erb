@@ -1,0 +1,14 @@
+$('#modal-dialog').modal('hide');
+var $new_row = $("<%= j (render @vehicle_compliance) %>").hide();
+<% if @vehicle_compliance.legal? %>
+$('#legal_vehicle_compliances_table .vehicle_compliance-<%= @vehicle_compliance.id %>').slideUp('fast').replaceWith($new_row);
+<% else %>
+$('#vehicle_compliances_table .vehicle_compliance-<%= @vehicle_compliance.id %>').slideUp('fast').replaceWith($new_row);
+<% end %>
+
+
+$new_row.slideDown('slow');
+
+<% if @is_newly_completed && @vehicle_compliance.vehicle_requirement_template.try(:reoccuring?)%>
+  <%= render 'ask_for_reoccuring', vehicle: @vehicle, legal: @vehicle_compliance.legal?, vehicle_requirement_template_id: @vehicle_compliance.vehicle_requirement_template_id %>
+<% end %>

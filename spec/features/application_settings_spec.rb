@@ -10,7 +10,7 @@ RSpec.describe "ApplicationSettings" do
     before :each do 
       @user = create(:user)
       visit new_user_session_path
-      fill_in 'Email', :with => @user.email
+      fill_in 'user_username', :with => @user.username
       fill_in 'Password', :with => @user.password
       click_button 'Log In'
     end
@@ -40,7 +40,7 @@ RSpec.describe "ApplicationSettings" do
     before :each do 
       @admin = create(:admin)
       visit new_user_session_path
-      fill_in 'Email', :with => @admin.email
+      fill_in 'user_username', :with => @admin.username
       fill_in 'Password', :with => @admin.password
       click_button 'Log In'
     end
@@ -57,7 +57,7 @@ RSpec.describe "ApplicationSettings" do
     before :each do 
       @admin = create(:super_admin)
       visit new_user_session_path
-      fill_in 'Email', :with => @admin.email
+      fill_in 'user_username', :with => @admin.username
       fill_in 'Password', :with => @admin.password
       click_button 'Log In'
     end

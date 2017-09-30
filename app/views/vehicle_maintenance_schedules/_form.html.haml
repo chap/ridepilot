@@ -1,0 +1,69 @@
+- remote ||= false
+= nested_form_for [@vehicle_maintenance_schedule_type, @vehicle_maintenance_schedule], 
+    remote: remote,
+    html: {class: "vehicle-maintenance-schedule-form"} do |f|
+  - if @vehicle_maintenance_schedule.errors.any?
+    .panel.panel-danger
+      .panel-heading= translate_helper("vehicle_maintenance_schedule_form_error", count: @vehicle_maintenance_schedule.errors.count)
+      .panel-body
+        %ul
+          - @vehicle_maintenance_schedule.errors.full_messages.each do |msg|
+            %li= msg
+  .row
+    .col-md-12
+      .panel.panel-primary
+        .panel-body.form-horizontal
+          .form-group
+            = f.label :name, translate_helper("vehicle_maintenance_schedule_name"), class: "col-md-3 control-label"
+            .col-md-9
+              = f.text_field :name, class: "form-control", required: true
+          .form-group
+            = f.label :mileage, translate_helper("vehicle_maintenance_schedule_mileage"), class: "col-md-3 control-label"
+            .col-md-9
+              = f.number_field :mileage, class: "form-control", required: true, min: 0
+          =f.fields_for :document, @document do |doc_f|
+            -if @document.persisted?
+              .form-group
+                %label.col-md-3.control-label=translate_helper("vehicle_maintenance_schedule_document")
+                .col-md-9
+                  =link_to  @vehicle_maintenance_schedule.document.document_file_name, 
+                            @vehicle_maintenance_schedule.document.document.url, 
+                            target: :blank,
+                            class: 'btn btn-link'
+                  .btn.btn-danger.btn-sm.delete-document
+                    %i.fa.fa-remove{'aria-hidden' => true}
+                =doc_f.check_box :_destroy, class: 'destroy-document hidden'
+            .form-group
+              = doc_f.label :document, 
+                  translate_helper("vehicle_maintenance_schedule_document_upload"), 
+                  class: "col-md-3 control-label"
+              .col-md-9
+                =doc_f.file_field :document, class: "form-control document-upload"
+              =doc_f.hidden_field :description, 
+                  class: "form-control", 
+                  value: translate_helper("vehicle_maintenance_schedule_document_description")
+
+
+  .row.form-actions= f.submit translate_helper("vehicle_maintenance_schedule_form_submit"), class: "btn action-button"
+
+:javascript
+  $(document).ready(function() {
+  
+    // Set _destroy to true and hide the row
+    var deleteDocument = function() {
+      var formGroup = $(this).closest('.form-group');
+      formGroup.find('input.destroy-document').prop('checked', true);
+      formGroup.addClass('hidden');
+    }
+    
+    // Delete row on click of delete-document-row button
+    $('.delete-document').click(deleteDocument);
+    
+    // On form submit, check if a document was uploaded, and if so set destroy to false
+    $('form.edit_vehicle_maintenance_schedule').submit(function() {
+      if($('.document-upload').get(0).files.length > 0) {
+        $('.destroy-document').prop('checked', false);
+      }
+    });
+    
+  });

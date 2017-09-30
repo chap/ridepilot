@@ -1,0 +1,15 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'runs'
+.row#page-header
+  .col-sm-12.col-md-6
+    %h1= translate_helper("repeating_runs_heading")
+  .col-sm-12.col-md-6
+    -if can? :create, RepeatingRun
+      .pull-right
+        = link_to translate_helper("new_repeating_run_text"), new_repeating_run_path, class: "btn action-button"
+
+.row
+  .col-sm-12
+    - if @runs.empty?
+      %p= translate_helper("no_repeating_runs")
+    - else
+      = render 'list'

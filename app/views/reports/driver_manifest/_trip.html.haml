@@ -17,7 +17,8 @@
         %br
         %p= pickup_addr.notes
   %td{style: 'text-align: right;'}= format_time_for_listing(trip.pickup_time)
-  %td{style: 'text-align: right;'}= format_time_for_listing(trip.appointment_time)
+  %td{style: 'text-align: right;'}
+    = format_time_for_listing(trip.appointment_time) if trip.appointment_time
 
 %tr
   %td= (trip.notes.blank? ? "" : translate_helper("driver_manifest_trip_notes") )
@@ -101,7 +102,8 @@
         %br
         %p= dropoff_addr.notes
   %td
-  %td{style: 'text-align: right;'}= format_time_for_listing(trip.appointment_time)
+  %td{style: 'text-align: right;'}
+    = format_time_for_listing(trip.appointment_time) if trip.appointment_time
 
 %tr
   %td= (trip.notes.blank? ? "" : translate_helper("driver_manifest_trip_notes") )

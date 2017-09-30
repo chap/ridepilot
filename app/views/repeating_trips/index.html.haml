@@ -1,0 +1,16 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'trips'
+
+.row#page-header
+  .col-sm-12.col-md-6
+    %h1= translate_helper("repeating_trips_heading")
+  .col-sm-12.col-md-6
+    -if can? :create, RepeatingTrip
+      .pull-right
+        = link_to translate_helper("new_repeating_trip_text"), new_repeating_trip_path, class: "btn action-button"
+
+.row
+  .col-sm-12
+    - if @trips.empty?
+      %p= translate_helper("no_repeating_trips")
+    - else
+      = render 'list'

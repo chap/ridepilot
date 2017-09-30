@@ -1,0 +1,74 @@
+- edit_mode = :edit if !defined? edit_mode
+- is_editing = edit_mode == :edit || edit_mode == :new
+
+.panel.panel-primary#customer_travel_trainings_panel
+  .panel-heading
+    %h3.panel-title
+      = translate_helper(:customer_travel_trainings_panel)
+  .panel-body{style: 'padding: 5px;'}
+    %table.table.table-striped.table-bordered#customerTravelTrainingsTable
+      %thead
+        %tr
+          - if is_editing
+            %th{width: 50}
+          %th
+            = translate_helper(:travel_training_date)
+          %th
+            = translate_helper(:travel_training_comment)
+      %tbody
+        - @customer.travel_trainings.order(date: :desc).each do |travel_training|
+          %tr{data: {travel_training: travel_training.to_json}}
+            - if is_editing
+              %td
+                = button_tag :type => 'button', class: 'deleteCustomerTravelTraining btn-danger' do 
+                  = translate_helper(:delete)
+            %td
+              = format_time_for_listing_day travel_training.date if travel_training.date
+            %td
+              = travel_training.comment
+    - if is_editing
+      .pull-right
+        = button_tag :type => 'button', 
+          id: 'addCustomerTravelTraining', 
+          "data-target" => "#addTravelTrainingDialog", 
+          "data-toggle" => "modal", 
+          :class => "btn action-button" do
+          = translate_helper(:add_travel_training)
+= render 'shared/date_time_picker_javascript'
+
+:javascript
+  $(document).ready(function() {
+    makeDatePickers();
+    $( ".new_travel_training .date-picker" ).datepicker( "option", "maxDate", "0" );
+    $('#customerTravelTrainingsTable').on('click', '.deleteCustomerTravelTraining', function(e) {
+      e.preventDefault();
+
+      $(this).parents('tr').remove();
+    });
+    $('#addTravelTrainingDialog').on('show.bs.modal', function () {
+      $('#addTravelTrainingDialog form')[0].reset();
+    });
+
+    function insertTravelTrainingRow(travelTrainingData) {
+      $('#customerTravelTrainingsTable').append("<tr data-travel-training='" + escapeQuotes(JSON.stringify(travelTrainingData)) + "'>" +
+          '<td><button class="deleteCustomerTravelTraining btn-danger" name="button" type="button">Delete</button></td>' +
+          "<td>" + travelTrainingData.date + '</td>' +
+          "<td>" + travelTrainingData.comment + "</td>" +
+          "</tr>");
+    }
+
+    $('#addTravelTrainingDialog form').submit(function() {
+      var travelTrainingData = {
+        date: $('#travel_training_date').val(),
+        comment: $('#travel_training_comment').val()
+      };
+      //insert new travel_training row
+      $('#addTravelTrainingDialog').modal('hide');
+      insertTravelTrainingRow(travelTrainingData);
+
+      return false; //no http submission
+    });
+  });
+
+
+    

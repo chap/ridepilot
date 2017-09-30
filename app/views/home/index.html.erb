@@ -1,9 +1,0 @@
-<%= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'admin' %>
-<ul>
-  <% if can? :manage, ApplicationSetting %><li><%= link_to translate_helper("application_settings_link_text"), application_settings_path %></li><% end %>
-  <% if can? :edit, "Providers" %><li><%= link_to translate_helper("providers_link_text"), providers_path %></li><% end %>
-  <% if can? :manage, RecurringDriverCompliance %><li><%= link_to translate_helper("recurring_driver_compliances_link_text"), recurring_driver_compliances_path %></li><% end %>
-  <% if can? :manage, RecurringVehicleMaintenanceCompliance %><li><%= link_to translate_helper("recurring_vehicle_maintenance_compliances_link_text"), recurring_vehicle_maintenance_compliances_path %></li><% end %>
-  <% if can? :manage, LookupTable %><li><%= link_to translate_helper("lookup_tables_link_text"), lookup_tables_path %></li><% end %>
-  <% if can? :manage, Translation %><li><%= link_to translate_helper("translation_engine_link_text"), translation_engine.translations_path %></li><% end %>
-</ul>

@@ -1,0 +1,23 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'vehicles'
+
+
+= form_for @vehicle, url: update_initial_mileage_vehicle_path(@vehicle), method: :post do |f| 
+  #page-header.row
+    .pull-right
+      = f.submit translate_helper("save"), class: "btn action-button"
+      = link_to translate_helper("cancel"), @vehicle, class: "btn action-button"
+    %h1= "#{translate_helper("edit_vehicle_initial_mileage_heading")}: #{@vehicle.name}"
+
+  .form-group
+    .col-sm-2
+      %label
+        = translate_helper(:vehicle_form_initial_mileage)
+    .col-md-10
+      %p.form-control-static
+        = f.number_field :initial_mileage, min: 0, class: "form-control"
+  .form-group
+    .col-sm-2
+      %label
+        = translate_helper(:vehicle_form_initial_mileage_change_reason)
+    .col-sm-10
+      = f.text_area :initial_mileage_change_reason, value: nil, class: 'form-control', required: true

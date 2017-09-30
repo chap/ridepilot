@@ -5,11 +5,11 @@ RSpec.describe UsersController, type: :routing do
     # NOTE we're only testing the non-Devise routes
 
     it "routes to #new_user" do
-      expect(:get => "/new_user").to route_to("users#new_user")
+      expect(:get => "/providers/1/users/new_user").to route_to("action"=>"new_user", "controller"=>"users", "provider_id"=>"1")
     end
 
     it "routes to #create_user" do
-      expect(:post => "/create_user").to route_to("users#create_user")
+      expect(:post => "/providers/1/users/create_user").to route_to("action"=>"create_user", "controller"=>"users", "provider_id"=>"1")
     end
 
     it "routes to #show_change_password" do

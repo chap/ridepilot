@@ -11,12 +11,12 @@ RSpec.describe UsersController, type: :controller do
   }
 
   let(:invalid_attributes) {
-    attributes_for(:user, :password => '')
+    attributes_for(:user, :username => '')
   }
 
   describe "GET #new_user" do
     it "assigns a new user as @user" do
-      get :new_user, {}
+      get :new_user, {provider_id: @current_user.current_provider.id}
       expect(assigns(:user)).to be_a_new(User)
     end
   end
@@ -28,18 +28,18 @@ RSpec.describe UsersController, type: :controller do
       
         it "creates a new User" do
           expect {
-            post :create_user, {:user => valid_attributes, :role => {:level => 50}}
+            post :create_user, {provider_id: @current_user.current_provider.id, :user => valid_attributes, :role => {:level => 50}}
           }.to change(User, :count).by(1)
         end
 
         it "assigns a newly created user as @user" do
-          post :create_user, {:user => valid_attributes, :role => {:level => 50}}
+          post :create_user, {provider_id: @current_user.current_provider.id, :user => valid_attributes, :role => {:level => 50}}
           expect(assigns(:user)).to be_a(User)
           expect(assigns(:user)).to be_persisted
         end
 
         it "assigns the user to a new role for the current provider" do
-          post :create_user, {:user => valid_attributes, :role => {:level => 50}}
+          post :create_user, {provider_id: @current_user.current_provider.id, :user => valid_attributes, :role => {:level => 50}}
           expect(assigns(:role)).to be_a(Role)
           expect(assigns(:role)).to be_persisted
           expect(assigns(:role).user).to eq(assigns(:user))
@@ -48,24 +48,25 @@ RSpec.describe UsersController, type: :controller do
         end
 
         it "redirects to the current provider" do
-          post :create_user, {:user => valid_attributes, :role => {:level => 50}}
-          expect(response).to redirect_to(@current_user.current_provider)
+          post :create_user, {provider_id: @current_user.current_provider.id, :user => valid_attributes, :role => {:level => 50}}
+          expect(response).to redirect_to(users_provider_path @current_user.current_provider)
         end
       end
       
       context "updating an existing user" do
         before(:each) do
           @new_user = create(:user)
+          @new_attrs = attributes_for(:user, email: @new_user.email, username: @new_user.username)
         end
         
         it "does not create a new User" do
           expect {
-            post :create_user, {:user => {:email => @new_user.email}, :role => {:level => 50}}
+            post :create_user, {provider_id: @current_user.current_provider.id, :user => @new_attrs, :role => {:level => 50}}
           }.to_not change(User, :count)
         end
 
         it "assigns the user to a new role for the current provider" do
-          post :create_user, {:user => {:email => @new_user.email}, :role => {:level => 50}}
+          post :create_user, {provider_id: @current_user.current_provider.id, :user => @new_attrs, :role => {:level => 50}}
           expect(assigns(:role)).to be_a(Role)
           expect(assigns(:role)).to be_persisted
           expect(assigns(:role).user).to eq(@new_user)
@@ -74,20 +75,20 @@ RSpec.describe UsersController, type: :controller do
         end
 
         it "redirects to the current provider" do
-          post :create_user, {:user => {:email => @new_user.email}, :role => {:level => 50}}
-          expect(response).to redirect_to(@current_user.current_provider)
+          post :create_user, {provider_id: @current_user.current_provider.id, :user => @new_attrs, :role => {:level => 50}}
+          expect(response).to redirect_to(users_provider_path @current_user.current_provider)
         end
       end
     end
 
     context "with invalid params" do
       it "assigns a newly created but unsaved user as @user" do
-        post :create_user, {:user => invalid_attributes}
+        post :create_user, {provider_id: @current_user.current_provider.id, :user => invalid_attributes}
         expect(assigns(:user)).to be_a_new(User)
       end
 
       it "re-renders the 'new_user' template" do
-        post :create_user, {:user => invalid_attributes}
+        post :create_user, {provider_id: @current_user.current_provider.id, :user => invalid_attributes}
         expect(response).to render_template("new_user")
       end
     end
@@ -104,8 +105,8 @@ RSpec.describe UsersController, type: :controller do
     context "with valid params" do
       let(:new_attributes) {{
         :current_password => attributes_for(:user)[:password],
-        :password => "new password 12345",
-        :password_confirmation => "new password 12345"
+        :password => "new Password 12345",
+        :password_confirmation => "new Password 12345"
       }}
 
       it "updates the requested user's password" do
@@ -166,7 +167,7 @@ RSpec.describe UsersController, type: :controller do
 
       it "redirects to the requested user's provider page" do
         put :change_expiration, {id: @user.id, :user => expiration_attributes}
-        expect(response).to redirect_to(provider_path(@user.current_provider))
+        expect(response).to redirect_to(users_provider_path(@user.current_provider))
       end
     end
   end
@@ -240,4 +241,54 @@ RSpec.describe UsersController, type: :controller do
       expect(response.body).to eq('OK')
     end
   end
+  
+  
+  describe "verification questions" do
+    let(:user) { create(:user, :with_verification_questions) }
+    
+    describe "POST #get_verification_question" do
+      
+      it "responds with one of the user's security questions" do
+        post :get_verification_question, { user: {username: user.username} }
+        expect(assigns(:user)).to eq(user)
+        expect(user.verification_questions.include?(assigns(:question))).to be true
+      end
+      
+    end
+    
+    describe "POST #answer_verification_question" do
+    
+      it "redirects to show_reset_password on correct answer" do
+        question = user.verification_questions.take
+        
+        post :answer_verification_question, {
+          id: user.id,
+          answer_verification_question: {
+            answer: question.answer,
+            verification_question_id: question.id
+          }
+        }
+        
+        expect(response.location.include?("show_reset_password")).to be true
+        
+      end
+      
+      it "redirects to get_verification_question on incorrect answer" do
+        question = user.verification_questions.take
+        
+        post :answer_verification_question, {
+          id: user.id,
+          answer_verification_question: {
+            answer: question.answer + "X",
+            verification_question_id: question.id
+          }
+        }
+        
+        expect(response.location.include?("get_verification_question")).to be true
+      end
+    
+    end
+    
+  end
+
 end

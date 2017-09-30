@@ -1,0 +1,104 @@
+:ruby
+  @is_repeating_trip = @trip.is_a? RepeatingTrip
+  @trip_id = @trip ? @trip.id : nil
+
+= render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'trips'
+- edit_mode = :edit if !defined? edit_mode
+= form_for @trip,
+  html: { class: 'trip_form', "data-remote" => @remote } do |f|
+  - if @is_repeating_trip
+    = render 'repeating_trips/form_header', edit_mode: edit_mode, f: f
+  - else
+    = render 'trips/form_header', edit_mode: edit_mode, f: f
+
+  - if @trip.errors.any?
+    #error_explanation
+      %h2= translate_helper("trip_form_error_message", count: @trip.errors.count)
+
+      %ul
+        - @trip.errors.full_messages.each do |msg|
+          %li= msg
+
+  -# the customer id needs to be passed in this action
+  = f.hidden_field :customer_id, class: 'trip-customer-id'
+  - unless @is_repeating_trip
+    = f.hidden_field :direction
+    = hidden_field_tag "trip[outbound_trip_id]", @trip.outbound_trip.try(:id)
+
+  .col-sm-12.col-md-6
+    = render 'trips/customer_panel', f: f, edit_mode: edit_mode
+    = render 'trips/trip_parameters_panel', f: f, edit_mode: edit_mode
+    = render 'trips/tracking_panel', f: f, edit_mode: edit_mode unless @is_repeating_trip
+    = render 'trips/eligibility_accommodation_panel', f: f, edit_mode: edit_mode
+
+  .col-sm-12.col-md-6
+    = render 'repeating_trips/repetition_panel', f: f if @is_repeating_trip
+    = render 'trips/other_panel', f: f
+    - if !@is_repeating_trip && edit_mode != :new
+      = render 'trips/assignment_panel', f: f
+    - if edit_mode == :show
+      - logs = TrackerActionLog.for(@trip).order(created_at: :desc)
+      = render 'shared/action_log_panel', logs: logs if logs.any?
+
+- if edit_mode != :show
+  = render 'trips/customer_trip_summary_dialog'
+  - if @is_repeating_trip
+    :javascript
+      $(function() {
+        $('body').on('dblclick', '#customerTripSummaryTable td', function() {
+          var trip_id = $(this).parents('tr').data('trip-id');
+          window.location.href = "#{clone_from_daily_trip_repeating_trips_path}?trip_id=" + trip_id;
+        });
+      });
+  - else
+    :javascript
+      $(function() {
+        $('body').on('dblclick', '#customerTripSummaryTable td', function() {
+          var trip_id = $(this).parents('tr').data('trip-id');
+          window.location.href = "#{clone_trip_path('xxx')}".replace('xxx', trip_id);
+        });
+      });
+
+- if @is_repeating_trip
+  = render 'shared/hide_invisible_form_fields_js', model_name: "repeatingtrip", table_name: 'repeating_trips', provider_id:  current_provider.try(:id)
+- else
+  = render 'shared/hide_invisible_form_fields_js', model_name: "trip", table_name: 'trips', provider_id:  current_provider.try(:id)
+
+- if !@is_repeating_trip && !@trip.is_return?
+  = render partial: 'trips/double_booked_trip_dialog'
+  :javascript
+    $(document).ready(function(){
+      // makeDatePickers(); // DEPRECATED
+
+      var doubleBookedTripRowHtml = "#{escape_javascript(render partial: 'double_booked_trip_row')}"
+      var dbh = new DoubleBookedTripsHelper({
+        tableRowHtml: doubleBookedTripRowHtml,
+        url: "#{check_double_booked_trips_path}",
+        form: $('form.trip_form'),
+        modal: $('#doubleBookedTripDialog'),
+        table: $('#doubleBookedTripDialog #double-booked-trips-table')
+      })
+
+      // On form submit, check for potential double-booking before submitting form
+      dbh.form.submit(function(e) {
+        var form = this;
+        e.preventDefault();
+        var requestBody = dbh.requestBodyFromForm(#{@trip_id || 'null'});
+
+        dbh.checkDoubleBooked(requestBody, function(data) {
+          // If double booking exists, alert user and let them cancel or continue
+          if(data.trips.length > 0) {
+            dbh.populateTable(data.trips);
+            dbh.showModal();
+            // If modal submit button is clicked, submit form.
+            dbh.modal.find('.submit-double-book-modal').click(function() {
+              form.submit();
+            });
+          // Else, submit form
+          } else {
+            form.submit();
+          }
+        });
+        
+      });
+    });

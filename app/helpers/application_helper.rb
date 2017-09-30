@@ -15,15 +15,6 @@ module ApplicationHelper
     current_user && current_provider.scheduling?
   end
 
-  def can_edit_role?(role)
-    false if !current_user.present?
-
-    is_allowed = can? :edit, role
-    is_allowed = current_user.super_admin? if is_allowed && role.system_admin?
-
-    is_allowed
-  end
-
   def is_admin_or_system_admin?
     current_user.present? && (current_user.admin? || current_user.super_admin?)
   end
@@ -41,7 +32,7 @@ module ApplicationHelper
   end
 
   def format_simple_full_datetime(time)
-    time.strftime "%d-%b-%Y %a %l:%M%P" if time
+    time.strftime "%B %d, %Y %I:%M %p" if time
   end
   
   def format_time_for_listing(time)
@@ -145,7 +136,7 @@ module ApplicationHelper
 
 
   def can_access_admin_tab(a_user)
-    a_user && a_user.editor? && can?(:read, a_user)
+    a_user && a_user.super_admin?
   end
 
   def can_access_provider_settings_tab(a_user, a_provider)
@@ -158,6 +149,39 @@ module ApplicationHelper
       trip.outbound_trip ? "<a href='#{trip_path(trip.outbound_trip)}'>#{linking_to_text}: #{trip.outbound_trip.id}</a>" : ""
     else
       trip.return_trip ? "<a href='#{trip_path(trip.return_trip)}'>#{linking_to_text}: #{trip.return_trip.id}</a>" : ""
+    end
+  end
+
+  def format_phone_number(phone_number)
+    return "" if phone_number.blank?
+
+    us_phony = Phony['1'] # US phone validation
+
+    norm_number = us_phony.normalize(phone_number.to_s)
+
+    number_to_phone norm_number, area_code: true
+  end
+
+  def show_provider_setting_alert(provider, section)
+    return unless provider && !section.blank?
+
+    has_alert = case section
+    when 'general'
+      provider.operating_hours.empty?
+    when 'users'
+      provider.roles.empty?
+    when 'drivers'
+      provider.drivers.empty?
+    when 'vehicles'
+      provider.vehicles.empty? 
+    when 'addresses'
+      ProviderCommonAddress.where(provider: provider).empty?
+    when 'customers'
+      Customer.for_provider(provider.try(:id)).empty?
+    end
+
+    if has_alert
+      "<div class='pull-right'><i style='color: red;' class='fa fa-exclamation-triangle'></i></div>".html_safe
     end
   end
 

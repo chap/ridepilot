@@ -62,9 +62,9 @@ class DevicePoolDriver < ActiveRecord::Base
   
   def name
     if driver.present?
-      "Driver: #{driver.name}" 
+      "Driver: #{driver.user_name}" 
     elsif vehicle.present?
-      "Vehicle: #{vehicle.name}"
+      "Vehicle: #{vehicle.user_name}"
     end
   end
   

@@ -35,7 +35,7 @@
   <% i += 1 %>
 
   <h1><%= translate_helper("daily_manifest_heading") %></h1>
-  <h2><%= format_date_for_daily_manifest @date %> &mdash; <%= driver.present? ? driver.name : translate_helper("unspecified_driver") %></h2>
+  <h2><%= format_date_for_daily_manifest @date %> &mdash; <%= driver.present? ? driver.user_name : translate_helper("unspecified_driver") %></h2>
   
   <% if @cab_trips %>
     <div class="cab-summary">

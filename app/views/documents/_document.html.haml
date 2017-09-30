@@ -1,0 +1,20 @@
+%tr{:class => "document-#{document.id}"}
+  %td
+    %p.form-control-static
+      = document.document_updated_at.to_s(:long)
+  %td
+    %p.form-control-static
+      = link_to_if @readonly, document.description, document.document.url, target: :blank
+  %td
+    %p.form-control-static
+      = number_to_human_size document.document_file_size
+  %td
+    - if @readonly
+      = link_to translate_helper("edit"), polymorphic_path([document.documentable, document], action: :edit), class: "btn action-button btn-sm pull-right"
+    - else
+      = link_to polymorphic_path([document.documentable, document]), 
+          remote: true, 
+          method: :delete, 
+          data: { confirm: translate_helper("document_delete_confirm") }, 
+          class: "btn btn-danger btn-sm pull-right" do
+        %i.fa.fa-remove{'aria-hidden' => true}

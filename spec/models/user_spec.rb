@@ -33,81 +33,120 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe "email" do
-    it "is required" do
-      user = build :user, email: ""
+  describe "required attributes" do
+    it "requires first_name" do
+      user = build :user, first_name: ""
       expect(user.valid?).to be_falsey
-      expect(user.errors.keys).to include :email
+      expect(user.errors.keys).to include :first_name
     end
 
-    it "must be a valid format" do
-      user = build :user, email: "m@m"
+    it "requires last_name" do
+      user = build :user, last_name: ""
       expect(user.valid?).to be_falsey
-      expect(user.errors.keys).to include :email
-
-      user.email = "m@m.m"
-      expect(user.valid?).to be_truthy
+      expect(user.errors.keys).to include :last_name
     end
 
-    it "must be unique" do
-      user_1 = create :user
-      user_2 = build :user, email: user_1.email
-      expect(user_2.valid?).to be_falsey
-      expect(user_2.errors.keys).to include :email
+    describe "username" do
+      it "is required" do
+        user = build :user, username: ""
+        expect(user.valid?).to be_falsey
+        expect(user.errors.keys).to include :username
+      end
 
-      user_2.email = "different-#{user_1.email}"
-      expect(user_2.valid?).to be_truthy
+      it "must be unique" do
+        user_1 = create :user
+        user_2 = build :user, username: user_1.username
+        expect(user_2.valid?).to be_falsey
+        expect(user_2.errors.keys).to include :username
+
+        user_2.username = "different#{user_1.username}"
+        expect(user_2.valid?).to be_truthy
+      end
+
+      it "is automatically downcased upon validation" do
+        user = build :user, username: "NEWTESTUSER"
+        expect(user.username).to eql "NEWTESTUSER"
+        user.valid?
+        expect(user.username).to eql "newtestuser"
+      end
     end
 
-    it "is automatically downcased upon validation" do
-      user = build :user, email: "UPCASE@GMAIL.COM"
-      expect(user.email).to eql "UPCASE@GMAIL.COM"
-      user.valid?
-      expect(user.email).to eql "upcase@gmail.com"
-    end
-  end
+    describe "email" do
+      it "is required" do
+        user = build :user, email: ""
+        expect(user.valid?).to be_falsey
+        expect(user.errors.keys).to include :email
+      end
 
-  describe "password" do
-    it "is required" do
-      user = build :user, password: ""
-      expect(user.valid?).to be_falsey
-      expect(user.errors.keys).to include :password
-    end
+      it "must be a valid format" do
+        user = build :user, email: "m@m"
+        expect(user.valid?).to be_falsey
+        expect(user.errors.keys).to include :email
 
-    it "must be confirmed" do
-      user = build :user, password_confirmation: ""
-      expect(user.valid?).to be_falsey
-      expect(user.errors.keys).to include :password_confirmation
+        user.email = "m@m.m"
+        expect(user.valid?).to be_truthy
+      end
 
-      user.password_confirmation = user.password
-      expect(user.valid?).to be_truthy
-    end
+      it "must be unique" do
+        user_1 = create :user
+        user_2 = build :user, email: user_1.email
+        expect(user_2.valid?).to be_falsey
+        expect(user_2.errors.keys).to include :email
 
-    it "must have at least one number and at least one non-alphanumeric character" do
-      user = build :user, password: "password"
-      expect(user.valid?).to be_falsey
-      expect(user.errors.keys).to include :password
+        user_2.email = "different-#{user_1.email}"
+        expect(user_2.valid?).to be_truthy
+      end
 
-      user.password = user.password_confirmation = "password 1"
-      expect(user.valid?).to be_truthy
-    end
-
-    it "must be at least 8 characters in length" do
-      user = build :user, password: "pass 1"
-      expect(user.valid?).to be_falsey
-      expect(user.errors.keys).to include :password
-
-      user.password = user.password_confirmation = "passwd 1"
-      expect(user.valid?).to be_truthy
+      it "is automatically downcased upon validation" do
+        user = build :user, email: "UPCASE@GMAIL.COM"
+        expect(user.email).to eql "UPCASE@GMAIL.COM"
+        user.valid?
+        expect(user.email).to eql "upcase@gmail.com"
+      end
     end
 
-    it "must be at most 20 characters in length" do
-      user = build :user, password: "this is too long by 13 characters"
-      expect(user.valid?).to be_falsey
-      expect(user.errors.keys).to include :password
+    describe "password" do
+      it "is required" do
+        user = build :user, password: ""
+        expect(user.valid?).to be_falsey
+        expect(user.errors.keys).to include :password
+      end
 
-      user.password = user.password_confirmation = "20 characters passes"
-      expect(user.valid?).to be_truthy
+      it "must be confirmed" do
+        user = build :user, password_confirmation: ""
+        expect(user.valid?).to be_falsey
+        expect(user.errors.keys).to include :password_confirmation
+
+        user.password_confirmation = user.password
+        expect(user.valid?).to be_truthy
+      end
+
+      it "must have at least one number and at least one capital letter" do
+        user = build :user, password: "password"
+        expect(user.valid?).to be_falsey
+        expect(user.errors.keys).to include :password
+
+        user.password = user.password_confirmation = "Password 1"
+        expect(user.valid?).to be_truthy
+      end
+
+      it "must be at least 8 characters in length" do
+        user = build :user, password: "pass 1"
+        expect(user.valid?).to be_falsey
+        expect(user.errors.keys).to include :password
+
+        user.password = user.password_confirmation = "Passwd 1"
+        expect(user.valid?).to be_truthy
+      end
+
+      it "must be at most 20 characters in length" do
+        user = build :user, password: "This is too long by 13 characters"
+        expect(user.valid?).to be_falsey
+        expect(user.errors.keys).to include :password
+
+        user.password = user.password_confirmation = "20 Characters passes"
+        expect(user.valid?).to be_truthy
+      end
     end
   end
 
@@ -133,6 +172,29 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe ".name" do
+    it "combins first_name and last_name" do 
+      user = build :user, first_name: "Test", last_name: "User"
+      expect(user.name).to eql "Test User"
+    end
+  end
+
+  describe ".display_name" do
+    context "when name is not provided" do 
+      it "uses Email" do 
+        user = build :user, first_name: nil, last_name: nil, email: "test@example.com"
+        expect(user.display_name).to eql "test@example.com"
+      end
+    end
+
+    context "when name presents" do 
+      it "uses name" do 
+        user = build :user, first_name: "Test", last_name: "User"
+        expect(user.display_name).to eql "Test User"
+      end
+    end
+  end
+
   it "can find users that are drivers for a given provider" do
     driver_1 = create :driver
     driver_2 = create :driver
@@ -142,13 +204,13 @@ RSpec.describe User, type: :model do
   end
 
   it "can update a users password with a valid set of params" do
-    user = create :user, password: "password 1"
-    params = {current_password: "password 1", password_confirmation: "new password 1"}
+    user = create :user, password: "Password 1"
+    params = {current_password: "Password 1", password_confirmation: "new Password 1"}
     expect(user.update_password(params)).to be_falsey
     expect(user.errors.keys).to include :password
 
     expect {
-      expect(user.update_password(params.merge({password: "new password 1"}))).to be_truthy
+      expect(user.update_password(params.merge({password: "new Password 1"}))).to be_truthy
     }.to change { user.reload.encrypted_password }
   end
 

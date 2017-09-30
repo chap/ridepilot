@@ -1,0 +1,23 @@
+#addTravelTrainingDialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      = form_for TravelTraining.new, :url=>'#' do |f|
+        .modal-header
+          .pull-right
+            = button_tag translate_helper(:ok), type: :submit, style: "margin-right: 5px;", class: "btn action-button"
+            = button_tag class: 'btn action-button', data: {dismiss: 'modal'} do
+              = translate_helper(:cancel)
+          .modal-title{:style => "text-align:left;"}
+            %strong
+              = translate_helper(:add_travel_training_dialog_title)
+        .modal-body.row{:style => "text-align:left;"}
+          .form-group.col-sm-12
+            .col-sm-3
+              = f.label :date, translate_helper("travel_training_date")
+            .col-sm-9  
+              = f.text_field :date, :value => format_time_for_listing_day(Time.current), class: 'date-picker form-control', required: true,readonly: true
+          .form-group.col-sm-12
+            .col-sm-3
+              = f.label :comment, translate_helper(:travel_training_comment) 
+            .col-sm-9
+              = f.text_area :comment, class: 'form-control', required: true

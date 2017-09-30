@@ -70,9 +70,9 @@ RSpec.describe ProvidersController, type: :controller do
         expect(assigns(:provider)).to be_persisted
       end
 
-      it "redirects to the created provider" do
+      it "redirects to creating new user for the created provider" do
         post :create, {:provider => valid_attributes}
-        expect(response).to redirect_to(Provider.last)
+        expect(response).to redirect_to(new_user_provider_users_path Provider.last)
       end
     end
 
@@ -80,7 +80,7 @@ RSpec.describe ProvidersController, type: :controller do
       it "borks" do
         expect {
           post :create, {:provider => invalid_attributes}
-        }.to raise_error(ActiveRecord::RecordInvalid)
+        }.to_not change(Provider, :count)
       end
     end
   end
@@ -96,7 +96,7 @@ RSpec.describe ProvidersController, type: :controller do
     it "redirects to the provider" do
       role = create(:role, :provider => @current_user.current_provider, :level => 50)
       post :change_role, {:provider_id => @current_user.current_provider.id, :role => {:id => role.id, :level => 100}}
-      expect(response).to redirect_to(@current_user.current_provider)
+      expect(response).to redirect_to(users_provider_path @current_user.current_provider)
     end
   end
 
@@ -126,21 +126,21 @@ RSpec.describe ProvidersController, type: :controller do
     it "redirects to the provider" do
       role = create(:role, :provider => @current_user.current_provider)
       post :delete_role, {:provider_id => @current_user.current_provider.id, :role_id => role.id}
-      expect(response).to redirect_to(@current_user.current_provider)
+      expect(response).to redirect_to(users_provider_path @current_user.current_provider)
     end
   end
 
-  describe "POST #change_dispatch" do
-    it "updates the dispatch flag on the requested provider" do
-      initial_dispatch_value = @current_user.current_provider.dispatch
+  describe "POST #change_cab_enabled" do
+    it "updates the cab_enabled flag on the requested provider" do
+      initial_cab_enabled_value = @current_user.current_provider.cab_enabled
       expect {
-        post :change_dispatch, {:id => @current_user.current_provider.id, :dispatch => false}
-      }.to change{ @current_user.current_provider.reload.dispatch }.from(initial_dispatch_value).to(false)
+        post :change_cab_enabled, {:id => @current_user.current_provider.id, :cab_enabled => false}
+      }.to change{ @current_user.current_provider.reload.cab_enabled }.from(initial_cab_enabled_value).to(false)
     end
 
-    it "redirects to the provider" do
-      post :change_dispatch, {:id => @current_user.current_provider.id, :dispatch => true}
-      expect(response).to redirect_to(@current_user.current_provider)
+    it "redirects to the provider general cab_settings section" do
+      post :change_cab_enabled, {:id => @current_user.current_provider.id, :cab_enabled => true}
+      expect(response).to redirect_to(general_provider_path @current_user.current_provider, anchor: 'cab_settings')
     end
   end
 
@@ -152,9 +152,9 @@ RSpec.describe ProvidersController, type: :controller do
       }.to change{ @current_user.current_provider.reload.scheduling }.from(true).to(false)
     end
 
-    it "redirects to the provider" do
+    it "redirects to the provider general scheduling_settings section" do
       post :change_scheduling, {:id => @current_user.current_provider.id, :scheduling => true}
-      expect(response).to redirect_to(@current_user.current_provider)
+      expect(response).to redirect_to(general_provider_path @current_user.current_provider, anchor: 'scheduling_settings')
     end
   end
 
@@ -168,9 +168,9 @@ RSpec.describe ProvidersController, type: :controller do
         end
       end
 
-      it "redirects to the provider" do
+      it "redirects to the provider general reimbursement_rates_settings section" do
         post :change_reimbursement_rates, {:id => @current_user.current_provider.id, Provider::REIMBURSEMENT_ATTRIBUTES.first => 0}
-        expect(response).to redirect_to(@current_user.current_provider)
+        expect(response).to redirect_to(general_provider_path @current_user.current_provider, anchor: 'reimbursement_rates_settings')
       end
     end
     
@@ -190,9 +190,9 @@ RSpec.describe ProvidersController, type: :controller do
       }.to change{ @current_user.current_provider.reload.fields_required_for_run_completion }.from([])
     end
 
-    it "redirects to the provider" do
+    it "redirects to the provider general run_fields_settings section" do
       post :change_fields_required_for_run_completion, {:id => @current_user.current_provider.id, :fields_required_for_run_completion => []}
-      expect(response).to redirect_to(@current_user.current_provider)
+      expect(response).to redirect_to(general_provider_path @current_user.current_provider, anchor: 'run_fields_settings')
     end
   end
 
@@ -209,9 +209,9 @@ RSpec.describe ProvidersController, type: :controller do
       }.to change{ @current_user.current_provider.reload.region_se_corner }.from(nil)
     end
 
-    it "redirects to the provider" do
+    it "redirects to the provider general region_map section" do
       post :save_region, {:id => @current_user.current_provider.id}
-      expect(response).to redirect_to(provider_url @current_user.current_provider, anchor: "region")
+      expect(response).to redirect_to(general_provider_path @current_user.current_provider, anchor: "region_map")
     end
   end
 
@@ -228,9 +228,9 @@ RSpec.describe ProvidersController, type: :controller do
       }.to change{ @current_user.current_provider.reload.viewport_center }.from(nil)
     end
 
-    it "redirects to the provider" do
+    it "redirects to the provider general viewport section" do
       post :save_viewport, {:id => @current_user.current_provider.id, :viewport_lat => 1.0, :viewport_lng => 1.0}
-      expect(response).to redirect_to(provider_url @current_user.current_provider, anchor: "viewport")
+      expect(response).to redirect_to(general_provider_path  @current_user.current_provider, anchor: "viewport")
     end
   end
   

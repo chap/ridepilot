@@ -1,5 +1,8 @@
-%table
+%table.runs-list
   %tr
+    -# first two columns are for select and view link
+    %th
+      %input.master-select-checkbox{type: "checkbox"}
     %th
     %th= translate_helper("run_name_column")
     %th= translate_helper("run_date_column")
@@ -12,3 +15,15 @@
 
   - @runs.each do |run|
     = render "row", :run => run
+
+-# Form for sending batch cancel requests
+= form_for :cancel_multiple_runs, url: cancel_multiple_runs_path, 
+  method: :patch, 
+  html: { class: 'cancel-multiple-runs' }  do |f|
+  = f.text_field :run_ids, label: false, value: nil, style: 'display: none'
+  
+-# Form for sending batch delete requests
+= form_for :delete_multiple_runs, url: delete_multiple_runs_path, 
+  method: :delete, 
+  html: { class: 'delete-multiple-runs' }  do |f|
+  = f.text_field :run_ids, label: false, value: nil, style: 'display: none'

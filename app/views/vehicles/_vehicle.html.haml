@@ -1,0 +1,24 @@
+%tr{:class => "#{vehicle.active ? 'active' : 'inactive'}"}
+  %td
+    = link_to_if can?(:read, vehicle), vehicle.name, vehicle
+  %td
+    = vehicle.year
+  %td
+    = vehicle.make
+  %td
+    = vehicle.model
+  %td
+    = vehicle.license_plate
+  %td
+    = vehicle.vin
+  %td
+    = vehicle.garaged_location
+  %td
+    = vehicle.active_status_text
+  %td
+    = number_with_delimiter vehicle.last_odometer_reading
+    mi.
+  %td
+    = vehicle.compliant? ? translate_helper("no") : translate_helper("yes")
+  %td
+    = vehicle.expired? ? translate_helper("yes") : translate_helper("no")

@@ -34,31 +34,32 @@ RSpec.describe TripFilter do
   context "filter by days of week" do 
     before do 
       @start_date = Time.now.in_time_zone.beginning_of_week
+      @end_date = @start_date + 6.days
 
-      (0..5).each do |n|
+      (0..6).each do |n|
         create(:trip, pickup_time: @start_date + n.days)
       end
 
       @all_trips = Trip.all.order(:pickup_time)
     end
 
-    it "should return all trips without days_of_week filter" do
+    it "should return current day trips without days_of_week filter" do
       filters = {}
-      expect(TripFilter.new(@all_trips).filter!.count).to eq(6)
+      expect(TripFilter.new(@all_trips).filter!.count).to eq(1)
     end
 
     it "should return all trips with all days_of_week" do
-      filters = {days_of_week: '0,1,2,3,4,5,6'}
-      expect(TripFilter.new(@all_trips, filters).filter!.count).to eq(6)
+      filters = {days_of_week: '0,1,2,3,4,5,6', start: @start_date.to_i, end: @end_date.to_i}
+      expect(TripFilter.new(@all_trips, filters).filter!.count).to eq(7)
     end
 
     it "should return eligible trips within days_of_week filter (Sun, Wed, Fri)" do
-      filters = {days_of_week: '0,2,4'}
+      filters = {days_of_week: '0,2,4', start: @start_date.to_i, end: @end_date.to_i}
       expect(TripFilter.new(@all_trips, filters).filter!.count).to eq(3)
     end
 
     it "should not return ineligible trips without days_of_week filter (Sun)" do
-      filters = {days_of_week: '1,2,3,4,5'}
+      filters = {days_of_week: '1,2,3,4,5', start: @start_date.to_i, end: @end_date.to_i}
       filtered_trips = TripFilter.new(@all_trips, filters).filter!
       expect(filtered_trips.count).to eq(5)
       expect(filtered_trips).to_not include(@all_trips.first)
@@ -67,10 +68,10 @@ RSpec.describe TripFilter do
 
   context "filter by vehicle" do 
     before do 
-      base_pickup_time = Time.now.in_time_zone.beginning_of_week
+      base_pickup_time = Time.now.in_time_zone
       @cab_trip = create(:trip, cab: true, pickup_time: base_pickup_time)
       @run = create(:run)
-      @non_cab_trip = create(:trip, cab: false, run: @run, pickup_time: base_pickup_time + 1.day)
+      @non_cab_trip = create(:trip, cab: false, run: @run, pickup_time: base_pickup_time)
     end
 
     it "should return all trips when no vehicle filter is specified" do 
@@ -88,7 +89,7 @@ RSpec.describe TripFilter do
 
   context "filter by driver" do 
     before do 
-      base_pickup_time = Time.now.in_time_zone.beginning_of_week
+      base_pickup_time = Time.now.in_time_zone
       @scheduled_run = create(:run)
       @non_scheduled_run = create(:run)
       @trip = create(:trip, run: @scheduled_run, pickup_time: base_pickup_time)
@@ -106,10 +107,10 @@ RSpec.describe TripFilter do
 
   context "filter by scheduled status" do 
     before do 
-      base_pickup_time = Time.now.in_time_zone.beginning_of_week
+      base_pickup_time = Time.now.in_time_zone
       @scheduled_run = create(:run)
       @scheduled_trip = create(:trip, run: @scheduled_run, pickup_time: base_pickup_time)
-      @non_scheduled_trip = create(:trip, pickup_time: base_pickup_time + 1.day)
+      @non_scheduled_trip = create(:trip, pickup_time: base_pickup_time)
     end
 
     it "should return scheduled trips when scheduled status is specified" do 
@@ -123,18 +124,18 @@ RSpec.describe TripFilter do
 
   context "filter by trip result" do 
     before do 
-      base_pickup_time = Time.now.in_time_zone.beginning_of_week
+      base_pickup_time = Time.now.in_time_zone
       @cancel_trip_result = create(:trip_result, code: 'CANC')
       @cancelled_trip = create(:trip, pickup_time: base_pickup_time, trip_result: @cancel_trip_result)
-      @non_scheduled_trip = create(:trip, pickup_time: base_pickup_time + 1.day)
+      @non_scheduled_trip = create(:trip, pickup_time: base_pickup_time)
     end
 
     it "should return cancelled trips when trip result filter is Cancelled" do 
-      expect(TripFilter.new(Trip.all, {trip_result_id: @cancel_trip_result.id}).filter!).to eq([@cancelled_trip])
+      expect(TripFilter.new(Trip.all, {trip_result_id: [@cancel_trip_result.id]}).filter!).to eq([@cancelled_trip])
     end
 
     it "should return all trips when trip result filter is not specified" do 
-      expect(TripFilter.new(Trip.all, {}).filter!).to eq([@cancelled_trip, @non_scheduled_trip])
+      expect(TripFilter.new(Trip.all, {}).filter!).to match_array([@cancelled_trip, @non_scheduled_trip])
     end
   end   
 

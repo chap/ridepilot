@@ -12,6 +12,8 @@ class TripFilter
     filter_by_days_of_week!
     filter_by_vehicle!
     filter_by_driver!
+    filter_by_customer!
+    filter_by_run!
     filter_by_status!
     filter_by_result!
 
@@ -23,16 +25,16 @@ class TripFilter
   def filter_by_pickup_time!
     utility = Utility.new
     t_start = utility.parse_date(@filters[:start]) 
-    t_end = utility.parse_date(@filters[:end])
-
+    t_end = utility.parse_date(@filters[:end]) 
+    
     if !t_start && !t_end
       time    = Time.current
-      t_start = time.beginning_of_week.to_date.in_time_zone
-      t_end   = t_start + 6.days
+      t_start = time.to_date.in_time_zone
+      t_end   = t_start
     elsif !t_end
-      t_end   = t_start + 6.days
+      t_end   = t_start
     elsif !t_start
-      t_start   = t_end - 6.days
+      t_start   = t_end
     end
     
     @trips = @trips.
@@ -65,6 +67,18 @@ class TripFilter
     end
   end
 
+  def filter_by_customer!
+    if @filters[:customer_id].present?  
+      @trips = @trips.where("trips.customer_id": @filters[:customer_id]) 
+    end
+  end
+
+  def filter_by_run!
+    unless @filters[:run_id].blank?  
+      @trips = @trips.includes(:run).references(:run).where("runs.id": @filters[:run_id]) 
+    end
+  end
+
   def filter_by_status!
     if @filters[:status_id].present?  
       if @filters[:status_id].to_i == 1
@@ -76,8 +90,17 @@ class TripFilter
   end
 
   def filter_by_result!
-    if @filters[:trip_result_id].present?  
-      @trips = @trips.where(trip_result_id: @filters[:trip_result_id]) 
+    if @filters[:trip_result_id].present?
+      trip_result_ids = @filters[:trip_result_id].dup
+
+      # Replace the hard-coded ID for unscheduled trips with `nil`
+      if trip_result_ids.include?(TripResult::UNSCHEDULED_ID)
+        trip_result_ids[trip_result_ids.index(TripResult::UNSCHEDULED_ID)] = nil
+      elsif trip_result_ids.include?(TripResult::UNSCHEDULED_ID.to_s)
+        trip_result_ids[trip_result_ids.index(TripResult::UNSCHEDULED_ID.to_s)] = nil
+      end
+
+      @trips = @trips.where(trip_result_id: trip_result_ids) 
     end
   end
 

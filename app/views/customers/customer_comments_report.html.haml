@@ -1,0 +1,29 @@
+%h2 Customer Comments Report
+="Printed on #{Time.current}"
+
+%hr
+
+-# HEADER SECTION
+
+-# VANILLA HTML
+%table.header-section
+  %tr
+    %td
+      %b Name:
+    %td=@customer.name
+  %tr
+    %td
+      %b ID:
+    %td=@customer.id
+  %tr
+    %td
+      %b Birth Date:
+    %td=@customer.birth_date
+
+%hr
+
+-# BODY SECTION
+
+-# VANILLA HTML
+%b Comments
+%p=simple_format(@customer.comments)

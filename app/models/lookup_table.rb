@@ -1,22 +1,16 @@
 class LookupTable < ActiveRecord::Base  
+  include Lookupable
+
   has_paper_trail
-  
-  # Each lookup table can have three columns associated: value, code, description
-  # e.g., TripResult has all three, but mostly only has one column, which is used as 'value' to identify each record
-  # Eligibility is a special case, because its value column is named as code, so value_column_name should be 'code'
-  validates_presence_of :name, :caption, :value_column_name
-  validates_uniqueness_of :name
 
   def values
-    model.all.order(value_column_name)
-  end
+    return [] unless model.present?
 
-  def model
-    (model_name || name.classify).constantize
-  end
-
-  def find_by_value(value)
-    model.find_by("#{value_column_name}": value)
+    if model.column_names.include? "provider_id"
+      model.where(provider_id: nil).order(value_column_name)
+    else
+      model.all.order(value_column_name)
+    end
   end
 
   def add_value(data)
@@ -50,8 +44,6 @@ class LookupTable < ActiveRecord::Base
       item.assign_attributes(data_config)
 
       item.save
-
-      item
     end
 
     item
@@ -62,10 +54,6 @@ class LookupTable < ActiveRecord::Base
     item.destroy if item && delete_value_allowed
 
     item
-  end
-
-  def get_value(model_id)
-    model.find_by_id(model_id)
   end
 
   def hide_value(model_id, provider_id)

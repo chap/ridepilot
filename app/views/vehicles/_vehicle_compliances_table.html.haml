@@ -1,0 +1,15 @@
+- table_id = legal ? 'legal_vehicle_compliances_table' : 'vehicle_compliances_table'
+%table.table.table-striped.table-condensed{id: table_id}
+  %thead
+    %tr
+      %th.col-sm-3= translate_helper("vehicle_compliance_form_due_date")
+      %th= translate_helper("vehicle_compliance_form_event")
+      %th.col-sm-3= translate_helper("vehicle_compliance_form_compliance_date")
+      - unless @readonly
+        %th.col-sm-1
+  %tbody
+    - if @readonly and vehicle_compliances.empty?
+      %tr
+        %td{:colspan => "3"}= translate_helper("vehicle_compliances_empty")
+    = render partial: 'vehicle_compliances/vehicle_compliance', collection: vehicle_compliances
+  

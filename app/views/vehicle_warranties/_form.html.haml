@@ -1,0 +1,49 @@
+- remote ||= false
+= nested_form_for [@vehicle, @vehicle_warranty], remote: remote do |f|
+  - if @vehicle_warranty.errors.any?
+    .panel.panel-danger
+      .panel-heading= translate_helper("vehicle_warranty_form_error", count: @vehicle_warranty.errors.count)
+      .panel-body
+        %ul
+          - @vehicle_warranty.errors.full_messages.each do |msg|
+            %li= msg
+  .row
+    .col-md-12
+      .panel.panel-primary
+        .panel-body.form-horizontal
+          .form-group
+            .col-md-3.control-label
+              %label= translate_helper("vehicle_warranty_type")
+            .col-md-9
+              = select_tag "vehicle_warranty_template", options_for_select(VehicleWarrantyTemplate.by_provider(current_provider_id).pluck(:name, :id)), include_blank: true, class: 'form-control', id: "vehicle_warranty_template", disabled: @readonly 
+          .form-group
+            = f.label :description, translate_helper("vehicle_warranty_form_description"), class: "col-md-3 control-label"
+            .col-md-9
+              = f.text_field :description, class: "form-control", disabled: @readonly 
+          .form-group
+            = f.label :notes, translate_helper("vehicle_warranty_form_notes"), class: "col-md-3 control-label"
+            .col-md-9
+              = f.text_area :notes, class: "form-control", rows: 3, disabled: @readonly 
+          .form-group
+            = f.label :expiration_date, translate_helper("vehicle_warranty_form_expiration_date"), class: "col-md-3 control-label"
+            .col-md-9
+              .input-group.datepicker-icon
+                = f.text_field :expiration_date, class: "form-control datepicker", disabled: @readonly
+                - unless @readonly 
+                  .input-group-btn
+                    %button.btn.btn-default{:type => "button"}
+                      = image_tag "calendar-clock.png"
+        / END .panel-body
+      / END .panel
+      = render partial: "document_associations/form_panel", locals: {f: f, documents: @vehicle_warranty.vehicle.documents}
+    / END .col-md-12
+  / END .row
+  - unless @readonly
+    .row.form-actions= f.submit translate_helper("vehicle_warranty_form_submit"), class: "btn action-button"
+
+  :javascript
+    $('#vehicle_warranty_template').change(function() {
+      if($(this).val()) {
+        $('#vehicle_warranty_description').val($(this).find('option:selected').text());
+      }
+    });

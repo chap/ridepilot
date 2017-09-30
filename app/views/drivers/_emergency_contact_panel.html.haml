@@ -1,0 +1,35 @@
+- emergency_contact = @driver.emergency_contact
+- prefix = "driver_emergency_contact_attributes_geocoded_address_attributes"
+- address = emergency_contact.geocoded_address || emergency_contact.build_geocoded_address(provider_id: current_provider_id)
+.panel.panel-primary
+  .panel-heading= translate_helper("driver_form_emergency_contact_heading")
+  .panel-body.form-horizontal
+    .form-group
+      = f.label :name, translate_helper("emergency_contact_name"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :name, class: "form-control", disabled: @readonly
+    = f.fields_for :geocoded_address, address do |address_form|
+      = address_form.hidden_field :provider_id
+      = address_form.hidden_field :address, class: 'address_text'
+      = address_form.hidden_field :city, class: 'address_city'
+      = address_form.hidden_field :state, class: 'address_state'
+      = address_form.hidden_field :zip, class: 'address_zip'
+      = hidden_field_tag :lat, address.latitude, class: 'address_lat'
+      = hidden_field_tag :lon, address.longitude, class: 'address_lon'
+      .form-group
+        = label_tag "#{prefix}_full_address", translate_helper("full_address_name"), class: "col-md-2 control-label"
+        .col-md-10
+          = text_field_tag "#{prefix}_full_address", address.try(:address_text), disabled: @readonly, class: "address_search form-control"
+      = render 'addresses/google_place_autocomplete_js'
+    .form-group
+      = f.label :phone_number, translate_helper("emergency_contact_phone_number"), class: "col-md-2 control-label"
+      .col-md-10
+        - if @readonly
+          %p.form-control
+            = format_phone_number(emergency_contact.try(:phone_number))
+        - else
+          = f.text_field :phone_number, class: "form-control"
+    .form-group
+      = f.label :relationship, translate_helper("emergency_contact_relationship"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :relationship, class: "form-control", disabled: @readonly

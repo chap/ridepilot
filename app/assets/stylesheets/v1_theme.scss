@@ -73,7 +73,7 @@ input[type="checkbox"] { vertical-align: bottom; }
 .ie7 input[type="checkbox"] { vertical-align: baseline; }
 .ie6 input { vertical-align: text-bottom; }
 /* hand cursor on clickable input elements */
-label, input[type=button], input[type=submit], button { cursor: pointer; }
+//label, input[type=button], input[type=submit], button { cursor: pointer; }
 /* webkit browsers add a 2px margin outside the chrome of form elements */  
 button, input, select, textarea { margin: 0; }
 /* colors for form validity */
@@ -300,25 +300,25 @@ body.monthlies #primary-nav li.reports a:link,
 body.monthlies #primary-nav li.reports a:visited,
 body.dispatch #primary-nav li.dispatch a:link, 
 body.dispatch #primary-nav li.dispatch a:visited,
-body.providers.show #secondary-nav li.vehicles-drivers-users a:link, 
-body.providers.show #secondary-nav li.vehicles-drivers-users a:visiteded,
-body.new-user #secondary-nav li.vehicles-drivers-users a:link, 
-body.new-user #secondary-nav li.vehicles-drivers-users a:visited,
-body.drivers #secondary-nav li.vehicles-drivers-users a:link, 
-body.drivers #secondary-nav li.vehicles-drivers-users a:visited,
-body.vehicles #secondary-nav li.vehicles-drivers-users a:link, 
-body.vehicles #secondary-nav li.vehicles-drivers-users a:visited, 
+body.providers.show #secondary-nav li.provider a:link, 
+body.providers.show #secondary-nav li.provider a:visiteded,
+body.new-user #secondary-nav li.provider a:link, 
+body.new-user #secondary-nav li.provider a:visited,
+body.drivers #secondary-nav li.provider a:link, 
+body.drivers #secondary-nav li.provider a:visited,
+body.vehicles #secondary-nav li.provider a:link, 
+body.vehicles #secondary-nav li.provider a:visited, 
 body.home.index #secondary-nav li.admin a:link, 
 body.home.index #secondary-nav li.admin a:visited {
   background: #fff;
   color: #009FFB;
 }
 /* override reports' vehicles class */
-body.reports #primary-nav li.vehicles-drivers-users a:link, body.reports #primary-nav li.vehicles-drivers-users a:visited { 
+body.reports #primary-nav li.provider a:link, body.reports #primary-nav li.provider a:visited { 
   color: #0081CC; background-image: -webkit-gradient( linear, left bottom, left top, #eee 35%, #fff 100% ); 
   background-image: -moz-linear-gradient( center bottom, #eee 35%, #fff 100% ); 
 }
-body.reports #primary-nav li.vehicles-drivers-users a:hover, body.reports #primary-nav li.vehicles-drivers-users a:active { 
+body.reports #primary-nav li.provider a:hover, body.reports #primary-nav li.provider a:active { 
   background: #fff; 
   color: #009FFB; 
 }
@@ -362,7 +362,7 @@ body.reports #primary-nav li.vehicles-drivers-users a:hover, body.reports #prima
   background: #fff;
 }
 #page-header {
-  background: #e5f2ff;
+  #background: #e5f2ff;
   padding: 5px 10px;
   margin: 0 0 10px;
   -webkit-border-radius: 5px;
@@ -590,7 +590,7 @@ form div.actions {
 }
 form div.actions input[type="submit"] {
   padding: 0.5em 0.8em;
-  background: #0081CC;
+  background: #336699;
   color: #fff;
   font-size: 15px;
   text-decoration: none;
@@ -600,7 +600,7 @@ form div.actions input[type="submit"] {
   border-radius: 5px;
 }
 form div.actions input[type="submit"]:hover {
-  background: #009FFB;
+  background: #264c73;
 }
 /* tables */
 table {

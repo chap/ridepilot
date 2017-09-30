@@ -21,10 +21,10 @@ class ApplicationController < ActionController::Base
 
     @provider_map = []
     if current_user.super_admin?
-      @provider_map = Provider.all.collect {|provider| [ provider.name, provider.id ] }
+      @provider_map = Provider.active.pluck :name, :id
     else
       for role in current_user.roles
-        @provider_map << [role.provider.name, role.provider_id]
+        @provider_map << [role.provider.name, role.provider_id] if role.provider.active?
       end
     end
     @provider_map.sort!{|a, b| a[0] <=> b[0] }

@@ -1,0 +1,37 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'drivers'
+#page-header.row
+  .col-sm-12{style: 'padding: 0px;'}
+    - if can? :create, Driver
+      .pull-right
+        = link_to translate_helper("new_driver_link_text"), new_driver_path, class: "btn action-button"
+    %h1
+      = translate_helper("index_driver_heading")
+.row
+  .col-sm-12.pull-right
+    .checkbox
+      %label
+        %input#show_active_only{type: 'checkbox'}
+          = translate_helper(:show_inactive)
+  .col-sm-12
+    %table#drivers_table.table.table-striped.table-bordered
+      %thead
+        %tr
+          %th.col-sm-4= translate_helper("driver_form_name")
+          %th.col-sm-2= translate_helper("driver_form_active")
+          %th.col-sm-2= translate_helper("paid")
+          %th.col-sm-2= translate_helper("driver_form_available")
+          %th.col-sm-2= translate_helper("driver_overdue_events")
+          %th.col-sm-2= translate_helper("driver_completed_run_hours")
+      %tbody
+        = render partial: 'driver', collection: @drivers
+
+:javascript
+  $(function() {
+    $('#drivers_table').dataTable({
+      sort: false
+    });
+    $('#show_active_only').prop('checked', #{params[:show_inactive] == 'true'});
+    $('#show_active_only').change(function() {
+      window.location.href = "#{drivers_path}?show_inactive=" + $(this).is(':checked')
+    });
+  });

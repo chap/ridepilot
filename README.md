@@ -1,7 +1,7 @@
-Ridepilot Verson 2
+Ridepilot Verson 3
 ================
 
-The purpose of this project is to implement a Computer Aided Scheduling and Dispatch (CASD) software system to meet the needs of small scale human service transportation agencies. RidePilot, an open source, web-based scheduling, reporting, and dispatch application developed by Ride Connection in Portland Oregon, was identified to fill this need. Utah Transit Authority is participating in a joint software development project ([Ridepilot Version 2](https://ridepilot.camsys-apps.com)) to build upon RidePilot’s current functionality ([Ridepilot Version 1](https://github.com/rideconnection/ridepilot)) and expand it to meet the needs of human service agencies in the Wasatch Front region. 
+The purpose of this project is to implement a Computer Aided Scheduling and Dispatch (CASD) software system to meet the needs of small scale human service transportation agencies. 
 
 Status
 -------------
@@ -11,7 +11,7 @@ work in progress
 
 - latest stable: check [master](https://github.com/camsys/ridepilot/tree/master)
 
-- Ridepilot Version 1 branch: check [ridepilot\_v1](https://github.com/camsys/ridepilot/tree/ridepilot_v1)
+- Ridepilot Version 2 branch: check [ridepilot\_v1](https://github.com/camsys/ridepilot/tree/ridepilot_v2)
 
 Dependencies
 -------------
@@ -19,10 +19,11 @@ Dependencies
 This application requires:
 
 - Ruby 2.2.1
-- Rails 4.2
+- Rails 4.1
 - Postgresql 9.3+
 - PostGIS 2.1+
 - Imagemagick
+- Redis
 
 Set up development environment
 -------------

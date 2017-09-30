@@ -1,0 +1,24 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'admin'
+#page-header.row
+  .col-sm-12.col-md-6
+    %h1= translate_helper("recurring_driver_compliances_index_heading")
+  .col-sm-12.col-md-6
+    .pull-right
+      - unless Rails.env.production? or Rails.env.staging?
+        = link_to "Generate Events", generate_recurring_driver_compliances_path, method: :put, data: { confirm: "For testing purposes only. This button is not available in production. In production, event generation would be handled by a cron task.\n\nAre you sure you want to trigger event generation for ALL recurring driver compliance events across ALL providers?" }, class: "btn action-button"
+      = link_to translate_helper("new_recurring_driver_compliance_link_text"), new_recurring_driver_compliance_path, class: "btn action-button"
+.row
+  .col-sm-12
+    %table#documents-table.table.table-striped.table-bordered
+      %thead
+        %tr
+          %th.col-sm-4= translate_helper("recurring_driver_compliance_form_event_name")
+          %th.col-sm-2= translate_helper("recurring_driver_compliance_form_start_date")
+          %th.col-sm-2= translate_helper("recurring_driver_compliance_recurrence_scheduling_heading")
+          %th.col-sm-2= translate_helper("recurring_driver_compliance_compliance_based_scheduling_heading")
+          %th.col-sm-2= translate_helper("recurring_driver_compliance_events_scheduled_heading")
+      %tbody
+        - if @recurring_driver_compliances.empty?
+          %tr
+            %td{:colspan => "5"}= translate_helper("recurring_driver_compliances_empty")
+        = render partial: 'recurring_driver_compliance', collection: @recurring_driver_compliances

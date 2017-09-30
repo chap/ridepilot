@@ -1,0 +1,14 @@
+%tr{class: 'run', data: { 'run-id' => run.id }}
+  %td
+    %input.run-selected{type: "checkbox"}
+  %td
+    -if can? :show, run
+      = link_to translate_helper("view"), run_path(run)
+  %td= run.name
+  %td= run.date.to_s(:long)
+  %td= run.scheduled_start_time.try(:to_s,:time_only)
+  %td= run.scheduled_end_time.try(:to_s,:time_only)
+  %td= run.vehicle ? run.vehicle.name : translate_helper('no_vehicle')
+  %td= run.driver  ? run.driver.user_name : translate_helper('no_driver')
+  %td= run.complete ? translate_helper('complete') : translate_helper('incomplete')
+  %td= reimbursement_cost_for_trips run.provider, run.trips

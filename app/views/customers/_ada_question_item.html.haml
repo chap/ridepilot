@@ -1,0 +1,6 @@
+.form-group
+  .col-sm-9.control-label
+    %span= item.name
+  .col-sm-3
+    - question = @customer.customer_ada_questions.where(ada_question: item).first
+    = select_tag "ada_questions[#{item.id}][answer]", options_for_select([[translate_helper(:yes), true], [translate_helper(:no), false]], question.try(:answer)), include_blank: true, class: 'form-control customer-ada-question', id: "ada_question_#{item.id}"

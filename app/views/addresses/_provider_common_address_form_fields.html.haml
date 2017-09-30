@@ -1,0 +1,57 @@
+- defined?(prefix) ? prefix : prefix = "address"
+- defined?(edit_mode) ? edit_mode : edit_mode = :new
+= hidden_field_tag :lat, address.latitude, class: 'address_lat'
+= hidden_field_tag :lon, address.longitude, class: 'address_lon'
+%li.selfclear
+  = form.label :address_group_id, translate_helper("address_group_label")
+  = form.select :address_group_id, AddressGroup.pluck(:name, :id), { :include_blank => true }, { class: 'address_group', required: true }
+%li.selfclear
+  = form.label :name, translate_helper("address_name")
+  = form.text_field :name, maxlength: 30, class: 'form-control'
+%li.selfclear.full_address
+  = label_tag "#{prefix}_full_address", translate_helper("full_address_name")
+  - if edit_mode == :edit
+    = address.try(:address_text)
+  - else
+    = text_field_tag "#{prefix}_full_address", address.try(:address_text), class: 'address_search form-control'
+.selfclear.non_geocoding_address{:style => "display: none;"}
+  %li.selfclear
+    = form.label :address, translate_helper("address")
+    = form.text_field :address, class: 'address_text form-control'
+  %li.selfclear
+    = form.label :city, translate_helper("city")
+    = form.text_field :city , class: 'address_city form-control'
+  %li.selfclear
+    = form.label :state, translate_helper("state")
+    = form.text_field :state, :size=>2, :maxlength=> 2, :class => 'address_state form-control', :data => {:convert => 'uppercase'}
+  %li.selfclear
+    = form.label :zip, translate_helper("zip")
+    = form.text_field :zip, class: 'address_zip form-control'
+%li.selfclear
+  = form.label :phone_number, translate_helper("phone_number")
+  = form.text_field :phone_number, class: 'form-control'
+%li.selfclear
+  = form.label :default_trip_purpose, translate_helper("default_trip_purpose")
+  = form.select :trip_purpose_id, TripPurpose.by_provider(current_provider).map { |tp| [tp.name, tp.id] }, :include_blank => true, class: 'form-control'
+%li.selfclear
+  = form.label :in_district, translate_helper("in_district")
+  = form.select :in_district, [[translate_helper("unspecified"),nil], [translate_helper("yes"), true], [translate_helper("no"), false]], class: 'form-control'
+%li.selfclear
+  = form.label :notes, translate_helper("address_notes")
+  = form.text_area :notes, class: 'form-control'
+= render 'addresses/google_place_autocomplete_js' if prefix != 'pickup'
+
+:javascript
+  $('#provider_common_address_address_group_id').selectize({
+    dropdownParent: 'body',
+    create: function(input, callback) {
+      $.post("#{address_groups_path(format: :json)}", {
+          address_group: {
+            name: input
+          }
+        }, function(obj) {
+          callback({text: obj.name, value: obj.id});
+        });
+    }
+  });
+

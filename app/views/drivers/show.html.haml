@@ -1,0 +1,22 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'drivers'
+#page-header.row
+  .col-sm-12.col-md-6
+    %h1
+      = translate_helper("show_driver_heading")
+      - if @driver.inactivated?
+        %span{style: 'font-size: small; color: red;'}= @driver.active_status_text
+  .col-sm-12.col-md-6
+    - if can? :manage, @driver
+      .pull-right
+        = link_to translate_helper("driver_documents_add_link_title"), new_driver_document_path(@driver), class: "btn action-button"
+        = link_to translate_helper("delete_driver_button"), @driver, method: :delete, data: { confirm: translate_helper("delete_driver_confirm") }, class: "btn action-button  btn-danger"  if can?(:delete, @driver)
+        = link_to translate_helper("delete_photo"), delete_photo_driver_path(@driver), data: { confirm: translate_helper("delete_photo_confirm") }, class: "btn action-button btn-danger" if !@driver.new_record? && @driver.photo.present?
+        = link_to translate_helper("edit_driver_button"), edit_driver_path(@driver), class: "btn action-button"
+        - if @driver.permanent_inactivated?
+          = link_to translate_helper("reactivate"), reactivate_driver_path(@driver), method: :post, :class=>'btn action-button', :data => { :confirm => translate_helper(:reactivate_confirmation)}
+        - else
+          = button_tag :type => 'button', id: 'inactivateDriver', "data-target" => "#inactivateDialog", "data-toggle" => "modal", :class => "btn action-button" do
+            = @driver.inactivated? ? translate_helper(:activate) : translate_helper(:inactivate)
+
+= render partial: "form"
+= render 'shared/date_range_inactivate_dialog', resource: @driver, inactivation_url: inactivate_driver_path(@driver)

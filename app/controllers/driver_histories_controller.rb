@@ -1,41 +1,52 @@
 class DriverHistoriesController < ApplicationController
   load_and_authorize_resource :driver
-  load_and_authorize_resource :driver_history, through: :driver
+  before_action :load_driver_history
+  
+  include DocumentAssociableController
   
   respond_to :html, :js
 
   # GET /driver_histories/new
   def new
-    prep_edit
   end
 
   # GET /driver_histories/1/edit
   def edit
-    prep_edit
+  end
+
+  def show
+    @readonly = true
   end
 
   # POST /driver_histories
   def create
+    puts "DH CREATE"
+    puts params.inspect
+    params = build_new_documents(driver_history_params)
+    @driver_history.assign_attributes(params)
+    
     if @driver_history.save
       respond_to do |format|
         format.html { redirect_to @driver, notice: 'Driver history was successfully created.' }
         format.js
       end
     else
-      prep_edit
+      show_documents_reminder
       render :new
     end
   end
 
   # PATCH/PUT /driver_histories/1
   def update
-    if @driver_history.update(driver_history_params)
+    params = build_new_documents(driver_history_params)
+            
+    if @driver_history.update(params)
       respond_to do |format|
         format.html { redirect_to @driver, notice: 'Driver history was successfully updated.' }
         format.js
       end
     else
-      prep_edit
+      show_documents_reminder
       render :edit
     end
   end
@@ -50,12 +61,18 @@ class DriverHistoriesController < ApplicationController
   end
 
   private
-
-  def prep_edit
-    @driver_history.document_associations.build
+  
+  def load_driver_history
+    @driver_history = DriverHistory.find_by_id(params[:id]) || 
+                      @driver.driver_histories.build
   end
 
   def driver_history_params
-    params.require(:driver_history).permit(:event, :notes, :event_date, document_associations_attributes: [:id, :document_id, :_destroy])
+    params.require(:driver_history).permit(
+      :event, 
+      :notes, 
+      :event_date,
+      documents_attributes: documents_attributes
+    )
   end
 end

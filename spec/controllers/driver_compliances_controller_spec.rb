@@ -8,11 +8,12 @@ RSpec.describe DriverCompliancesController, type: :controller do
       @driver = create :driver, provider: @current_user.current_provider
     end
 
-    it_behaves_like "a controller that accepts nested attributes for a document association" do
-      before do
-        @owner = @driver
-      end
-    end
+    ### No longer deals with document_associations attributes--directly deals with documents
+    # it_behaves_like "a controller that accepts nested attributes for a document association" do
+    #   before do
+    #     @owner = @driver
+    #   end
+    # end
 
     # This should return the minimal set of attributes required to create a 
     # valid DriverCompliance. As you add validations to DriverCompliance, be

@@ -1,0 +1,19 @@
+%h1 Listing address_groups
+
+%table
+  %thead
+    %tr
+      %th
+      %th
+      %th
+
+  %tbody
+    - @address_groups.each do |address_group|
+      %tr
+        %td= link_to 'Show', address_group
+        %td= link_to 'Edit', edit_address_group_path(address_group)
+        %td= link_to 'Destroy', address_group, :method => :delete, :data => { :confirm => 'Are you sure?' }
+
+%br
+
+= link_to 'New Address group', new_address_group_path

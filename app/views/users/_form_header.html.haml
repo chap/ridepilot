@@ -1,0 +1,21 @@
+.clearfix.col-sm-12#page-header
+  - if edit_mode == :new
+    .pull-right
+      = f.submit translate_helper(:save), class: 'btn action-button'
+      = link_to translate_helper(:cancel), users_provider_path(@provider), class: "btn btn-default"
+    %h1
+      = translate_helper("new_user_heading")
+  - else
+    .pull-right
+      - if edit_mode == :edit
+        = f.submit translate_helper(:update), class: 'btn action-button'
+        = link_to translate_helper(:cancel), user_path(@user), class: "btn btn-default"
+      - else
+        = link_to translate_helper(:provider_index_users), users_provider_path(@provider), class: "btn action-button" if can?(:edit, @provider)
+        - if @user.driver.present?
+          = link_to translate_helper(:driver_profile), driver_path(@user.driver), class: "btn action-button"
+        - if !@user.new_record? && can?(:edit, @user)
+          = link_to translate_helper("reset_password"), show_reset_password_user_path(@user), :class=>'btn action-button btn-danger' 
+          = link_to translate_helper("edit"), edit_user_path(@user), :class=>'btn action-button' 
+    %h1
+      = @user.display_name

@@ -1,0 +1,7 @@
+<% if @customer %>
+$('.customer-eligibilities').show();
+
+$('.customer-eligibility-details').html("<%= j(render 'customers/view_customer_eligibilities') %>");
+<% else %>
+$('.customer-eligibilities').hide();
+<% end %>

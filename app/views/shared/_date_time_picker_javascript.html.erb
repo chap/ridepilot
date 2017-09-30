@@ -24,7 +24,16 @@
       buttonImage: "<%=  image_path 'calendar-clock.png' %>",
       buttonImageOnly: true,
       constrainInput: false,
-      dateFormat: 'dd-M-yy D'
+      dateFormat: 'dd-M-yy D',
+      showButtonPanel: true,
+      closeText: 'Clear', // Text to show for "close" button
+      onClose: function () {
+          var event = arguments.callee.caller.caller.arguments[0];
+          // If "Clear" gets clicked, then really clear it
+          if ($(event.delegateTarget).hasClass('ui-datepicker-close')) {
+              $(this).val('');
+          }
+      }
     });
   }
 

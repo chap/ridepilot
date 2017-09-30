@@ -5,20 +5,21 @@ RSpec.describe "VehicleMaintenanceCompliances" do
     before :each do
       @admin = create(:admin)
       visit new_user_session_path
-      fill_in 'Email', :with => @admin.email
+      fill_in 'user_username', :with => @admin.username
       fill_in 'Password', :with => @admin.password
       click_button 'Log In'
       
       @vehicle = create :vehicle, :provider => @admin.current_provider
-      @vehicle_maintenance_compliance = create :vehicle_maintenance_compliance, :complete, vehicle: @vehicle
+      @vehicle_maintenance_compliance = create :vehicle_maintenance_compliance, vehicle: @vehicle
     end
-    
-    it_behaves_like "it accepts nested attributes for document associations" do
-      before do
-        @owner = @vehicle
-        @example = @vehicle_maintenance_compliance
-      end
-    end
+
+    # Document Associations have been refactored    
+    # it_behaves_like "it accepts nested attributes for document associations" do
+    #   before do
+    #     @owner = @vehicle
+    #     @example = @vehicle_maintenance_compliance
+    #   end
+    # end
 
     describe "GET /vehicles/:id" do
       it "shows the name of the compliance event" do
@@ -43,9 +44,10 @@ RSpec.describe "VehicleMaintenanceCompliances" do
         expect(page).to have_text "#{@vehicle_maintenance_compliance.due_date.to_s(:long)} and 100 mi"
       end
       
-      it "shows the compliance date of the compliance event" do
+      it "does not show completed event by default" do
+        completed_vehicle_maintenance_compliance = create :vehicle_maintenance_compliance, :complete, vehicle: @vehicle
         visit vehicle_path(id: @vehicle.to_param)
-        expect(page).to have_text @vehicle_maintenance_compliance.compliance_date.to_s(:long)
+        expect(page).not_to have_text completed_vehicle_maintenance_compliance.compliance_date.to_s(:long)
       end
     end
 

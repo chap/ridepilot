@@ -22,7 +22,16 @@ module ReportsHelper
   
   def ordered_pickup_and_dropoff_addresses(trips)
     trips.collect do |trip|
-      [{time: trip.pickup_time, address: trip.pickup_address}, {time: trip.appointment_time, address: trip.dropoff_address}]
-    end.flatten.sort_by{ |trip_info| trip_info[:time] }.collect{ |trip_info| trip_info[:address] }
+      [{
+        sort_time: trip.pickup_time, 
+        time: trip.pickup_time, 
+        address: trip.pickup_address
+        }, 
+        {
+          sort_time: trip.appointment_time || trip.pickup_time, 
+          time: trip.appointment_time, 
+          address: trip.dropoff_address
+        }]
+    end.flatten.sort_by{ |trip_info| trip_info[:sort_time] }.collect{ |trip_info| trip_info[:address] }
   end
 end

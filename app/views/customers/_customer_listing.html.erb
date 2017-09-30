@@ -8,10 +8,6 @@
       <th><%=translate_helper("alternate_phone")%></th>
       <th><%=translate_helper("email")%></th>
       <th><%=translate_helper("customer_active")%></th>
-      <th><%=translate_helper("activated_date")%></th>
-      <% if !@active_only %>
-      <th><%=translate_helper("inactivated_date")%></th>
-      <% end %>
     </tr>
   </thead>
 
@@ -20,14 +16,10 @@
     <tr>
       <td class="plurality"><%= link_to customer.group ? content_tag(:span, "Group", :class=>'group') : content_tag(:span, "Individual", :class=>'individual'), customer %></td>
       <td><%= link_to customer.name, customer %></td>
-      <td><%= customer.phone_number_1 %></td>
-      <td><%= customer.phone_number_2 %></td>
+      <td><%= format_phone_number(customer.phone_number_1) %></td>
+      <td><%= format_phone_number(customer.phone_number_2) %></td>
       <td><%= customer.email %></td>
-      <td><%= image_tag("tick-circle.png") if customer.active? %></td>
-      <td><%= customer.activated_date %></td>
-      <% if !@active_only %>
-      <td><%= customer.inactivated_date %></td>
-      <% end %>
+      <td><%= customer.active_status_text %></td>
     </tr>
     <% end %>
   </tbody>

@@ -24,6 +24,8 @@
   <%= hidden_field_tag 'addresses' %>
   <%= hidden_field_tag 'mailing_address_index' %>
   <%= hidden_field_tag 'donations' %>
+  <%= hidden_field_tag 'travel_trainings' %>
+  <%= hidden_field_tag 'funding_authorization_numbers' %>
   <%= f.hidden_field :group, value: is_group %>
   <%= render 'form_header', edit_mode: edit_mode, f: f %>
   <% if @customer.errors.any? %>
@@ -39,22 +41,28 @@
 
   <div class="col-sm-12 col-md-6">
     <%= render 'details_panel', f: f, edit_mode: edit_mode %>
+    <%= render 'travel_trainings_panel', f:f, edit_mode: edit_mode %>
+    <%= render 'funding_authorization_numbers_panel', f:f, edit_mode: edit_mode %>
   </div>
 
   <div class="col-sm-12 col-md-6">
     <%= render 'common_addresses_panel', edit_mode: edit_mode %>
-    <%= render 'eligibility_panel', f: f %>
-    <%= render 'providers_panel', f: f %>
+    <%= render 'eligibility_panel', f: f, edit_mode: edit_mode %>
+    <%= render 'providers_panel', f: f, edit_mode: edit_mode %>
     <%= render 'donations_panel', f: f, edit_mode: edit_mode  %>
+    <%= render 'comments_panel', f: f, edit_mode: edit_mode %>
     <%= render 'others_panel', f: f, edit_mode: edit_mode %>
+    <% if edit_mode == :show %>
+      <% logs = TrackerActionLog.for(@customer).order(created_at: :desc) %>
+      <%= render 'shared/action_log_panel', logs: logs if logs.any? %>
+    <% end %>
   </div>
-
 <% end %>
 
-<%= render 'inactivate_dialog' if edit_mode == :show %>
 <%= render 'add_donation_dialog' if edit_mode == :edit || edit_mode == :new %>
 <%= render 'add_address_dialog', edit_mode: edit_mode %>
-
+<%= render 'add_travel_training_dialog' if edit_mode == :edit || edit_mode == :new %>
+<%= render 'add_funding_authorization_number_dialog' if edit_mode == :edit || edit_mode == :new %>
 <%= render 'shared/hide_invisible_form_fields_js', model_name: "customer", table_name: 'customers', provider_id:  current_provider.try(:id) %>
 <script>
 // hide middle/last names for group customer
@@ -94,6 +102,7 @@
     $('#customerForm input[name=mailing_address_index]').val(mailingAddressIndex);
     $('#customerForm input[name=addresses]').val(JSON.stringify(addresses));
 
+
     // serializing donations
     var donations = [];
     $('#customerDonationsTable tbody tr').each(function() {
@@ -101,5 +110,22 @@
     });
 
     $('#customerForm input[name=donations]').val(JSON.stringify(donations));
+    
+    
+    // serializing travel trainings
+    var travelTrainings = [];
+    $('#customerTravelTrainingsTable tbody tr').each(function() {
+      travelTrainings.push($(this).data('travelTraining'));
+    });
+
+    $('#customerForm input[name=travel_trainings]').val(JSON.stringify(travelTrainings));
+
+    // serializing funding numbers
+    var fundingNumbers = [];
+    $('#customerFundingAuthorizationNumbersTable tbody tr').each(function() {
+      fundingNumbers.push($(this).data('fundingNumber'));
+    });
+
+    $('#customerForm input[name=funding_authorization_numbers]').val(JSON.stringify(fundingNumbers));
   });
 </script>

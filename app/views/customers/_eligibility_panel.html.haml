@@ -5,8 +5,12 @@
     %h3.panel-title
       = translate_helper(:customer_eligibility_panel)
   .panel-body{style: 'padding: 5px;'}
-    - Eligibility.by_provider(current_provider).each do |eligibility|
-      = render 'eligibility_item', item: eligibility
+    - if edit_mode == :show
+      = render 'view_customer_eligibilities'
+    - else
+      = render 'ada_eligibility', f: f
+      - Eligibility.by_provider(current_provider).each do |eligibility|
+        = render 'eligibility_item', item: eligibility
 
 :javascript
   $('document').ready(function() {
@@ -15,7 +19,17 @@
       if ($(this).val() == 'false') {
         ineligibleReasonDiv.show();
       } else {
+        ineligibleReasonDiv.find('.ineligible-reason-text').text('');
         ineligibleReasonDiv.hide();
+      }
+    });
+
+    $('#customer_ada_eligible').change(function() {
+      var ada_questions = $(this).parents('.form-group').find('.ada-questions');
+      if ($(this).val() == 'true') {
+        ada_questions.show();
+      } else {
+        ada_questions.hide();
       }
     });
   });

@@ -1,0 +1,21 @@
+%table.table.table-bordered#address_results
+  %thead
+    %tr
+      %th= translate_helper("address_results_type_column")
+      %th= translate_helper("address_results_name_column")
+      %th= translate_helper("address")
+      %th= translate_helper("city")
+      %th= translate_helper("state")
+      %th= translate_helper("phone_number")
+      %th= translate_helper("in_district")
+      %th= translate_helper("address_notes")
+      - if can? :edit, Vehicle
+        %th
+  %tbody
+    - @provider.addresses.each do |address|
+      = render 'addresses/provider_common_address', address: address
+
+:javascript
+  $(function() {
+    $('#address_results').dataTable();
+  });

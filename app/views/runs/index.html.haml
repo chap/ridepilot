@@ -2,40 +2,77 @@
 .clearfix.row#page-header{style: 'padding: 0px;'}
   - if can? :create, Run
     = link_to translate_helper("new_run_link_text"), new_run_path, :class=>'btn action-button pull-right'
+  - if can? :create, RepeatingRun
+    = link_to translate_helper("new_repeating_run_text"), new_repeating_run_path, :class=>'btn action-button pull-right'
+  - if can? :index, RepeatingRun
+    = link_to translate_helper("repeating_runs"), repeating_runs_path, :class=>'btn action-button pull-right'
   %h1= translate_helper("runs")+ ": " + format_time_as_title_for_listing_day(@start_pickup_date) + " - " + format_time_as_title_for_listing_day(@end_pickup_date)
   .clearfix
 
 .col-md-3{style: 'padding: 0px 15px 0px 0px;'}
   = render :partial => 'filters'
-.col-md-9{style: 'padding: 0px;'}
-  .checkbox.pull-right
-    %label
-      %input#hide_run_calendar{type: 'checkbox'}
-      %b
-        = translate_helper("hide_calendar")
-  = render 'trips/calendar', base_path: runs_path, resources: @day_resources, events: @runs_json
+- unless can?(:edit, Run)
+  .col-md-9{style: 'padding: 0px;'}
+    = render :partial => 'list'
+- else
+  .col-md-9{style: 'padding: 0px;'}
+    .modify-selected-runs.dropdown{style: 'margin-bottom: 5px;'}
+      %button.btn.btn-primary.dropdown-toggle{type: 'button', data: {toggle: 'dropdown'}} 
+        =translate_helper(:modify_selected_runs)
+        %span.caret
+      %ul.dropdown-menu
+        -Run::BATCH_ACTIONS.each do |action|
+          %li
+            %a{href: '#', 'data-run-batch-action' => action.to_s }
+              =translate_helper("#{action}_run")
 
-  = render :partial => 'list'
+    = render :partial => 'list'
 
-:javascript
-  $(function() {
-    // hide/unhide calendar
-    function manage_calendar_hidden_status() {
-      var is_calendar_hidden = (localStorage.getItem('run_calendar_hidden') == 'true');
-      if(is_calendar_hidden) {
-        $('#calendar').hide();
-      } else {
-        $('#calendar').show();
+  :javascript
+    $(function() {    
+      /* MULTI-SELECT AND BATCH CANCEL */
+      
+      // One checkbox to rule them all
+      $('.master-select-checkbox').change(function() {
+        $('.run-selected').prop('checked', $(this).prop('checked'));
+      });
+      
+      var clearCheckboxes = function() {
+        $('.master-select-checkbox').prop('checked', false).trigger('change');
       }
-    }
+      
+      // Handler for applying an action to multiple selected runs
+      $('.modify-selected-runs a').click(function() {
+        var checkedBoxes = $('.run-selected:checked');
+        if(checkedBoxes.length === 0) { return; } // Return if no runs are selected
 
-    $('#hide_run_calendar').change(function() {
-      var checked = $(this).prop('checked');
-      localStorage.setItem('run_calendar_hidden', checked || false);
-
-      manage_calendar_hidden_status();
+        // Pull the run ids from the selected rows
+        var runRows = checkedBoxes.closest('tr.run');
+        var runIds = runRows.map(function() {
+          return this.dataset.runId;
+        }).get().join();
+        
+        // Pull the action name from the dropdown
+        var action = $(this).data('run-batch-action');
+        var confirmation = false;
+        
+        // Update the appropriate form based on the action
+        var form;
+        if (action === "cancel") {
+          confirmation = confirm("#{translate_helper('confirm_runs_batch_cancel')}");
+          if(!confirmation) { return; } // Return if cancel clicked
+          form = $('form.cancel-multiple-runs');
+          form.find('#cancel_multiple_runs_run_ids').val(runIds);
+        } else if (action === "delete") {        
+          confirmation = confirm("#{translate_helper('confirm_runs_batch_delete')}");
+          if(!confirmation) { return; } // Return if cancel clicked
+          form = $('form.delete-multiple-runs');
+          form.find('#delete_multiple_runs_run_ids').val(runIds);
+        }
+        
+        // Submit the form and clear the checkboxes
+        form.submit();
+        clearCheckboxes();
+        
+      });
     });
-
-    manage_calendar_hidden_status();
-    $('#hide_run_calendar').prop('checked', (localStorage.getItem('run_calendar_hidden') == 'true'));
-  });

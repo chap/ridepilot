@@ -24,4 +24,7 @@
       .col-sm-9
         %textarea.form-control#mobility_notes{rname:"mobility_notes", readonly:"readonly"}
           = @customer.try :mobility_notes
-      
+    .customer-eligibilities{style: (@customer ? "" : "display: none;")}
+      %h4.col-sm-12= translate_helper('customer_eligibilities')
+      .customer-eligibility-details
+        = render 'customers/view_customer_eligibilities'

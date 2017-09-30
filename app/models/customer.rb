@@ -1,27 +1,48 @@
 class Customer < ActiveRecord::Base
   include RequiredFieldValidatorModule 
+  include Inactivateable
+  include PublicActivity::Common
+
   before_validation :generate_uuid_token, on: :create
+  before_update :ada_changed
 
   acts_as_paranoid # soft delete
 
-  has_and_belongs_to_many :authorized_providers, :class_name => 'Provider', :through => 'customers_providers'
+  has_and_belongs_to_many :authorized_providers, -> { where("inactivated_date is NULL and (customer_nonsharable is NULL or customer_nonsharable != ?)", true) }, :class_name => 'Provider', :through => 'customers_providers'
 
   belongs_to :provider, -> { with_deleted }
-  belongs_to :address
-  has_many   :addresses, :dependent => :destroy, inverse_of: :customer
+  belongs_to :address, :class_name => 'CustomerCommonAddress'
+  has_many   :addresses, :dependent => :destroy, :class_name => 'CustomerCommonAddress', inverse_of: :customer
   belongs_to :mobility, -> { with_deleted }
   belongs_to :default_funding_source, -> { with_deleted }, :class_name=>'FundingSource'
   has_many   :trips, :dependent => :destroy, inverse_of: :customer
   has_many   :donations, :dependent => :destroy, inverse_of: :customer
 
-  has_many  :eligibilities, through: :customer_eligibilities
-  has_many  :customer_eligibilities
+  has_many   :eligibilities, through: :customer_eligibilities
+  has_many   :customer_eligibilities, dependent: :destroy
+
+  has_many   :ada_questions, through: :customer_ada_questions
+  has_many   :customer_ada_questions, dependent: :destroy
+
+  # profile photo
+  has_one  :photo, class_name: 'Image', as: :imageable, dependent: :destroy, inverse_of: :imageable
+  accepts_nested_attributes_for :photo
+
+  # travel trainings
+  has_many   :travel_trainings, dependent: :destroy
+  accepts_nested_attributes_for :travel_trainings
+
+  # funding numbers
+  has_many   :funding_authorization_numbers, dependent: :destroy
+  accepts_nested_attributes_for :funding_authorization_numbers
 
   belongs_to :service_level, -> { with_deleted }
   delegate :name, to: :service_level, prefix: :service_level, allow_nil: true
 
   validates_presence_of :first_name
   validates_associated :address
+  validates_associated :photo
+  validate :valid_phone_number
   #validate :address_required
   # Token is auto-generated at database level via uuid extension
   
@@ -37,6 +58,8 @@ class Customer < ActiveRecord::Base
   scope :for_provider, -> (provider_id) { where("provider_id = ? OR id IN (SELECT customer_id FROM customers_providers WHERE provider_id = ?)", provider_id, provider_id) }
   scope :individual,   -> { where(:group => false) }
 
+  after_initialize :set_defaults
+
   has_paper_trail
 
   def name
@@ -48,10 +71,6 @@ class Customer < ActiveRecord::Base
     else
       return "%s %s" % [first_name, last_name]
     end
-  end
-
-  def active?
-    !inactivated_date
   end
 
   def age_in_years
@@ -85,6 +104,7 @@ class Customer < ActiveRecord::Base
     { :id                        => id,
       :label                     => name, 
       :medicaid_eligible         => is_medicaid_eligible?,
+      :age_eligible              => age_eligible?,
       :phone_number_1            => phone_number_1, 
       :phone_number_2            => phone_number_2,
       :mobility_notes            => mobility_notes,
@@ -94,7 +114,8 @@ class Customer < ActiveRecord::Base
       :private_notes             => private_notes,
       :address_data              => address_data,
       :default_funding_source_id => default_funding_source_id,
-      :default_service_level     => service_level_name
+      :default_service_level     => service_level_name,
+      :customer_eligibilities    => customer_eligibilities.specified.as_json
     }
   end
 
@@ -263,6 +284,32 @@ class Customer < ActiveRecord::Base
       d.save
     end
   end
+  
+  def edit_travel_trainings(travel_training_objects)
+    # remove non-existing ones
+    prev_travel_training_ids = travel_trainings.pluck(:id)
+    existing_travel_training_ids = travel_training_objects.select {|tt| tt[:id] != nil}.map{|tt| tt[:id]}
+    TravelTraining.where(id: prev_travel_training_ids - existing_travel_training_ids).delete_all
+  
+    # update travel trainings
+    travel_training_objects.select {|tt| tt[:id].blank? }.each do |travel_training_hash|
+      tt = TravelTraining.parse(travel_training_hash, self)
+      tt.save
+    end
+  end
+
+  def edit_funding_authorization_numbers(funding_number_objects)
+    # remove non-existing ones
+    prev_funding_number_ids = funding_authorization_numbers.pluck(:id)
+    existing_funding_number_ids = funding_number_objects.select {|tt| tt[:id] != nil}.map{|tt| tt[:id]}
+    FundingAuthorizationNumber.where(id: prev_funding_number_ids - existing_funding_number_ids).delete_all
+  
+    # update funding numbers
+    funding_number_objects.select {|tt| tt[:id].blank? }.each do |funding_number_hash|
+      tt = FundingAuthorizationNumber.parse(funding_number_hash, self)
+      tt.save
+    end
+  end
 
   def edit_eligibilities(eligibility_params)
     return if !eligibility_params
@@ -280,6 +327,24 @@ class Customer < ActiveRecord::Base
     end
   end
 
+  def edit_ada_questions(ada_question_params)
+    return if !ada_question_params
+
+    ada_question_params.each do |question_id, data|
+      question = AdaQuestion.find_by_id question_id
+      next unless question
+      item = customer_ada_questions.where(ada_question: question).first_or_create
+    
+      answer = data["answer"] == 'true' ? true : (data["answer"] == 'false' ? false: nil)
+
+      item.update_attributes answer: answer
+    end
+  end
+
+  def age_eligible?
+    provider.try(:check_age_eligible, age_in_years)
+  end
+
   private 
 
   def address_required
@@ -290,6 +355,28 @@ class Customer < ActiveRecord::Base
 
   def generate_uuid_token
     self.token = SecureRandom.hex(5)
+  end
+
+  def valid_phone_number
+    util = Utility.new
+    if phone_number_1.present?
+      errors.add(:phone_number_1, 'is invalid') unless util.phone_number_valid?(phone_number_1) 
+    end
+
+    if phone_number_2.present?
+      errors.add(:phone_number_2, 'is invalid') unless util.phone_number_valid?(phone_number_2) 
+    end
+  end
+
+  def set_defaults
+    self.active = true if self.active.nil?
+  end
+
+  def ada_changed
+    if self.ada_eligible_changed?
+      # once ada_eligible is changed, clear ada questions if not ada_eligible
+      customer_ada_questions.clear unless ada_eligible?
+    end
   end
 
 end

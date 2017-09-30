@@ -1,0 +1,31 @@
+#page-header.clearfix
+  %h1= translate_helper("editing_address")
+.profile-actions.selfclear
+  .manage
+    = delete_trippable_link(@address)
+= form_for @address do |form|
+  - if @address.errors.any?
+    #error_explanation
+      %h2= translate_helper("address_form_error_message", count: @address.errors.count)
+      %ul
+        - @address.errors.full_messages.each do |msg|
+          %li= msg
+  = form.hidden_field :provider_id
+  %fieldset
+    %ol.section.first
+      = render 'provider_common_address_form_fields', :form => form, address: @address, prefix: 'address', edit_mode: :edit
+      %li.selfclear
+        = form.label :inactive, translate_helper("inactive")
+        = form.check_box :inactive
+  .actions
+    = form.submit translate_helper("submit")
+- if @address.trips.present? && can?(:destroy, @address)
+  #confirm-destroy{:style => "display:none;"}
+    = form_for @address, :html => { :method => "delete" } do |form|
+      %fieldset
+        %legend= translate_helper("reassociate_trips")
+        %ol.section
+          %li
+            = label_tag translate_helper("address_search")
+            = autocomplete_field_tag 'address_term', '', autocomplete_provider_common_addresses_path(exclude:@address.try(:id)), :size => 30, :delay => 500, :id_element => "#address_id"
+            = hidden_field_tag 'address_id'

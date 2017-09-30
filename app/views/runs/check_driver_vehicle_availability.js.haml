@@ -1,0 +1,12 @@
+$('#unavailable_warning_messages').html('');
+- if !@is_vehicle_active || !@is_driver_active || !@is_driver_available
+  - if !@is_vehicle_active
+    $('#unavailable_warning_messages').append("<li>#{translate_helper(:vehicle_temporarily_inactive)}</li>");
+  - if !@is_driver_active
+    $('#unavailable_warning_messages').append("<li>#{translate_helper(:driver_temporarily_inactive)}</li>");
+  - if !@is_driver_available
+    $('#unavailable_warning_messages').append("<li>#{translate_helper(:unavailable_driver_for_run_time_range_warning)}</li>");
+
+  $('#unavailable_warning_dialog').modal('show');
+- else
+  $('.run_form').submit();

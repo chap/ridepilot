@@ -1,0 +1,22 @@
+- prefix = "driver_address_attributes"
+.panel.panel-primary
+  .panel-heading= translate_helper("driver_address_heading")
+  .panel-body.form-horizontal
+    = f.fields_for :address, @driver.address do |address_form|
+      = render 'addresses/non_geocoding_form_fields', address_form: address_form, readonly: @readonly
+
+- prefix = "driver_alt_address_attributes"
+.panel.panel-primary
+  .panel-heading= translate_helper("driver_alt_address_heading")
+  .panel-body.form-horizontal
+    = f.fields_for :alt_address, @driver.alt_address do |address_form|
+      = render 'addresses/non_geocoding_form_fields', address_form: address_form, readonly: @readonly
+
+= render 'addresses/google_place_autocomplete_js'
+:javascript
+  $(function() {
+    // Force uppercase text
+    $('[data-convert="uppercase"]').keyup(function(evt) {
+      convert_uppercase(this);
+    });
+  });

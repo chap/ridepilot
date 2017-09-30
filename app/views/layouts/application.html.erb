@@ -20,10 +20,10 @@
       <%= translate_helper("header_content") %>
       <div id="login-area">
         <% if current_user %>
-          <a href="#"><%= current_user.email %></a> 
+          <a href=<%= user_path(current_user)%>><%= current_user.display_name %></a> 
           <span class="separator">|</span> <%= link_to translate_helper("change_password"), show_change_password_path, :class=>'change-password' %>
           <span class="separator">|</span>
-          <%= link_to translate_helper("log_out_link_text"), destroy_user_session_path, method: :delete %>
+          <%= link_to translate_helper("log_out_link_text"), destroy_user_session_path(locale: I18n.default_locale), method: :delete %>
           <span class="separator">|</span>
           Logged in to 
           <% if @provider_map.size > 1 %>
@@ -44,22 +44,21 @@
   <div id="crossbar">
     <div class="wrap selfclear">
       <ul id="primary-nav" class="selfclear">
+        <% if show_scheduling? %><li class="trips_runs"><%= link_to translate_helper("application_trips_runs_link_text"), trips_runs_path %></li><% end %>
         <% if show_scheduling? %><li class="trips"><%= link_to translate_helper("application_trips_link_text"), trips_path %></li><% end %>
         <% if show_scheduling? %><li class="runs"><%= link_to translate_helper("application_runs_link_text"), runs_path %></li><% end %>
-        <% if show_scheduling? %><li class="trips_runs"><%= link_to translate_helper("application_trips_runs_link_text"), trips_runs_path %></li><% end %>
-        <% if show_scheduling? %><li class="cab_trips"><%= link_to translate_helper("application_cabs_link_text"), cab_trips_path %></li><% end %>
         <% if show_scheduling? %><li class="customers"><%= link_to translate_helper("application_customers_link_text"), customers_path %></li><% end %>
         <% if show_scheduling? %><li class="drivers"><%= link_to translate_helper("application_drivers_link_text"), drivers_path %></li><% end %>
         <% if show_scheduling? %><li class="vehicles"><%= link_to translate_helper("application_vehicles_link_text"), vehicles_path %></li><% end %>
         <% if show_scheduling? %><li class="reports"><%= link_to translate_helper("application_reports_link_text"), reporting.reports_path %></li><% end %>
-        <% if show_dispatch?   %><li class="dispatch"><%= link_to translate_helper("application_dispatch_link_text"), dispatch_path %></li><% end %>
+        <% if current_provider.try(:cab_enabled?) %><li class="cab_trips"><%= link_to translate_helper("application_cabs_link_text"), cab_trips_path %></li><% end %>
       </ul>
       <ul id="secondary-nav" class="selfclear">
         <% if can_access_admin_tab(current_user) %>
           <li class="admin"><%= link_to translate_helper("application_admin_link_text"), admin_path %></li>
         <% end %>
         <% if can_access_provider_settings_tab(current_user, current_provider) %>
-          <li class="vehicles-drivers-users"><%= link_to translate_helper("current_provider_settings_link_text"), provider_path(current_user.current_provider) %></li>
+          <li class="provider"><%= link_to translate_helper("current_provider_settings_link_text"), provider_path(current_user.current_provider) %></li>
         <% end %>
       </ul>
     </div><!-- /.wrap -->

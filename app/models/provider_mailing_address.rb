@@ -1,0 +1,2 @@
+class ProviderMailingAddress < Address
+end

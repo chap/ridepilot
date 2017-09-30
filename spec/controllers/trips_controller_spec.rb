@@ -30,9 +30,10 @@ RSpec.describe TripsController, type: :controller do
         expect(response.content_type).to eq("application/json")
       end
 
-      it "assigns trips for the current week as @trips" do
-        trip_1 = create(:trip, :provider => @current_user.current_provider, :pickup_time => Time.now.in_time_zone)
-        trip_2 = create(:trip, :provider => @current_user.current_provider, :pickup_time => 1.week.from_now.in_time_zone)
+      it "assigns trips for the current day as @trips" do
+        current_day = Time.now.in_time_zone
+        trip_1 = create(:trip, :provider => @current_user.current_provider, :pickup_time => current_day)
+        trip_2 = create(:trip, :provider => @current_user.current_provider, :pickup_time => current_day + 1.day)
         get :index, {:format => "json"}
         expect(assigns(:trips)).to include(trip_1)
         expect(assigns(:trips)).to_not include(trip_2)
@@ -53,6 +54,112 @@ RSpec.describe TripsController, type: :controller do
       end
     end
   end
+
+  describe "GET #customer_trip_summary" do
+    it "returns empty when no customer_id is given" do 
+      get :customer_trip_summary, {:format => "json"}
+      expect(assigns(:trips)).to be_empty
+    end
+
+    context "when customer_id is given" do
+      let(:customer_id) { create(:customer, :provider => @current_user.current_provider).id }
+      before do
+        # Time.now is now 
+        Timecop.freeze(Date.today)
+
+        pickup_time = DateTime.current.beginning_of_day
+        appointment_time = pickup_time + 1.hour
+
+        # today trip
+        @today_trip = create(:trip, customer_id: customer_id, pickup_time: pickup_time, appointment_time: appointment_time)
+
+        # past trips
+        (1..7).each do |i|
+          create(:trip, customer_id: customer_id, pickup_time: pickup_time - i.day, appointment_time: appointment_time - i.day)
+        end
+
+        # future trips
+        (1..7).each do |i|
+          create(:trip, customer_id: customer_id, pickup_time: pickup_time + i.day, appointment_time: appointment_time + i.day)
+        end
+        
+      end
+
+      after do
+        Timecop.return
+      end
+
+      context "when by default" do
+        before do 
+          get :customer_trip_summary, {:format => "json", :customer_id => customer_id}
+        end
+
+        it "returns past trips" do 
+          expect(assigns(:trips).minimum(:pickup_time)).to be <= DateTime.current
+        end
+        it "returns at most 10 trips" do 
+          expect(assigns(:trips).count).to be < 10
+        end
+      end
+
+      context "when show past 5 trips" do
+        before do 
+          get :customer_trip_summary, {:format => "json", :customer_id => customer_id, :past_trips => 5}
+        end
+
+        it "returns past trips" do 
+          expect(assigns(:trips).minimum(:pickup_time)).to be <= DateTime.current
+        end
+        it "returns at most 5 trips" do 
+          expect(assigns(:trips).count).to be <= 5
+        end
+      end
+
+      context "when show future 5 trips" do
+        before do 
+          get :customer_trip_summary, {:format => "json", :customer_id => customer_id, :future_trips => 5}
+        end
+
+        it "returns past trips" do 
+          expect(assigns(:trips).minimum(:pickup_time)).to be >= DateTime.current
+        end
+        it "returns at most 5 trips" do 
+          expect(assigns(:trips).count).to be <= 5
+        end
+      end
+
+      context "when date range params are given" do
+        context "start date is given but not end date" do 
+          before do 
+            get :customer_trip_summary, {:format => "json", :customer_id => customer_id, :start_date => Date.tomorrow} 
+          end
+
+          it "returns correct trips" do
+            expect(assigns(:trips).minimum(:pickup_time)).to be >= Date.tomorrow
+          end
+        end
+        context "end date is given but not start date" do 
+          before do 
+            get :customer_trip_summary, {:format => "json", :customer_id => customer_id, :end_date => Date.today} 
+          end
+
+          it "returns correct trips" do
+            expect(assigns(:trips).maximum(:pickup_time)).to be < Date.tomorrow
+          end
+
+        end
+        context "both start and end dates are given" do 
+          before do 
+            get :customer_trip_summary, {:format => "json", :customer_id => customer_id, :start_date => Date.today, :end_date => Date.today} 
+          end
+
+          it "returns correct trips" do
+            expect(assigns(:trips)).to match([@today_trip])
+          end
+        end
+      end
+    end
+  end  
 
   describe "GET #new" do
     it "assigns a new trip as @trip" do
@@ -135,49 +242,6 @@ RSpec.describe TripsController, type: :controller do
         expect(assigns(:trip)).to be_a(Trip)
         expect(assigns(:trip)).to be_persisted
       end
-
-      context "when responding to :html request" do
-        #TODO: need a context when creating a outbound trip, should expect a ask_for_creating_return_trip_modal_dialog
-        context "when both params[trip][run_id] and params[run_id] are present and equal" do
-          it "redirects to the requested run" do
-            run = create(:run, :provider => @current_user.current_provider)
-            post :create, {:trip => valid_attributes.merge({:run_id => run.id, :direction => :return}), :run_id => run.id}
-            expect(response).to redirect_to(edit_run_path(run))
-          end
-        end
-
-        context "when run_id param is not present" do
-          it "redirects to the trips list" do
-            post :create, {:trip => valid_attributes.merge(:direction => :return)}
-            expect(response).to redirect_to(trips_url)
-          end
-        end
-      end
-      
-      context "when responding to a :js request" do
-        it "responds with JSON" do
-          post :create, {:trip => valid_attributes, :format => "js"}
-          expect(response.content_type).to eq("text/json")
-        end
-
-        it "includes a successful status in the JS response" do
-          post :create, {:trip => valid_attributes, :format => "js"}
-          json = JSON.parse(response.body)
-          expect(json["status"]).to be_a(String)
-          expect(json["status"]).to eq("success")
-        end
-
-        context "with rendered views" do
-          render_views
-          
-          it "responds with the runs/trip partial in the JS response" do
-            post :create, {:trip => valid_attributes, :format => "js"}
-            json = JSON.parse(response.body)
-            expect(json["trip"]).to be_a(String)
-            expect(json["trip"]).to include(edit_trip_path(Trip.last))
-          end
-        end
-      end
     end
 
     context "with invalid params" do
@@ -190,31 +254,6 @@ RSpec.describe TripsController, type: :controller do
         it "re-renders the 'new' template" do
           post :create, {:trip => invalid_attributes}
           expect(response).to render_template("new")
-        end
-      end
-      
-      context "when responding to a :js request" do
-        it "responds with JSON" do
-          post :create, {:trip => invalid_attributes, :format => "js"}
-          expect(response.content_type).to eq("text/json")
-        end
-        
-        it "includes a error status in the JS response" do
-          post :create, {:trip => invalid_attributes, :format => "js"}
-          json = JSON.parse(response.body)
-          expect(json["status"]).to be_a(String)
-          expect(json["status"]).to eq("error")
-        end
-
-        context "with rendered views" do
-          render_views
-          
-          skip "responds with the 'new' form partial in the JS response" do
-            post :create, {:trip => invalid_attributes, :format => "js"}
-            json = JSON.parse(response.body)
-            expect(json["form"]).to be_a(String)
-            expect(json["form"]).to include("action=\"#{trips_path}\"")
-          end
         end
       end
     end
@@ -265,7 +304,7 @@ RSpec.describe TripsController, type: :controller do
         it "redirects to the trips list" do
           trip = create(:trip, :provider => @current_user.current_provider)
           put :update, {:id => trip.to_param, :trip => valid_attributes}
-          expect(response).to redirect_to(trips_url)
+          expect(response).to redirect_to(trip_url(trip))
         end
       end
 
@@ -543,6 +582,34 @@ RSpec.describe TripsController, type: :controller do
       expect(assigns(:trips)).to_not include(trip_2)
       expect(assigns(:trips)).to_not include(trip_3)
     end
+  end
+  
+  describe "POST #check_double_booked" do
+    
+    it "returns a list of possible double-booked trips" do
+      trip_1 = create(:trip)
+      trip_2 = create(:trip, customer: trip_1.customer)
+      trip_3 = create(:trip, customer: trip_1.customer)
+      check_double_booked_params = {
+        trip: {
+          id: trip_1.id,
+          customer_id: trip_1.customer_id,
+          date: trip_1.date.to_s
+        },
+        format: :js
+      }
+      
+      post :check_double_booked, check_double_booked_params
+      trips = JSON.parse(response.body)["trips"]
+      expect(trips.count).to eq(2)
+      expect(trips.map{|t| t["id"]}.sort).to eq([trip_2.id, trip_3.id].sort)
+      expect(trips[0]["pickup_time"]).to be
+      expect(trips[0]["pickup_address"]).to be
+      expect(trips[0]["appointment_time"]).to be
+      expect(trips[0]["dropoff_address"]).to be
+      
+    end
+    
   end
   
 end

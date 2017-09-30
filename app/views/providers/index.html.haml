@@ -1,0 +1,35 @@
+#page-header.row
+  .col-sm-12{style: 'padding: 0px;'}
+    - if can? :create, Provider
+      .pull-right
+        = link_to translate_helper("new_provider_link_text"), new_provider_path, class: "btn action-button"
+    %h1= translate_helper("provider_index_heading")
+
+.row
+  .col-sm-12.pull-right
+    .checkbox
+      %label
+        %input#show_active_only{type: 'checkbox'}
+          = translate_helper(:show_inactive)
+  .col-sm-12
+    %table#providers_table.table.table-striped.table-bordered
+      %thead
+        %tr
+          %th= translate_helper("provider_index_name")
+          %th= translate_helper("provider_index_users")
+          %th= translate_helper("provider_index_active")
+      %tbody
+        - @providers.each do |provider|
+          %tr
+            %td= link_to provider.name, provider_path(provider)
+            %td= provider.users.size
+            %td= provider.active? ? translate_helper(:active) : translate_helper(:inactive)
+
+:javascript
+  $(function() {
+    $('#providers_table').dataTable();
+    $('#show_active_only').prop('checked', #{params[:show_inactive] == 'true'});
+    $('#show_active_only').change(function() {
+      window.location.href = "#{providers_path}?show_inactive=" + $(this).is(':checked')
+    });
+  });

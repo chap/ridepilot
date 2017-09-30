@@ -1,0 +1,5 @@
+%h1
+  = translate_helper("show_provider_heading", provider: @provider.name)
+  - if !@provider.active?
+    %span{style:'color: red;'}
+      = "( #{translate_helper(:inactive)} )"

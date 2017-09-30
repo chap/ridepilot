@@ -1,0 +1,34 @@
+.panel.panel-primary
+  .panel-heading= translate_helper("vehicle_maintenance_compliances_heading")
+  .form-group
+    .col-md-6.control-label
+      %label= translate_helper("vehicle_maintenance_schedule_type_label")
+    .col-md-6
+      - if @vehicle.vehicle_maintenance_schedule_type.present?
+        = @vehicle.vehicle_maintenance_schedule_type.name
+      - elsif !@readonly
+        = f.collection_select :vehicle_maintenance_schedule_type_id, VehicleMaintenanceScheduleType.for_provider(current_provider_id).default_order, :id, :name, { include_blank: true }, { class: "form-control", id: "vehicle_maintenance_schedule_type" }
+        :javascript
+          $(function() {
+            $('#vehicle_maintenance_schedule_type').change(function() {
+              $('#new_maintenance_compliance_link').prop('href', "#{new_vehicle_vehicle_maintenance_compliance_path(@vehicle)}?vehicle_maintenance_schedule_type_id=" + $(this).val());
+            });
+          });
+  .col-sm-12{style: "padding-top: 10px;"}
+    .checkbox.pull-right
+      %label
+        %input#show_all_compliances{type: 'checkbox'}
+          %b= translate_helper(:show_all_compliances)
+  = render 'vehicle_maintenance_compliances_table', vehicle_maintenance_compliances: @vehicle.vehicle_maintenance_compliances.order(:due_mileage).incomplete.limit(3).default_order
+  - unless @readonly
+    .panel-footer
+      .clearfix
+        = link_to translate_helper("vehicle_maintenance_compliances_add_link_title"), new_vehicle_vehicle_maintenance_compliance_path(@vehicle), class: "btn action-button pull-right", remote: true, id: 'new_maintenance_compliance_link'
+/ END .panel
+
+:javascript
+  $(function() {
+    $('#show_all_compliances').change(function() {
+      $.ajax({url: "#{vehicle_vehicle_maintenance_compliances_path(@vehicle)}?readonly=#{@readonly}&show_past=" + $(this).is(':checked')});
+    });
+  });

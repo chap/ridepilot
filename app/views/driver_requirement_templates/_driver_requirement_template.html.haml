@@ -1,0 +1,7 @@
+%tr
+  %td
+    = link_to driver_requirement_template.name, driver_requirement_template_path(driver_requirement_template, provider_id: params[:provider_id])
+  %td
+    = driver_requirement_template.legal? ? translate_helper('yes') : ''
+  %td
+    = driver_requirement_template.reoccuring? ? translate_helper('yes') : ''

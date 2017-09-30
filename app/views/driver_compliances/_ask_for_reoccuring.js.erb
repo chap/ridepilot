@@ -1,0 +1,7 @@
+bootbox.confirm("<%= translate_helper(:confirm_creating_reoccuring_event) %>", function(result){
+  if(result) {
+    $.ajax({
+      url: "<%=new_driver_driver_compliance_path(driver: driver, format: :js)%>&legal=<%=legal%>&driver_requirement_template_id=<%=driver_requirement_template_id%>"
+    });
+  }
+});

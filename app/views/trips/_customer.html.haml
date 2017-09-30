@@ -1,0 +1,101 @@
+- if @customer.try(:id).present? 
+  #trip_customer_name_wrapper
+    %strong#trip_customer_name_string
+      = link_to @customer.name, @customer, :target => "_blank"
+    - if edit_mode != :show 
+      &nbsp;&nbsp;&nbsp;&nbsp;(
+      %a#change_trip_customer_link{href:"#"}
+        = translate_helper("change_customer")
+      )
+
+= autocomplete_field_tag 'customer_name', @customer.try(:name), autocomplete_customers_path(active_only: true), :size => 30, :delay => 500, :update_elements => { id: "##{prefix}trip_customer_id,##{prefix}trip_customer_attributes_id", group: '#trip_group', message: "#customer_flag_message"}, :class => "form-control", :style => @customer.try(:id).present? ? 'display: none' : '', :autocomplete => "off"
+
+- if edit_mode != :show 
+  = link_to translate_helper("new"), new_customer_path, :target => "_blank", id: 'new_customer', class: 'btn action-button', style: (@customer.try(:id).present? ? 'display: none;' : '') 
+  %button#view_customer{type:'button', class:'btn action-button', style: (@customer.try(:id).present? ? '' : 'display: none;')}
+    = translate_helper("view_customer_profile")
+  %button#view_customer_trip_summary{type:'button', class:'btn action-button', style: (@customer.try(:id).present? ? '' : 'display: none;')}
+    = translate_helper("view_customer_trip_summary") 
+
+:javascript
+  $(document).ready(function(){
+    var prefix = "#{prefix}";
+    $('#change_trip_customer_link').click(function(event){
+      event.preventDefault();
+      $('#trip_customer_name_wrapper').hide();
+      $('#customer_name').show();
+      $('#new_customer').show();
+    });
+
+    function popupFlagMessage(message) {
+      if(message) {
+        $('#customerFlagMessageText').text(message);
+        $('#customerFlagMessageDialog').modal('show');
+      }
+    }
+
+    function updateUponCustomerChange(customerData) {
+      $('#' + prefix+ 'trip_customer_attributes_phone_number_1').val(customerData.phone_number_1); 
+      $('#alt_phone').val(customerData.phone_number_2);
+      $('#mobility_notes').val(customerData.mobility_notes);
+      $('#' + prefix+ 'trip_mobility_id').val(customerData.mobility_id);
+      $('#customer_private_notes').val(customerData.private_notes);
+      $('#' + prefix+ 'trip_pickup_address_id').val(customerData.address_id);
+      //$("#pickup_address").val(customerData.address);
+      $('#pickup_address').typeahead('val', customerData.address);
+      var pickup_addr_notes = customerData.address_data ? customerData.address_data.notes : "";
+      $("#pickup_address_notes").val(pickup_addr_notes);
+      $('#' + prefix+ 'trip_funding_source_id').val(customerData.default_funding_source_id);
+      $('#' + prefix+ 'trip_service_level').val(customerData.default_service_level);
+      $('#' + prefix+ 'trip_medicaid_eligible').attr('checked',customerData.medicaid_eligible);      
+    }
+
+    $('.trip_form #customer_name').bind('railsAutocomplete.select', function(event, data){ 
+      $('#view_customer').show();
+      $('#view_customer_trip_summary').show();
+      popupFlagMessage(data.item.message);
+
+      if ($("#trip_group").val() == "true") {
+        $("li.passengers").hide();
+        $("li.group_size").show();
+      } else {
+        $("li.passengers").show();
+        $("li.group_size").hide();
+      }
+
+      var customerId = data.item.id;
+      $('.address-search input[name=customer_id]').val(customerId);
+
+      $.post("#{data_for_trip_customers_path}", {
+          customer_id: customerId
+        }, function(customerData) {
+          updateUponCustomerChange(customerData);
+        });
+
+      $.get("#{get_eligibilities_for_trip_customer_path('xxx')}".replace('xxx', customerId));
+    });
+
+    $('#view_customer').click(function(e) {
+      e.preventDefault();
+      var customerId = $('#' + prefix+ 'trip_customer_id').val();
+      if(customerId && customerId.length > 0) {
+        var win = window.open("#{customers_url}" + '/' + customerId, '_blank');
+        win.focus();
+      }
+    });
+
+    $('#view_customer_trip_summary').click(function(e) {
+      e.preventDefault();
+      $('#customerTripSummaryDialog').modal('show');
+    });
+
+    $('#customerTripSummaryDialog').on('show.bs.modal', function() {
+      var customerId = $('#' + prefix + 'trip_customer_id').val();
+      var customerName = $('#customer_name').val();
+
+      $(this).find('#customer_id').val(customerId);
+      $(this).find('.modal-title').text("#{translate_helper(:customer_trip_summary_for)}" + customerName);
+      $(this).find('form').submit();
+    });
+
+  });

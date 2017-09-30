@@ -1,0 +1,5 @@
+<% if @vehicle_compliance.legal? %>
+$('#legal_vehicle_compliances_table .vehicle_compliance-<%= @vehicle_compliance.id %>').fadeOut(350).delete();
+<% else %>
+$('#vehicle_compliances_table .vehicle_compliance-<%= @vehicle_compliance.id %>').fadeOut(350).delete();
+<% end %>

@@ -1,0 +1,14 @@
+- trip_result_codes = [[TripResult::SHOW_ALL_ID, 'Show All']] + (TripResult.by_provider(current_provider).order(:name).pluck(:id, :name) + [[TripResult::UNSCHEDULED_ID, 'Pending']]).sort_by{|tr| tr[1]}
+.col-sm-12.trip_result-filter{style: 'padding: 5px;'}
+  = f.label :trip_result_id, translate_helper(:trip_result)
+  = f.collection_check_boxes :trip_result_id, trip_result_codes, :first, :last, { checked: session[trip_result_session_name] }, {class: 'trip-result-filter', style: 'vertical-align: initial;'} do |b|
+    .col-sm-12
+      = b.check_box + " " + b.text
+
+:javascript
+  $(function() {
+    var show_all_id = "#{TripResult::SHOW_ALL_ID}";
+    $('.trip-result-filter[value=' + show_all_id+ ']').change(function() {
+      $('.trip-result-filter[value!=' + show_all_id + ']').prop('checked', $(this).is(':checked'));
+    });
+  });

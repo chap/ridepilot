@@ -1,0 +1,10 @@
+.col-sm-12{style: 'padding: 0px;'}
+  .pull-right
+    - if is_add_user_allowed?(current_user)
+      = link_to translate_helper("create_user_link_text"), new_user_provider_users_path(@provider), :class=>'btn action-button'
+  %h2.section-header
+    = translate_helper(:provider_users_label)
+    - if @provider.roles.empty?
+      %span.badge
+        0
+      %i.fa.fa-exclamation-triangle{style: 'color: red'}

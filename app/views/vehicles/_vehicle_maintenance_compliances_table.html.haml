@@ -1,0 +1,15 @@
+%table#vehicle_maintenance_compliances-table.table.table-striped.table-condensed
+  %thead
+    %tr
+      %th.col-sm-3= translate_helper("vehicle_maintenance_compliance_form_due_string")
+      %th= translate_helper("vehicle_maintenance_compliance_form_event")
+      %th.col-sm-3= translate_helper("vehicle_maintenance_compliance_form_compliance_date")
+      %th.col-sm-3= translate_helper("vehicle_maintenance_compliance_form_compliance_mileage")
+      %th= translate_helper("vehicle_maintenance_schedule_document")
+      - unless @readonly
+        %th.col-sm-1
+  %tbody
+    - if @readonly and vehicle_maintenance_compliances.empty?
+      %tr
+        %td{:colspan => "4"}= translate_helper("vehicle_maintenance_compliances_empty")
+    = render partial: 'vehicle_maintenance_compliances/vehicle_maintenance_compliance', collection: vehicle_maintenance_compliances

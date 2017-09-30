@@ -1,0 +1,52 @@
+#flash-reminder
+.panel.panel-primary#documents-panel
+  .panel-heading= label_tag translate_helper("document_associations_documents_heading")
+  .panel-body.form-horizontal
+    %table#associated-documents.table.table-striped
+      %thead
+        %tr
+          %th.hidden id
+          %th=translate_helper(:document_description)
+          %th=translate_helper(:document_file)
+          - unless @readonly 
+            %th
+      %tbody
+        - @parent.documents.each do |doc|
+          =render partial: 'document_associations/document_row', locals: {f: f, document: doc}
+        -unless @readonly # Need to render the document rows ahead of time so form indices increment properly.
+          =render partial: 'document_associations/document_row', locals: {f: f}
+          -9.times do
+            =render partial: 'document_associations/document_row', locals: {f: f, hidden: true} 
+    - unless @readonly
+      .btn.btn-primary.add-document-row.pull-right=translate_helper(:add_document)
+    
+:javascript
+  $(document).ready(function() {
+  
+    // Set _destroy to true and hide the row
+    var deleteDocumentRow = function() {
+      var row = $(this).closest('tr');
+      row.find('input.destroy-document').prop('checked', true);
+      row.addClass('hidden');
+    }
+    
+    // Show the last document row on click of add-document-row button
+    $('.add-document-row').click(function() {
+      $('table#associated-documents tr.hidden:first').removeClass('hidden');
+    });
+    
+    // Delete row on click of delete-document-row button
+    $('.delete-document-row').click(deleteDocumentRow);
+    
+    // If there's a flash[:reminder], display it in the modal
+    var refreshReminder = function() {
+      if(#{flash[:reminder].present?}) {
+        show_alert("#{flash[:reminder]}", "warning", $('#flash-reminder'));
+      } else {
+        hide_alert();
+      }
+    }
+    
+    refreshReminder();
+
+  });

@@ -1,0 +1,77 @@
+:css
+  .trip-summary-count {
+    width: 50px !important;
+  }
+  .trip-summary-count[disabled] {
+    background-color: #eeeeee;
+  }
+#customerTripSummaryDialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1", data: {"backdrop": "static", "keyboard": false }}
+  = form_for :trip, url: customer_trip_summary_trips_path(format: :js), :method => :get, :remote => true do |f|
+    = hidden_field_tag :customer_id, nil
+    .modal-dialog
+      .modal-content
+        .modal-header
+          .pull-right
+            = f.submit translate_helper(:search_button_label), id: 'searchCustomerTripSummary', class: 'btn action-button', role: 'button'
+            %button{type: 'button', class: 'btn action-button', data: {dismiss: 'modal'}}
+              = translate_helper(:close_button_label)
+          .modal-title{:style => "text-align:left; font-weight: bold; font-size: large;"}
+            = translate_helper(:customer_trip_summary_for)
+        .modal-body.row{:style => "text-align:left; margin: 0px; padding-top: 0px;"}
+          .col-sm-12.trip_summary_filters
+            .radio.col-sm-12
+              %input{type: 'radio', name: 'customer_trip_summary_options', value: 'past_trips', checked: 'checked'}
+              .past_trips
+                = translate_helper('show_last_label')
+                = number_field_tag :past_trips, 10, class: 'trip-summary-count', min: 1
+                = translate_helper('trips_label')
+            .radio.col-sm-12
+              %input{type: 'radio', name: 'customer_trip_summary_options', value: 'future_trips'}
+              .future_trips
+                = translate_helper('show_future_label')
+                = number_field_tag :future_trips, 10, class: 'trip-summary-count', min: 1, disabled: 'disabled'
+                = translate_helper('trips_label')
+            .radio.col-sm-12{style: 'padding-top: 10px;'}
+              %input{type: 'radio', name: 'customer_trip_summary_options', value: 'date_range'}
+                = translate_helper('date_range_filter')
+            .col-sm-12.date_range
+              .col-sm-6{style: 'padding: 0px;'}
+                = text_field_tag :start_date, format_time_for_listing_day(Date.today), class: 'date-picker form-control', readonly: true
+              .col-sm-6{style: 'padding: 0px 5px;'}
+                = text_field_tag :end_date, nil, class: 'date-picker form-control', readonly: true
+           
+          .row.col-sm-12{style: 'padding-top: 20px;'}
+            %div
+              %label= translate_helper('customer_trip_summary_instructions')
+            %div#customerTripSummaryTable{style: 'max-height: 300px; overflow: auto;'}
+
+:javascript 
+$(function() {
+  $('#customerTripSummaryDialog').on('show.bs.modal', function() {
+    // if datepicker is not initialized, then do it now
+    if($(this).find('.ui-datepicker-trigger').length == 0) {
+      makeDatePickers();
+    }
+    // hide by default as date_range is not the default filter mode
+    $('.date_range').find('.ui-datepicker-trigger').hide();
+  });
+
+
+  $('input[name=customer_trip_summary_options]').change(function(e) {
+    var selected = $('input[name=customer_trip_summary_options]:checked').val();
+    if(selected == 'date_range') {
+      $('.date_range').find('.ui-datepicker-trigger').show();
+      $('#past_trips').attr('disabled', 'disabled');
+      $('#future_trips').attr('disabled', 'disabled');
+    } else if(selected == 'past_trips') {
+      $('.date_range').find('.ui-datepicker-trigger').hide();
+      $('#future_trips').attr('disabled', 'disabled');
+      $('#past_trips').removeAttr('disabled');
+    } else if(selected == 'future_trips') {
+      $('.date_range').find('.ui-datepicker-trigger').hide();
+      $('#past_trips').attr('disabled', 'disabled');
+      $('#future_trips').removeAttr('disabled');
+    }
+  });
+});
+    

@@ -34,11 +34,13 @@ en:
   non_street_mailing_address: 'Non-street Mailing Address (P.O. Box)'
   city_state_zip: "City/State/Zip"
   phone_number: "Phone Number"
+  alt_phone_number: "Alternative Phone Number"
   in_district: "In UTA District"
   unspecified: "Unspecified"
   "yes": "Yes" # yes, no: needs to put as string, otherwise won't be loaded as will be parsed as {false=>"No"}
   "no": "No"
   default_trip_purpose: "Default Trip Purpose:"
+  default: "Default"
   address_form_error_message:
     one: "%{count} error prohibited this address from being saved:"
     other: "%{count} errors prohibited this address from being saved:"
@@ -71,15 +73,22 @@ en:
     other: "Edit %{count} cab trips"
   #eligibilities
   eligible: 'Eligible'
+  age_eligible: 'Age Eligible'
+  age_eligibility: 'Age Eligibility'
+  eligible_age: "Eligible Age"
   not_eligible: 'Not Eligible'
   ineligible_reason: 'Why not eligible?'
+  
   #customers
   customer_id_label: 'ID'
   customer_details_panel: 'Details'
   customer_addresses_panel: 'Addresses'
+  customer_saved_address_dialog_title: "Customer Saved Address"
+  address_code: "Code"
   is_mailing_address: 'Mailing'
   customer_providers_panel: 'Authorized Providers'
   customer_eligibility_panel: 'Eligibility'
+  customer_eligibilities: 'Customer Eligibilities'
   customer_donations_panel: 'Donations'
   customer_others_panel: 'Others'
   customer_inactivate_panel: 'Inactivate'
@@ -88,6 +97,7 @@ en:
   gender: 'Gender'
   male: 'Male'
   female: 'Female'
+  other_gender: 'Non-Binary'
   alternate_phone: "Alternate Phone"
   email: "Email"
   date_of_birth: "Date of Birth"
@@ -115,6 +125,9 @@ en:
   first_name: "First Name"
   middle_initial: "Middle Initial"
   last_name: "Last Name:"
+  customer_form_photo: 'Photo'
+  driver_form_photo: 'Photo'
+  username: "Username"
   alternate_phone_number: "Alternate Phone"
   inactivation_reason: "Inactivation Reason"
   editing_customer: "Editing Customer: %{customer_name}"
@@ -129,15 +142,34 @@ en:
   reassociate_customer_trips: "Associate this customer's trips with another customer."
   group_name: "Group Name"
   no_trips_yet: "No trips yet."
+  no_trips: "No trips."
   cctc_RC_label: "RC"
   cctc_STF_label: "STF"
   cctc_new_riders_label: "# Riders New This Month"
   delete_customer_confirm: "Are you sure to delete this customer?"
   customer_message: 'Message'
+  customer_travel_trainings_panel: 'Travel Trainings'
+  travel_training_date: 'Date'
+  travel_training_comment: 'Comment'
+  add_travel_training: 'Add'
+  add_travel_training_dialog_title: 'Add Travel Training'
+  customer_funding_authorization_numbers_panel: 'Funding Authorization Numbers'
+  funding_authorization_number_name: 'Number'
+  funding_authorization_number_funding_source: 'Funding Source'
+  funding_authorization_number_contact_info: 'Contact Info'
+  add_funding_authorization_number: 'Add'
+  add_funding_authorization_number_dialog_title: 'Add Funding Authorization Number'
+  customer_comments_panel: "Customer Comments"
+  customer_comments: 'Comments'
+  view_customer_comments_report: 'View Customer Comments Report'
+  configure_provider_ada_questions: "Configure ADA Questions"
+  provider_ada_questions_link_text: "ADA Question Lookup Table"
+  
   # Lookup tables
   add_value: "Add Value"
   delete_value: "Delete Value"
   lookup_table: "Lookup Table"
+  provider_lookup_table: "Provider Specific Lookup Table"
   edit_value: "Edit Value"
   hide_value: 'Hide Value'
   show_value: 'Show Value'
@@ -151,18 +183,41 @@ en:
   lookup_table_error_message:
     one: "%{count} error prohibited this lookup table from being saved:"
     other: "%{count} errors prohibited this lookup table from being saved:"
+  # Tracker Action Log
+  action_log: 'Action Log'
+  log_date_time: 'Datetime'
+  log_user: 'User'
+  log_message: 'Message'
   #Shared
   site_title: "Ridepilot"
   new_trip: "New Trip"
+  new_repeating_trip: "New Subscription Trip"
+  repeating_trips: "View Subscription Trip Templates"
+  repeating_trip: "Subscription Trip"
+  repeating_trips_heading: "Subscription Trips"
+  new_repeating_trip_text: "Create New Subscription Trip"
+  new_repeating_run: "New Subscription Run"
+  repeating_runs: "View Subscription Run Templates"
+  repeating_run: "Subscription Run"
+  repeating_runs_heading: "Subscription Runs"
+  new_repeating_run_text: "Create New Subscription Run"
+  repeating_schedule: 'Schedule'
   date: "Date"
+  start_date: "Start Date"
+  end_date: "Stop Date"
   add: "Add"
   edit: "Edit"
   delete: "Delete"
   confirm: "Are you sure?"
   ok: "OK"
   cancel: "Cancel"
+  close_button_label: "Close"
   back: "Back"
   inactivate: "Inactivate"
+  reactivate_confirmation: "Are you sure to reactivate it?"
+  reactivate: "Reactivate"
+  delete_photo: "Delete Photo"
+  delete_photo_confirm: "Are you sure to delete the photo?"
   activate: "Activate"
   submit: "Submit"
   previous: "Previous"
@@ -170,6 +225,7 @@ en:
   this_week: "This Week"
   update: "Update"
   search: "Search"
+  search_button_label: "Search"
   date_order_parameter: "year,month,day"
   new_trip_link_text: "New Trip"
   month: "Month"
@@ -200,6 +256,8 @@ en:
   new_password: "New Password"
   confirm_new_password: "Confirm New Password"
   change_my_password: "Change My Password"
+  reset_password: "Reset Password"
+  reset_password_heading: "Reset Password"
   new_password_heading: "Forgot your password?"
   submit_new_password_form: "Send me reset password instructions"
   submit_new_confirmation_form: "Send new confirmation instructions"
@@ -249,6 +307,25 @@ en:
   operating_hours_open: "Open"
   driver_form_details_heading: "Details"
   driver_address_heading: "Address"
+  driver_alt_address_heading: "Alternative Address"
+  driver_completed_run_hours: "Completed Run Hours This Week"
+  active_only: 'Active Only?'
+  show_inactive: 'Include inactive?'
+  permanent_inactive: 'Permanent Inactive?'
+  configure_inactivation_dialog_title: 'Configure Inactivation'
+  permanent_inactive: 'Permenent Inactive?'
+  date_range_inactive: 'Inactive for a date range'
+  inactivated_start_date: 'Start Date'
+  inactivated_end_date: 'End Date'
+  active_status_change_reason: 'Reason'
+  inactivated_end_date_earlier_than_start_date: 'End Date should be no earlier than Start Date'
+
+  # emergency contact
+  driver_form_emergency_contact_heading: 'Emergency Contact'
+  emergency_contact_name: 'Name'
+  emergency_contact_phone_number: 'Phone Number'
+  emergency_contact_relationship: 'Relationship'
+  emergency_contact_address: 'Address'
 
   # Driver histories
   driver_histories_heading: "History Events"
@@ -266,8 +343,11 @@ en:
   driver_history_form_submit: "Save"
 
   # Driver compliances
+  legal_driver_compliances_heading: "Legal Requirements"
+  driver_requirement_template_field_label: 'Type'
   driver_compliances_heading: "Compliance Events"
   driver_compliances_add_link_title: "Add compliance event"
+  driver_legal_requirements_add_link_title: "Add legal requirement"
   driver_compliances_empty: "No compliance events exist for this driver"
   driver_compliance_delete_confirm: "Are you sure you want to delete this compliance event?"
   driver_compliance_form_error:
@@ -280,6 +360,87 @@ en:
   driver_compliance_form_due_date: "Due Date"
   driver_compliance_form_compliance_date: "Compliance Date"
   driver_compliance_form_submit: "Save"
+  confirm_creating_reoccuring_event: "This is a reoccuring event. Would you like to create a new record?"
+  show_past: "Show Past?"
+
+  # Driver requirement templates
+  system_driver_requirement_templates_link_text: "System-wide Driver Requirements"
+  system_driver_requirement_templates_index_heading: "System-wide Driver Requirements"
+  provider_driver_requirement_templates_link_text: "Provider-specific Driver Requirements"
+  provider_driver_requirement_templates_index_heading: "Provider-specific Driver Requirements"
+  configure_provider_driver_requirement_templates: "Configure Provider Specific Driver Requirements"
+  driver_requirement_templates_link_text: "Driver Requirements"
+  driver_requirement_templates_index_heading: "Driver Requirements"
+  new_driver_requirement_template_link_text: "Create Driver Requirement"
+  new_driver_requirement_template_heading: "New Driver Requirement"
+  show_driver_requirement_template_heading: "Driver Requirement"
+  delete_driver_requirement_template_button: "Delete"
+  edit_driver_requirement_template_button: "Edit"
+  edit_driver_requirement_template_heading: "Edit Requirement"
+  delete_driver_requirement_template_confirm_button: "Confirm"
+  delete_driver_requirement_template_confirm: "Are you sure?"
+  delete_driver_requirement_template_confirm_heading: "You are about to delete '%{requirement_name}'"
+  delete_driver_requirement_template_heading: "Delete Requirement"
+  driver_requirement_template_name: 'Name'
+  driver_requirement_template_legal: 'Legal?'
+  driver_requirement_template_reoccuring: 'Reoccuring?'
+  driver_requirement_template_form_submit: 'Submit'
+  driver_requirement_templates_empty: 'No requirements exist'
+  driver_requirement_template_name_field_label: 'Name'
+  driver_requirement_template_legal_field_label: 'Legal?'
+  driver_requirement_template_reoccuring_field_label: 'Reoccuring?'
+  driver_requirement_template_form_error:
+    one: "1 error prohibited this requirement from being saved"
+    other: "%{count} errors prohibited this requirement from being saved"
+
+  # Vehicle compliances
+  legal_vehicle_compliances_heading: "Legal Requirements"
+  vehicle_requirement_template_field_label: 'Type'
+  vehicle_compliances_heading: "Compliance Events"
+  vehicle_compliances_add_link_title: "Add compliance event"
+  vehicle_legal_requirements_add_link_title: "Add legal requirement"
+  vehicle_compliances_empty: "No compliance events exist for this vehicle"
+  vehicle_compliance_delete_confirm: "Are you sure you want to delete this compliance event?"
+  vehicle_compliance_form_error:
+    one: "1 error prohibited this vehicle compliance from being saved"
+    other: "%{count} errors prohibited this vehicle compliance from being saved"
+  vehicle_compliance_form_new_heading: "New compliance event"
+  vehicle_compliance_form_edit_heading: "Edit compliance event"
+  vehicle_compliance_form_event: "Name"
+  vehicle_compliance_form_notes: "Notes"
+  vehicle_compliance_form_due_date: "Due Date"
+  vehicle_compliance_form_compliance_date: "Compliance Date"
+  vehicle_compliance_form_submit: "Save"
+
+  # Vehicle requirement templates
+  system_vehicle_requirement_templates_link_text: "System-wide Vehicle Requirements"
+  system_vehicle_requirement_templates_index_heading: "System-wide Vehicle Requirements"
+  provider_vehicle_requirement_templates_link_text: "Provider-specific Vehicle Requirements"
+  provider_vehicle_requirement_templates_index_heading: "Provider-specific Vehicle Requirements"
+  configure_provider_vehicle_requirement_templates: "Configure Provider Specific Vehicle Requirements"
+  vehicle_requirement_templates_link_text: "Vehicle Requirements"
+  vehicle_requirement_templates_index_heading: "Vehicle Requirements"
+  new_vehicle_requirement_template_link_text: "Create Vehicle Requirement"
+  new_vehicle_requirement_template_heading: "New Vehicle Requirement"
+  show_vehicle_requirement_template_heading: "Vehicle Requirement"
+  delete_vehicle_requirement_template_button: "Delete"
+  edit_vehicle_requirement_template_button: "Edit"
+  edit_vehicle_requirement_template_heading: "Edit Requirement"
+  delete_vehicle_requirement_template_confirm_button: "Confirm"
+  delete_vehicle_requirement_template_confirm: "Are you sure?"
+  delete_vehicle_requirement_template_confirm_heading: "You are about to delete '%{requirement_name}'"
+  delete_vehicle_requirement_template_heading: "Delete Requirement"
+  vehicle_requirement_template_name: 'Name'
+  vehicle_requirement_template_legal: 'Legal?'
+  vehicle_requirement_template_reoccuring: 'Reoccuring?'
+  vehicle_requirement_template_form_submit: 'Submit'
+  vehicle_requirement_templates_empty: 'No requirements exist'
+  vehicle_requirement_template_name_field_label: 'Name'
+  vehicle_requirement_template_legal_field_label: 'Legal?'
+  vehicle_requirement_template_reoccuring_field_label: 'Reoccuring?'
+  vehicle_requirement_template_form_error:
+    one: "1 error prohibited this requirement from being saved"
+    other: "%{count} errors prohibited this requirement from being saved"
 
   # Recurring Driver Compliance Events
   recurring_driver_compliances_link_text: "Recurring Driver Compliance Events"
@@ -408,6 +569,41 @@ en:
   recurring_vehicle_maintenance_compliance_form_future_schedule_time_span_preview_placeholder_text: "Complete all scheduling and new vehicle scheduling fields to see an example of future scheduling using 'After a time'"
   recurring_vehicle_maintenance_compliance_events_scheduled_heading: "Events Scheduled"
 
+  #vehicle maintenance schedule types
+  configure_provider_vehicle_maintenance_types: "Configure Vehicle Maintenance Schedule Types"
+  provider_vehicle_maintenance_types_link_text: "Provider-specific Vehicle Maintenance Schedule Types"
+  index_vehicle_maintenance_schedule_type_heading: "Maintenance Schedule Types"
+  vehicle_maintenance_schedule_type_label: "Maintenance Schedule Type"
+  new_vehicle_maintenance_schedule_type_link_text: "New"
+  vehicle_maintenance_schedule_type_name: "Name"
+  vehicle_maintenance_schedule_type_form_error:
+    one: "1 error prohibited this schedule type from being saved"
+    other: "%{count} errors prohibited this schedule type from being saved"
+  vehicle_maintenance_schedule_type_form_edit_heading: "Edit Maintenance Schedule Type"
+  vehicle_maintenance_schedule_type_form_submit: "Submit"
+  vehicle_maintenance_schedule_type_delete_confirm: "Are you sure to delete this schedule type?"
+  vehicle_maintenance_schedule_types: 'Maintenance Schedule Types'
+  no_vehicle_maintenance_schedule_type: 'No maintenance schedule type.'
+  vehicle_maintenance_schedule_type_form_new_heading: "New Schedule Type"
+  vehicle_maintenance_schedule_form_edit_heading: "Edit Schedule Type"
+  show_all_compliances: "Show All?"
+  confirm_creating_next_maintenance_event: "Would you like to create next maintenance event?"
+
+  #vehicle maintenance schedules
+  new_vehicle_maintenance_schedule_link_text: "New"
+  vehicle_maintenance_schedule_name: "Name"
+  vehicle_maintenance_schedule_mileage: "Mileage"
+  vehicle_maintenance_schedule_form_error:
+    one: "1 error prohibited this schedule from being saved"
+    other: "%{count} errors prohibited this schedule from being saved"
+  vehicle_maintenance_schedule_form_submit: "Submit"
+  vehicle_maintenance_schedule_delete_confirm: "Are you sure to delete this schedule?"
+  vehicle_maintenance_schedule_form_new_heading: "New Schedule"
+  vehicle_maintenance_schedule_form_edit_heading: "Edit Schedule"
+  vehicle_maintenance_schedule_document: "Inspection Requirement Sheet"
+  vehicle_maintenance_schedule_document_upload: "Upload Inspection Requirement Sheet"
+  vehicle_maintenance_schedule_document_description: "Inspection Requirement Sheet"
+
   # Documents
   driver_documents_heading: "Driver Documentation"
   driver_documents_add_link_title: "Add document"
@@ -428,7 +624,10 @@ en:
   document_form_file_name_currently: "Current file:"
   document_form_submit: "Save"
   document_download: "Download"
-  
+  document_description: "Description"
+  document_file: "File"
+  add_document: "Add Document"
+
   # Document Associations
   document_associations_documents_heading: "Associated Documents"
   document_associations_document_date_heading: "Uploaded At"
@@ -461,6 +660,8 @@ en:
   current_provider_link_text: "Vehicles, drivers and users"
   dispatch_link_text: "Dispatch"
   lookup_tables_link_text: "Lookup Tables"
+  provider_lookup_tables_link_text: "Provider Lookup Tables"
+  configure_provider_lookup_tables: "Configure Provider Lookup Tables"
   application_settings_link_text: "Application Settings"
   #footer
   footer_content: "Footer content here."
@@ -471,20 +672,20 @@ en:
   log_out_link_text: "Log out"
   application_trips_link_text: "Trips"
   application_runs_link_text: "Runs"
-  application_cabs_link_text: "Cab trips"
+  application_cabs_link_text: "Cabs"
   application_customers_link_text: "Customers"
   application_reports_link_text: "Reports"
   application_drivers_link_text: "Drivers"
   application_vehicles_link_text: "Vehicles"
   application_dispatch_link_text: "Dispatch"
-  application_admin_link_text: "Admin"
-  current_provider_settings_link_text: "Settings"
+  application_admin_link_text: "System Admin"
+  current_provider_settings_link_text: "Provider Settings"
   #customer layout
   active_customers_link_text: "Active Customers"
   all_customers_link_text: "All Customers"
   new_customer_link_text: "New Customer"
   #repeating trips layout
-  view_repeating_trips_link_text: "View Repeating Trips"
+  view_repeating_trips_link_text: "View Subscription Trips"
   #runs layout
   view_runs_link_text: "View Runs"
   #trips layout
@@ -497,9 +698,11 @@ en:
   vehicle_has_open_seating_capacity_validation_error: "There's not enough open capacity on this run to accommodate this trip"
   completable_until_trip_appointment_day_validation_error: "cannot be set as complete until the day of the trip appointment"
   vehicle_has_mobility_device_capacity_validation_error: "There's not enough mobility device capacity on this run to accommodate this trip"
-  outbound_trip_dropoff_time_no_later_than_return_trip_pickup_time: "Dropoff time should be no later than return trip's pickup time"
+  outbound_trip_dropoff_time_no_later_than_return_trip_pickup_time: "Appointment time should be no later than return trip's pickup time"
   return_trip_pickup_time_no_earlier_than_outbound_trip_dropoff_time: "Pickup time should be no earlier than outbound trip's appointment time"
+  dropff_time_later_than_pickup_time: "Appointment time should be no earlier than pickup time"
   violate_provider_min_time_gap: 'The gap between drop off time and pick up time violates the minimum gap setting (%{min_gap} minutes) by the provider (%{provider_name})'
+  customer_inactive_for_trip_date: "is not active on the trip scheduled date."
   #monthlies
   monthlies_start_date: "Month"
   funding_source: "Funding Source"
@@ -511,23 +714,66 @@ en:
   new_monthly_link_text:  "Add New Monthly Data"
   new_monthly_heading: "Create Monthly Report"
   #Providers
+  new_provider_heading: 'New Provider'
+  create_first_admin_user: 'Create Admin User'
+  provider_form_details_heading: 'Details'
+  provider_form_primary_contact_heading: 'Primary Contact'
+  provider_form_business_address_heading: 'Business Address'
+  provider_form_mailing_address_heading: 'Mailing Address'
+  provider_form_website: "Website (add http or https)"
+  provider_form_admin_name: "Admin Name"
+  provider_form_admin_name_label: "Admin Name (if different)"
+  provider_form_primary_contact_name: "Name"
+  provider_form_primary_contact_phone: "Phone"
+  provider_form_primary_contact_email: "Email"
+  provider_profile_label: 'Profile'
+  provider_general_label: 'General'
+  provider_users_label: 'Users'
+  provider_drivers_label: 'Drivers'
+  provider_vehicles_label: 'Vehicles'
+  provider_addresses_label: 'Addresses'
+  provider_customers_label: 'Customers'
+  delete_provider_button: 'Delete'
+  delete_provider_confirm: "Are you sure to delete this provider?"
+  edit_provider_button: 'Edit'
+  configure_provider_vehicle_warranties: "Configure Vehicle Warranties"
+  provider_vehicle_warranties_link_text: "Vehicle Warrenties Lookup Table"
+  manage_provider_lookup_tables: "Configure Provider Lookup Table"
+  manage_provider_lookup_tables_link_text: "Open Provider Lookup Table Page"
+  show_hide_system_lookup_tables: "Show/hide System-wide Lookup Table Entries"
+  open_system_lookup_tables_link_text: "Open System Lookup Tables Page"
+  manage_drivers: 'Manage Drivers'
+  manage_drivers_link_text: 'Open Drivers Tab'
+  manage_vehicles: 'Manage Vehicles'
+  manage_vehicles_link_text: 'Open Vehicles Tab'
+  manage_customers: 'Manage Customers'
+  manage_customers_link_text: 'Open Customers Tab'
   customer_authorized_providers: "Authorized Providers"
+  inactivate_provider_confirmation: "Are you sure to inactivate this provider?"
+  reactivate_provider_confirmation: "Are you sure to reactivate this provider?"
+  provider_form_error:
+    one: "1 error prohibited this provider from being saved"
+    other: "%{count} errors prohibited this provider from being saved"
   provider_form_name: "Name"
   provider_form_logo: "Logo"
   provider_form_dispatch: "Dispatch enabled"
   provider_form_scheduling: "Scheduling"
+  provider_form_run_tracking: "Run Tracking"
   provider_form_trip_entry_from_runs: "Allow trip entry from runs page"
-  provider_form_fields_required_for_run_completion: "Fields required for a run to be considered valued"
+  provider_form_fields_required_for_run_completion: "Fields required for a run to be considered completed"
   provider_form_submit: "Submit"
   provider_index_heading: "Providers"
   provider_index_name: "Name"
   provider_index_users: "Users"
   provider_index_details: "Details"
+  provider_index_active: "Active?"
   new_provider_link_text: "New Provider"
   show_provider_heading: "Provider: %{provider}"
+  edit_provider_heading: "Edit Provider: %{provider}"
   show_provider_address_heading: "Addresses"
   show_provider_search_addresses: "Search addresses:"
   address_results_name_column: "Name"
+  address_results_type_column: "Type"
   address_results_building_name_column: "Building Name"
   no_addresses_yet: "No addresses yet."
   search_for_address: "Search for an address above."
@@ -543,8 +789,11 @@ en:
   change_email_heading: "Change Email"
   change_role: "Change role"
   delete_role_confirm: "Are you sure?"
+  delete_driver_user_role_confirm: "This user is associated with a driver account. Are you sure to delete it?"
   create_user_link_text: "Create User"
   restore_user_link_text: 'Restore User'
+  user_details_heading: "Details"
+  user_address_heading: "Address"
   user_was_deleted: 'This user was deleted. You can find the option below to restore it.'
   user_was_restored: 'User has been successfully restored.'
   switch_providers_to_create_user: "<p>You are currently logged in to %{current_provider}.  To create a user for %{provider} , please switch providers by using the dropdown menu at the top of this page.</p>"
@@ -576,6 +825,7 @@ en:
   switch_providers_to_add_device_pool: "<p>You are currently logged in to %{current_provider}.  To create a device pool for %{provider}, please switch providers by using the dropdown menu at the top of this page.</p>"
   currently_available: "Currently Available?"
   driver_paid: "Paid"
+  driver_profile: "Driver Profile"
   volunteer: "Volunteer"
   delete_driver_confirm: "Are you sure?"
   new_driver_link_text: "Create Driver"
@@ -611,6 +861,13 @@ en:
   configure_provider_operating_hours: 'Configure Operating Hours'
   update_provider_operating_hours: 'Update'
   provider_not_available_for_trip: 'Provider is not available for the trip.'
+  customer_trip_summary_for: "Trips for "
+  view_customer_trip_summary: "Trip Summary"
+  customer_trip_summary_instructions: "Double clicking each trip below to clone a new trip"
+  address_group: 'Address Group'
+  address_group_label: 'Type'
+  new_provider_common_address_dialog_title: "New Address"
+
   #reports
   service_performed: "Service Performed"
   odometer_reading: "Odometer Reading"
@@ -632,11 +889,18 @@ en:
   trip_run_label: "Run: "
   trip_result_label: "Result: "
   trip_result: 'Trip Result'
-  trip_result_reason: 'Reason'
+  trip_result_reason: 'Trip Result Comment'
   pending: "Pending"
   later_trips: "Later ride today"
   age_and_ethnicity_report_heading: "Reports: Unduplicated Age &amp; Ethnicity"
   age_and_ethnicity_page_title: "Age and Ethnicity: %{provider}, %{start_date}"
+  
+  # Approved Vendors List
+  vendor_list_download: "Download Approved Vendors List"
+  vendor_list: "Approved Vendors List"
+  upload_vendor_list: "Upload Approved Vendors List"
+  no_vendor_list: "No Approved Vendor List has been uploaded"
+  remove_vendor_list_confirm: "Are you sure you want to remove the Approved Vendor List?"
 
   reports: "Reports"
   age_and_ethnicity_table_heading: "Unduplicated Age & Ethnicity Report"
@@ -733,7 +997,7 @@ en:
   donation_amount: 'Amount'
   donation_notes: 'Notes'
   add_donation: 'Add'
-  add_donation_dialog_title: 'Add Donation' 
+  add_donation_dialog_title: 'Add Donation'
   total: "Total"
   reports_heading: "Reports"
   service_summary_link_text: "Service Summary"
@@ -794,6 +1058,10 @@ en:
   line_number_label: "Line #"
   out_of_district: "Out of District"
   trips: "Trips"
+  show_last_label: "Show last"
+  show_future_label: "Show future"
+  trips_label: "Trips"
+  date_range_filter: "Date range"
   total_trips: "Total Trips"
   total_miles_driven: "Total Miles Driven"
   turndowns: "Turndowns"
@@ -834,6 +1102,7 @@ en:
   mileage: "Mileage"
   license_plate: "License Plate"
   garaged_location: "Garaged Location"
+  
   #runs
   run_form_error_message:
     one: "%{count} error prohibited this run from being saved:"
@@ -858,6 +1127,24 @@ en:
   new_run_submit: "Submit"
   runs: 'Runs'
   new_run: 'New Run'
+  run_tracking: "Tracking"
+  run_tracking_senior: "Senior"
+  run_tracking_disabled: "Disabled"
+  run_tracking_low_income: "Low Income"
+  number_of_one_way_trips: "Number of One Way Trips"
+  number_of_passengers_served: "Number of Passengers Served"
+  modify_selected_runs: "Apply Action to Selected Runs"
+  delete_run: "Delete"
+  cancel_run: "Cancel"
+  confirm_runs_batch_cancel: "Are you sure you want to unschedule all selected runs?"
+  confirm_runs_batch_delete: "Are you sure you want to delete all selected runs?"
+  unavailable_warning_message: "System detected following warnings, would you still like to proceed?"
+  unavailable_warning_dialog_title: "Unavailable"
+  vehicle_temporarily_inactive: "Vehicle is put on temporarily inactive for the date."
+  driver_temporarily_inactive: "Driver is put on temporarily inactive for the date."
+  unavailable_driver_for_run_time_range_warning: "Driver is not available within the run scheduled time range."
+  proceed_button: "Proceed"
+  
   #shared
   generic_error_message:
       one: "%{count} error prohibited this record from being saved:"
@@ -877,12 +1164,17 @@ en:
     other: "%{count} errors prohibited this trip from being saved:"
   appointment_time: "Appointment Time"
   pickup_address: "Pickup Address"
+  pickup_address_notes: "Pickup Address Notes"
   customer_phone: "Customer Phone"
   dropoff_address: "Dropoff Address"
+  dropoff_address_notes: "Dropoff Address Notes"
   dropoff_phone: "Dropoff Phone"
   repetition: "Repetitions"
   repetition_vehicle: "Vehicle"
   repetition_driver: "Driver"
+  repetition_comments: "Comments"
+  no_repeating_trips: "No subscription trips"
+  no_repeating_runs: "No subscription runs"
   mark_as_called_back: "Mark as Called Back:"
   group_size: "Group Size"
   passengers: "Passengers"
@@ -903,6 +1195,7 @@ en:
   back_to_view_trips: "Back to View Trips"
   edit_trip_link_text: "Edit Trip"
   clone_trip: "Clone"
+  create_return_trip: "Create Return"
   edit_run_link_text: "Edit Run"
   cab_trip: "Cab Trip"
   view_customer_profile: 'Profile'
@@ -933,6 +1226,17 @@ en:
   linking_to: 'Link to'
   trip_form_mobility_device_accommodations_label: 'Mobility Device Count'
   eligibility_and_accommodation: 'Eligibility and Accommodation'
+  number_of_passengers_tracking: "Number of Passengers Tracking"
+  number_of_senior_passengers_tracking_label: "Senior"
+  number_of_disabled_passengers_tracking_label: "Disabled"
+  number_of_low_income_passengers_tracking_label: "Low Income"
+  
+  # Double booked trips
+  double_booked_modal_title: 'Warning: Potential Duplication of Trips'
+  double_booked_modal_message: 'The customer already has one or more trips on the same day that could be duplicates. Do you want to save this trip as entered or go back to re-edit information about the trip?'
+  double_booked_modal_submit: 'Save'
+  double_booked_modal_dismiss: 'Back'
+  
   #trips table
   pickup_date_column: 'Pickup Date'
   customer_column: 'Customer'
@@ -945,6 +1249,12 @@ en:
   trip_called_back_column: 'Called back?'
   trip_result_column: 'Result'
   trip_direction_column: 'Trip Direction'
+  change_selected_trips_result: 'Change Result of Selected Trips'
+  ask_for_trip_result_reason_message: "Would you like to enter a comment to explain the change?"
+  trip_result_modal_dismiss: "Skip Comment"
+  trip_result_modal_cancel: "Cancel"
+  trip_result_confirm_message: "Are you sure you want to change the trip result?"
+  
   #users
   new_user_heading: "Create New User"
   user_form_error_message:
@@ -961,6 +1271,22 @@ en:
   user_expires_at: "Inactivation Date"
   user_inactivation_reason: "Reasons"
   change_expiration_submit: "Update"
+  
+  #password reset & verification questions
+  verification_questions: "Security Questions"
+  verification_question_question: "Question"
+  verification_question_answer: "Answer"
+  reset_password: "Reset Password"
+  add_verification_question: "Add a Security Question"
+  add_verification_question_dialog_title: "Add a Security Question"
+  new_password_form_heading: "Enter your Username"
+  new_password_form_identifier_label: "Username"
+  submit_new_password_form_reset: "Send a Password Reset Email"
+  submit_new_password_form_verification_question: "Reset Password by Answering a Security Question"
+  answer_verification_questions_heading: "Answer a Security Question to Reset your Password"
+  submit_answer_verification_questions_form: "Submit Answer"
+  no_verification_questions_set: "You have not set up any security questions. Please contact your administrator to reset your password."
+  verification_question_incorrect_answer: "That answer is not correct. Please try again or contact your administrator to reset your password."
 
   # Vehicle Maintenance Events
   vehicle_maintenance_event_form_error:
@@ -980,6 +1306,7 @@ en:
   back_to_provider: "Back"
 
   # Vehicle Warranties
+  vehicle_warranty_type: 'Warranty Type'
   vehicle_warranties_heading: "Vehicle and Equipment Warranties"
   vehicle_warranties_add_link_title: "Add warranty"
   vehicle_warranties_empty: "No warranties exist for this vehicle"
@@ -1005,6 +1332,7 @@ en:
   vehicle_form_license_plate_label: "License Plate"
   vehicle_form_vin_label: "VIN"
   vehicle_form_location_label: "Garaged Location"
+  vehicle_form_garage_label: "Garage"
   vehicle_form_active_label: "Active"
   vehicle_form_driver_label: "Driver"
   vehicle_form_insurance_coverage_details_label: "Insurance Coverage"
@@ -1034,11 +1362,13 @@ en:
   vehicle_maintenance_events_empty: "There are no maintenance events"
   vehicle_maintenance_event_add_link_title: "Add Maintenance Event"
   vehicle_maintenance_event_delete_confirm: "Are you sure?"
-  
+  edit_vehicle_initial_mileage_heading: "Change initial mileage"
+  vehicle_form_initial_mileage_change_reason: "Reason"
+
   # Vehicle Maintenance Compliances
-  vehicle_maintenance_compliances_heading: "Compliance Events"
+  vehicle_maintenance_compliances_heading: "Preventive Maintenance Logs (PM)"
   vehicle_maintenance_compliances_add_link_title: "Add compliance event"
-  vehicle_maintenance_compliances_empty: "No compliance events exist for this driver"
+  vehicle_maintenance_compliances_empty: "No compliance events exist for this vehicle"
   vehicle_maintenance_compliance_delete_confirm: "Are you sure you want to delete this compliance event?"
   vehicle_maintenance_compliance_form_error:
     one: "1 error prohibited this vehicle compliance from being saved"
@@ -1046,6 +1376,7 @@ en:
   vehicle_maintenance_compliance_form_new_heading: "New compliance event"
   vehicle_maintenance_compliance_form_edit_heading: "Edit compliance event"
   vehicle_maintenance_compliance_form_event: "Name"
+  vehicle_maintenance_compliance_form_schedule: "Schedule"
   vehicle_maintenance_compliance_form_notes: "Notes"
   vehicle_maintenance_compliance_form_due_type: "Due Based On"
   vehicle_maintenance_compliance_form_due_date: "Due Date"
@@ -1080,6 +1411,9 @@ en:
   unscheduled: 'Unscheduled'
   schedule: 'Schedule'
   unschedule: 'Unschedule'
+  beyond_advance_day_scheduling: "should be within %{advance_day_scheduling} (Advance Day Scheduling) days from today"
+  advance_day_scheduling: 'Advance Day Scheduling'
+  days_in_advance: 'Days to schedule in advance'
   from_date: 'From Date'
   to_date: 'To Date'
   from_date_cannot_later_than_to_date: "From Date can not be later than To Date"
@@ -1098,14 +1432,16 @@ en:
   guest_count_column: 'Guest Count'
   attendant_count_column: 'Attendant Count'
   # trips runs tab
-  application_trips_runs_link_text: 'Trips Runs'
-  trips_runs: 'Trips Runs'
+  application_trips_runs_link_text: 'Dispatch'
+  trips_runs: 'Dispatch'
   trips_runs_filter: 'Filter'
   run_result: 'Result'
   run_trip_day: 'Date'
   not_fit_in_run_schedule: 'Trip schedule does not fit in run schedule'
   vehicle_unavailable: 'Vehicle is not available'
   driver_unavailable: 'Driver is not available'
+  assigned_to_other_overlapping_run: 'has been assigned to another overlapping run'
+  assigned_to_overlapping_repeating_run: 'has been assigned to another overlapping subscription run'
   unknown_error: 'There was something wrong with the request, please try again.'
   # address upload
   address_file_uploaded: 'Address file was uploaded.'
@@ -1142,9 +1478,3 @@ en:
   locales:
     en: "English"
     tags: "Tags"
-
-
-
-
-
-

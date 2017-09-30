@@ -1,0 +1,20 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: (params[:provider_id].blank? ? 'admin' : 'provider')
+#page-header.row
+  .col-sm-12.col-md-6
+    %h1= translate_helper("edit_vehicle_requirement_template_heading")
+  .col-sm-12.col-md-6
+    .pull-right
+      %button#vehicle_requirement_template_form_submit.btn.action-button
+        = translate_helper("update")
+      = link_to translate_helper("cancel"), vehicle_requirement_template_path(@vehicle_requirement_template, provider_id: params[:provider_id]), class: "btn action-button"
+      
+= render partial: "form"
+
+:javascript
+  $(document).ready(function(){
+    $("form.edit_vehicle_requirement_template .form-actions").hide();
+    
+    $("#vehicle_requirement_template_form_submit").on("click", function(){
+      $("form.edit_vehicle_requirement_template").submit();
+    });
+  });

@@ -26,12 +26,12 @@ class RunFilter
 
     if !t_start && !t_end
       time    = Time.current
-      t_start = time.beginning_of_week.to_date.in_time_zone
-      t_end   = t_start + 6.days
+      t_start = time.to_date.in_time_zone
+      t_end   = t_start
     elsif !t_end
-      t_end   = t_start + 6.days
+      t_end   = t_start
     elsif !t_start
-      t_start   = t_end - 6.days
+      t_start   = t_end
     end
     
     @runs = @runs.

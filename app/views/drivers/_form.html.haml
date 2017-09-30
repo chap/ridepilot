@@ -1,0 +1,139 @@
+= form_for @driver do |f|
+  - if @driver.errors.any?
+    .panel.panel-danger
+      .panel-heading= translate_helper("driver_form_error", count: @driver.errors.count)
+      .panel-body
+        %ul
+          - @driver.errors.full_messages.each do |msg|
+            %li= msg
+  .row
+    .col-sm-12.col-md-6
+      .panel.panel-primary
+        .panel-heading= translate_helper("driver_form_details_heading")
+        .panel-body.form-horizontal
+          .form-group
+            = f.label :photo, translate_helper("driver_form_photo"), class: "col-md-2 control-label"
+            .col-md-10
+              - if @driver.photo.present? && !@driver.photo.new_record?
+                = image_tag @driver.photo.image.url(:thumb)
+              - unless @readonly
+                = f.fields_for :photo do |image_upload|
+                  = image_upload.file_field :image, class: "form-control"
+          - if @readonly
+            .form-group
+              = f.label :name, translate_helper("driver_form_name"), class: "col-md-2 control-label"
+              .col-md-10
+                = @driver.user_name
+                - if @driver.user.present? && !@driver.user.deleted? && can?(:edit, @driver.user)
+                  = link_to translate_helper("edit"), edit_user_path(@driver.user), class: "btn action-button"
+          .form-group
+            = f.label :phone_number, translate_helper("phone_number"), class: "col-md-2 control-label"
+            .col-md-10
+              - if @readonly
+                %p.form-control
+                  = format_phone_number(@driver.phone_number)
+              - else
+                = f.text_field :phone_number, class: "form-control"
+          .form-group
+            = f.label :alt_phone_number, translate_helper("alt_phone_number"), class: "col-md-2 control-label"
+            .col-md-10
+              - if @readonly
+                %p.form-control
+                  = format_phone_number(@driver.alt_phone_number)
+              - else
+                = f.text_field :alt_phone_number, class: "form-control"
+          - if @readonly
+            .form-group
+              = f.label :email, translate_helper("driver_form_email"), class: "col-md-2 control-label"
+              .col-md-10
+                = @driver.user.try(:email) || @driver.email
+                - if @driver.user.present? && !@driver.user.deleted? && can?(:edit, @driver.user)
+                  = link_to translate_helper("edit"), edit_user_path(@driver.user), class: "btn action-button"
+          .form-group
+            = f.label :paid, translate_helper("paid"), class: "col-md-2 control-label"
+            .col-md-10
+              = f.select :paid, [["Paid", "true"], ["Volunteer", "false"]], { selected: @driver.paid.to_s }, class: "form-control", disabled: @readonly
+          .form-group
+            = f.label :user_id, translate_helper("driver_form_associated_user"), class: "col-md-2 control-label"
+            .col-md-10
+              = f.collection_select :user_id, @available_users, :id, :name_with_username, { include_blank: true }, { class: "form-control", disabled: @readonly }
+        / END .panel-body
+      / END .panel
+      = render 'address_panel', f: f
+      = render 'shared/operating_hours'
+    / END .col-md-6
+    .col-sm-12.col-md-6
+      - @driver.build_emergency_contact if @driver.emergency_contact.nil?
+      = f.fields_for :emergency_contact, @driver.emergency_contact do |contact_form|
+        = render 'drivers/emergency_contact_panel', f: contact_form
+
+      - if @driver.persisted?
+        .panel.panel-primary
+          .panel-heading= translate_helper("driver_documents_heading")
+          %table#documents-table.table.table-striped.table-condensed
+            %thead
+              %tr
+                %th.col-sm-3= translate_helper("document_form_upload_date")
+                %th= translate_helper("document_form_description")
+                %th.col-sm-2= translate_helper("document_form_file_size")
+                %th.col-sm-1
+            %tbody
+              - if @readonly and @driver.documents.empty?
+                %tr
+                  %td{:colspan => "4"}= translate_helper("driver_documents_empty")
+              = render partial: 'documents/document', collection: @driver.documents.unassociated.default_order
+        / END .panel
+        .panel.panel-primary
+          .panel-heading= translate_helper("driver_histories_heading")
+          %table#driver_histories-table.table.table-striped.table-condensed
+            %thead
+              %tr
+                %th.col-sm-3= translate_helper("driver_history_form_event_date")
+                %th= translate_helper("driver_history_form_event")
+                - unless @readonly
+                  %th.col-sm-1
+            %tbody
+              - if @readonly and @driver.driver_histories.empty?
+                %tr
+                  %td{:colspan => "2"}= translate_helper("driver_histories_empty")
+              = render partial: 'driver_histories/driver_history', collection: @driver.driver_histories.default_order
+          - unless @readonly
+            .panel-footer
+              .clearfix
+                = link_to translate_helper("driver_histories_add_link_title"), new_driver_driver_history_path(@driver), class: "btn action-button pull-right", remote: true
+        / END .panel
+        = render 'legal_requirements_panel'
+        = render 'non_legal_requirements_panel'
+
+        - if @readonly
+          - logs = TrackerActionLog.for(@driver).order(created_at: :desc)
+          = render 'shared/action_log_panel', logs: logs if logs.any?
+        / END .panel
+    / END .col-md-6
+  / END .row
+  - unless @readonly
+    .row.form-actions= f.submit translate_helper("driver_form_submit"), class: "btn action-button"
+ 
+= render 'shared/hide_invisible_form_fields_js', model_name: "driver", table_name: 'drivers', provider_id:  current_provider.try(:id)
+
+- if @readonly
+  = render 'shared/readonly_modal_dialog', modal_id: "modal-dialog" 
+- else 
+  = render 'shared/modal_dialog', modal_id: "modal-dialog" 
+
+:javascript
+  $(document).ready(function(){
+    function update_hours_enabled(i) {
+      var enabled = $("input#hours-" + i + "-open").is(":checked");
+      $("select#start-hour-" + i).prop('disabled', !enabled);
+      $("select#end-hour-" + i).prop('disabled', !enabled);
+    };
+    
+    // Enable/disable behavior for operating hours on form
+    for (var i = 0; i < 7; ++i) (function(i) {
+      update_hours_enabled(i);
+      $("input.hours-" + i).click(function(e) {
+        update_hours_enabled(i);
+      });
+    })(i);
+  });

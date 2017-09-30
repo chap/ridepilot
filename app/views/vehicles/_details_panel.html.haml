@@ -1,0 +1,56 @@
+.panel.panel-primary
+  .panel-heading= translate_helper("vehicle_form_details_heading")
+  .panel-body.form-horizontal
+    .form-group
+      = f.label :name, translate_helper("vehicle_form_name_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :name, class: "form-control", disabled: @readonly
+    .form-group
+      = f.label :year, translate_helper("vehicle_form_year_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :year, class: "form-control", disabled: @readonly
+    .form-group
+      = f.label :make, translate_helper("vehicle_form_make_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :make, class: "form-control", disabled: @readonly
+    .form-group
+      = f.label :model, translate_helper("vehicle_form_model_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :model, class: "form-control", disabled: @readonly
+    .form-group
+      = f.label :license_plate, translate_helper("vehicle_form_license_plate_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :license_plate, class: "form-control", disabled: @readonly
+    .form-group
+      = f.label :vin, translate_helper("vehicle_form_vin_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.text_field :vin, class: "form-control", disabled: @readonly
+    .form-group
+      = f.label :reportable, translate_helper("vehicle_form_reportable_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.select :reportable, [["Yes", "true"], ["No", "false"]], {:selected => @vehicle.reportable.to_s }, class: "form-control", disabled: @readonly
+    .form-group
+      = label_tag nil, translate_helper("vehicle_form_initial_mileage"), class: "col-md-2 control-label"
+      .col-md-10
+        %p.form-control-static
+          - if @vehicle.new_record?
+            = f.number_field :initial_mileage, min: 0, class: "form-control"
+          - else
+            = number_with_delimiter @vehicle.initial_mileage
+            mi.
+            - if @readonly && can?(:edit, @vehicle)
+              = link_to translate_helper("edit"), edit_initial_mileage_vehicle_path(@vehicle), class: "btn action-button"
+    .form-group
+      = label_tag nil, translate_helper("vehicle_form_last_odometer_reading"), class: "col-md-2 control-label"
+      .col-md-10
+        %p.form-control-static
+          = number_with_delimiter @vehicle.last_odometer_reading
+          mi.
+    .form-group
+      = f.label :seating_capacity, translate_helper("vehicle_form_seating_capacity_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.number_field :seating_capacity, min: 1, class: "form-control", disabled: @readonly
+    .form-group
+      = f.label :mobility_device_accommodations, translate_helper("vehicle_form_mobility_device_accommodations_label"), class: "col-md-2 control-label"
+      .col-md-10
+        = f.number_field :mobility_device_accommodations, min: 0, class: "form-control", disabled: @readonly

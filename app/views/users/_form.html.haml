@@ -1,0 +1,143 @@
+- url = edit_mode == :new ? create_user_provider_users_path(@provider) : user_path(@user)
+- is_editing = edit_mode == :edit || edit_mode == :new
+= form_for @user, :url=>url, :html => {class: 'user_form'} do |f|
+  = render 'form_header', edit_mode: edit_mode, f: f
+  - error_messages = @user.errors.any? ? @user.errors.full_messages : @errors
+  - if error_messages && error_messages.any?
+    #error_explanation
+      %h2= translate_helper("user_form_error_message", count: error_messages.count)
+      %ul
+        - error_messages.each do |msg|
+          %li= msg
+  - if @is_user_deleted
+    %p= link_to translate_helper("restore_user_link_text"), restore_user_path(id: @user.try(:id)), :class=>'new-user action-bttn'
+  =hidden_field_tag 'verification_questions'
+  .row
+    .col-sm-12.col-md-6
+      .panel.panel-primary
+        .panel-heading= translate_helper("user_details_heading")
+        .panel-body.form-horizontal
+          .form-group
+            = f.label :first_name, translate_helper("first_name"), class: "col-md-2 control-label"
+            .col-md-10
+              = f.text_field :first_name, class: "form-control"
+          .form-group
+            = f.label :last_name, translate_helper("last_name"), class: "col-md-2 control-label"
+            .col-md-10
+              = f.text_field :last_name, class: "form-control"
+          .form-group
+            = f.label :username, translate_helper("username"), class: "col-md-2 control-label"
+            .col-md-10
+              = f.text_field :username, class: "form-control"
+          .form-group
+            = f.label :email, translate_helper("email"), class: "col-md-2 control-label"
+            .col-md-10
+              = f.text_field :email, class: "form-control"
+          - if @user != current_user
+            - role = Role.find_by(user: @user, provider: @provider)
+            - if @user.new_record? || can?(:manage, role)
+              - editable_roles = Role.editable_role_array_by_user(current_user)
+              - if editable_roles.any?
+                .form-group
+                  = f.label :permissions, translate_helper("permissions"), class: "col-md-2 control-label"
+                  .col-md-10
+                    = select :role, :level, editable_roles, {selected: role.try(:level)}, { class: "form-control" }
+          .form-group
+            = f.label :phone_number, translate_helper("phone_number"), class: "col-md-2 control-label"
+            .col-md-10
+              - if edit_mode != :show
+                = f.text_field :phone_number, class: "form-control"
+              - else
+                = format_phone_number(@user.phone_number)
+      - prefix = "user_address_attributes"
+      .panel.panel-primary
+        .panel-heading= translate_helper("user_address_heading")
+        .panel-body.form-horizontal
+          - @user.user_address ||= @user.build_user_address
+          = f.fields_for :user_address, @user.user_address do |address_form|
+            = render 'addresses/non_geocoding_form_fields', address_form: address_form, readonly: false
+        / END .panel-body
+      / END .panel
+      .panel.panel-primary
+        .panel-heading= translate_helper("verification_questions")
+        .panel-body{style: 'padding: 5px;'}
+          %table.table.table-striped.table-bordered#verification-questions-table
+            %thead
+              %tr
+                - if is_editing
+                  %th{width: 50}
+                %th
+                  = translate_helper(:verification_question_question)
+                %th
+                  = translate_helper(:verification_question_answer)
+            %tbody
+              - @user.verification_questions.each do |vq|
+                %tr{'data-verification-question' => vq.to_json}
+                  - if is_editing
+                    %td
+                      = button_tag :type => 'button', class: 'delete-verification-question btn-danger' do 
+                        = translate_helper(:delete)
+                  %td
+                    = vq.question
+                  %td
+                    = vq.answer
+          - if is_editing
+            .pull-right
+              = button_tag :type => 'button', 
+                id: 'add-verification-question', 
+                "data-target" => "#add-verification-question-dialog", 
+                "data-toggle" => "modal", 
+                :class => "btn action-button" do
+                = translate_helper(:add_verification_question)
+                
+      = render 'addresses/google_place_autocomplete_js'
+      
+= render 'add_verification_question_dialog' if is_editing
+
+:javascript
+  $(function() {
+    // Force uppercase text
+    $('[data-convert="uppercase"]').keyup(function(evt) {
+      convert_uppercase(this);
+    });
+    
+    $('#verification-questions-table').on('click', '.delete-verification-question', function(e) {
+      e.preventDefault();
+
+      $(this).parents('tr').remove();
+    });
+    $('#add-verification-question-dialog').on('show.bs.modal', function () {
+      $('#add-verification-question-dialog form')[0].reset();
+    });
+
+    function insertVerificationQuestionRow(verificationQuestionData) {
+      $('#verification-questions-table').append(
+          "<tr data-verification-question='" + escapeQuotes(JSON.stringify(verificationQuestionData)) + "'>" +
+          '<td><button class="delete-verification-question btn-danger" name="button" type="button">Delete</button></td>' +
+          "<td>" + verificationQuestionData.question + '</td>' +
+          "<td>" + verificationQuestionData.answer + "</td>" +
+          "</tr>");
+    }
+
+    $('#add-verification-question-dialog form').submit(function() {
+      var verificationQuestionData = {
+        question: $('#verification_question_question').val(),
+        answer: $('#verification_question_answer').val()
+      };
+      //insert new verification question row
+      $('#add-verification-question-dialog').modal('hide');
+      insertVerificationQuestionRow(verificationQuestionData);
+
+      return false; //no http submission
+    });
+    
+    $('.user_form').submit(function(e) {
+      // serializing travel trainings
+      var verificationQuestions = [];
+      $('#verification-questions-table tbody tr').each(function() {
+        verificationQuestions.push($(this).data('verification-question'));
+      });
+      
+      $('.user_form input[name=verification_questions]').val(JSON.stringify(verificationQuestions));
+    });
+  });

@@ -1,0 +1,11 @@
+%h2.section-header= translate_helper("configure_provider_driver_requirement_templates")
+= link_to translate_helper("provider_driver_requirement_templates_link_text"), driver_requirement_templates_path(provider_id: current_provider_id), target: '_blank'
+%hr
+
+%h2.section-header
+  = translate_helper("manage_drivers")
+  - if @provider.drivers.empty?
+    %span.badge
+      0
+    %i.fa.fa-exclamation-triangle{style: 'color: red'}
+= link_to translate_helper("manage_drivers_link_text"), drivers_path, target: '_blank'

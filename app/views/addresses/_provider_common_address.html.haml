@@ -1,0 +1,13 @@
+%tr
+  %td
+    = address.address_group.try(:name)
+  %td.name
+    = link_to_if can?(:edit, ProviderCommonAddress), address.name || '' , edit_provider_common_address_path(address)
+  %td= address.address
+  %td= address.city
+  %td= address.state
+  %td= format_phone_number address.phone_number
+  %td= address.in_district? ? "In District" : "Out of District"
+  %td= address.notes
+  - if can? :edit, Address
+    %td= link_to translate_helper("edit"), edit_provider_common_address_path(address), :class=>'edit edit-address'

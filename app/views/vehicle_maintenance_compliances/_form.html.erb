@@ -18,59 +18,48 @@
       <div class="panel panel-primary">
         <div class="panel-body form-horizontal">
           <div class="form-group">
+            <%= f.label :vehicle_maintenance_schedule, translate_helper("vehicle_maintenance_compliance_form_schedule"), class: "col-md-3 control-label" %>
+            <div class="col-md-9">
+              <%= f.collection_select :vehicle_maintenance_schedule_id, @vehicle_maintenance_schedules.order(:name), :id, :name, { include_blank: true }, { class: "form-control", id: 'vehicle_maintenance_schedule', disabled: @readonly } %>
+            </div>
+          </div>
+          <div class="form-group">
             <%= f.label :event, translate_helper("vehicle_maintenance_compliance_form_event"), class: "col-md-3 control-label" %>
             <div class="col-md-9">
-              <%= f.text_field :event, class: "form-control" %>
+              <%= f.text_field :event, class: "form-control", disabled: @readonly %>
             </div>
           </div>
           <div class="form-group">
             <%= f.label :notes, translate_helper("vehicle_maintenance_compliance_form_notes"), class: "col-md-3 control-label" %>
             <div class="col-md-9">
-              <%= f.text_area :notes, class: "form-control", rows: 3 %>
-            </div>
-          </div>
-          <div class="form-group">
-            <%= f.label :due_type, translate_helper("vehicle_maintenance_compliance_form_due_type"), class: "col-md-3 control-label" %>
-            <div class="col-md-9">
-              <%= f.select :due_type, VehicleMaintenanceCompliance::DUE_TYPES.map(&:to_s), { selected: @vehicle_maintenance_compliance.due_type, include_blank: true }, class: "form-control" %>
-            </div>
-          </div>  
-          <div class="form-group due-type-date">
-            <%= f.label :due_date, translate_helper("vehicle_maintenance_compliance_form_due_date"), class: "col-md-3 control-label" %>
-            <div class="col-md-9">
-              <div class="input-group datepicker-icon">
-                <%= f.text_field :due_date, class: "form-control datepicker" %>
-                <div class="input-group-btn">
-                  <button class="btn btn-default" type="button">
-                    <%= image_tag "calendar-clock.png" %>
-                  </button>
-                </div>
-              </div>
+              <%= f.text_area :notes, class: "form-control", rows: 3, disabled: @readonly %>
             </div>
           </div>
           <div class="form-group due-type-mileage">
             <%= f.label :due_mileage, translate_helper("vehicle_maintenance_compliance_form_due_mileage"), class: "col-md-3 control-label" %>
             <div class="col-md-9">
-              <%= f.number_field :due_mileage, min: 1, class: "form-control" %>
+              <%= f.number_field :due_mileage, min: 1, class: "form-control", disabled: @readonly %>
             </div>
           </div>
           <div class="form-group">
             <%= f.label :compliance_date, translate_helper("vehicle_maintenance_compliance_form_compliance_date"), class: "col-md-3 control-label" %>
             <div class="col-md-9">
               <div class="input-group datepicker-icon">
-                <%= f.text_field :compliance_date, class: "form-control datepicker" %>
-                <div class="input-group-btn">
-                  <button class="btn btn-default" type="button">
-                    <%= image_tag "calendar-clock.png" %>
-                  </button>
-                </div>
+                <%= f.text_field :compliance_date, class: "form-control datepicker", disabled: @readonly %>
+                <% unless @readonly %>
+                  <div class="input-group-btn">
+                    <button class="btn btn-default" type="button">
+                      <%= image_tag "calendar-clock.png" %>
+                    </button>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>
           <div class="form-group">
             <%= f.label :compliance_mileage, translate_helper("vehicle_maintenance_compliance_form_compliance_mileage"), class: "col-md-3 control-label" %>
             <div class="col-md-9">
-              <%= f.number_field :compliance_mileage, min: 1, class: "form-control" %>
+              <%= f.number_field :compliance_mileage, min: 1, class: "form-control", disabled: @readonly %>
             </div>
           </div>
         </div><!-- END .panel-body -->
@@ -80,5 +69,7 @@
     </div><!-- END .col-md-12 -->
   </div><!-- END .row -->
   
-  <div class="row form-actions"><%= f.submit translate_helper("vehicle_maintenance_compliance_form_submit"), class: "btn action-button" %></div>
+  <% unless @readonly %>
+    <div class="row form-actions"><%= f.submit translate_helper("vehicle_maintenance_compliance_form_submit"), class: "btn action-button" %></div>
+  <% end %>
 <% end %>

@@ -127,4 +127,79 @@ RSpec.describe Customer do
       end
     end
   end
+  
+  describe 'travel_trainings' do
+    let(:customer) { create(:customer) }
+    let(:customer_w_trainings) { create(:customer, :with_travel_trainings) }
+    
+    it 'has many travel trainings' do
+      tt_count = customer.travel_trainings.count
+      customer.travel_trainings << create(:travel_training)
+      expect(customer.travel_trainings.count).to eq(tt_count + 1)
+      customer.travel_trainings << create(:travel_training)      
+      expect(customer.travel_trainings.count).to eq(tt_count + 2)      
+    end
+    
+    it 'edits travel trainings via hash' do
+      original_trainings = customer_w_trainings.travel_trainings
+      expect(customer_w_trainings.travel_trainings.count).to eq(3)
+      
+      # new trainings array consists of one new training, and two of the original
+      # ones. One old training is left out.
+      new_trainings_hash = [
+        { date: Date.today, comment: "new comment"},
+        original_trainings[0].attributes.with_indifferent_access,
+        original_trainings[1].attributes.with_indifferent_access
+      ]
+      
+      customer_w_trainings.edit_travel_trainings(new_trainings_hash)
+      customer_w_trainings.reload
+      new_trainings = customer_w_trainings.travel_trainings
+      
+      # Expect two of the old trainings and the one new one to be present
+      expect(new_trainings.pluck(:id).include?(original_trainings[0].id)).to be true
+      expect(new_trainings.pluck(:id).include?(original_trainings[1].id)).to be true
+      expect(new_trainings.pluck(:id).include?(original_trainings[2].id)).to be false
+      expect(new_trainings.where(comment: "new comment").count).to eq(1)
+      
+    end
+  end
+
+  describe 'funding_authorization_numbers' do
+    let(:customer) { create(:customer) }
+    let(:customer_w_funding_numbers) { create(:customer, :with_funding_authorization_numbers) }
+    
+    it 'has many funding authorization numbers' do
+      fn_count = customer.funding_authorization_numbers.count
+      customer.funding_authorization_numbers << create(:funding_authorization_number)
+      expect(customer.funding_authorization_numbers.count).to eq(fn_count + 1)
+      customer.funding_authorization_numbers << create(:funding_authorization_number)      
+      expect(customer.funding_authorization_numbers.count).to eq(fn_count + 2)      
+    end
+    
+    it 'edits funding authorization numbers via hash' do
+      original_numbers = customer_w_funding_numbers.funding_authorization_numbers
+      expect(customer_w_funding_numbers.funding_authorization_numbers.count).to eq(3)
+      
+      # new numbers array consists of one new funding number, and two of the original
+      # ones. One old number is left out.
+      new_funding_numbers_hash = [
+        { number: 'test number', funding_source: FundingSource.first, contact_info: 'test contact info'},
+        original_numbers[0].attributes.with_indifferent_access,
+        original_numbers[1].attributes.with_indifferent_access
+      ]
+      
+      customer_w_funding_numbers.edit_funding_authorization_numbers(new_funding_numbers_hash)
+      customer_w_funding_numbers.reload
+      new_funding_numbers = customer_w_funding_numbers.funding_authorization_numbers
+      
+      # Expect two of the old funding numbers and the one new one to be present
+      expect(new_funding_numbers.pluck(:id).include?(original_numbers[0].id)).to be true
+      expect(new_funding_numbers.pluck(:id).include?(original_numbers[1].id)).to be true
+      expect(new_funding_numbers.pluck(:id).include?(original_numbers[2].id)).to be false
+      expect(new_funding_numbers.where(contact_info: 'test contact info').count).to eq(1)
+      
+    end
+  end
+  
 end

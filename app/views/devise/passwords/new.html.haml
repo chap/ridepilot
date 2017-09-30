@@ -1,0 +1,48 @@
+%h2= translate_helper("new_password_heading")
+
+.row
+  .col-sm-12.col-md-6
+    .panel.panel-primary
+      .panel-heading= translate_helper(:new_password_form_heading)
+      .panel-body.form-horizontal
+        .form-group
+          %label.col-md-2.control-label= translate_helper(:new_password_form_identifier_label)
+          .col-md-10
+            %input.form-control#master-identifier-input{type: 'text', autofocus: true}
+
+-# PASSWORD RESET VIA EMAIL
+= form_for(resource, 
+    as: resource_name, 
+    url: password_path(resource_name), 
+    html: { method: :post, id: 'reset-password-via-email' }) do |f|
+  = devise_error_messages!
+  = f.text_field :username, hidden: true
+  
+-# PASSWORD RESET VIA VERIFICATION question
+= form_for(resource, 
+    as: resource_name, 
+    url: get_verification_question_users_path, 
+    html: { method: :get, id: 'get-verification-question' }) do |f|
+  =f.text_field :username, hidden: true, value: nil
+  
+#reset-password-via-email-form-submit.btn.btn-primary=translate_helper("submit_new_password_form_reset")
+#get-verification-question-form-submit.btn.btn-primary=translate_helper("submit_new_password_form_verification_question")
+
+%br
+= render "devise/shared/links"
+
+:javascript
+  $(function() {
+  
+    // Update the reset password via email form with username from master input, and submit
+    $('#reset-password-via-email-form-submit').click(function() {
+      $('form#reset-password-via-email input#user_username').val($('#master-identifier-input').val());
+      $('form#reset-password-via-email').submit();
+    });
+
+    // Update the get verification question form with username from master input, and submit    
+    $('#get-verification-question-form-submit').click(function() {
+      $('form#get-verification-question input#user_username').val($('#master-identifier-input').val());
+      $('form#get-verification-question').submit();
+    });
+  });

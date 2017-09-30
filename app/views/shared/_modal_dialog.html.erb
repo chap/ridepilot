@@ -1,5 +1,5 @@
 <% modal_id ||= "modal-dialog" %>
-<div id="<%= modal_id %>" class="modal fade" role="dialog" aria-hidden="true" tabindex="-1" aria-labelledby="modal-title">
+<div id="<%= modal_id %>" class="modal fade" role="dialog" aria-hidden="true" tabindex="-1" aria-labelledby="modal-title" data-backdrop="static" data-keyboard="false" }>
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -23,10 +23,21 @@
       var $modalBody = $this.find(".modal-body");
       $modalBody.find(".panel:first").removeClass("panel-primary");
       $modalBody.find(".form-actions").hide();
+      $("#<%= modal_id %>-submit").removeAttr('disabled');
     })
     
     $("#<%= modal_id %>-submit").on("click", function(){
       $('#<%= modal_id %> .modal-body form').submit();
+    });
+
+    $("body").on('ajax:send', "#<%= modal_id %> form", function() {
+      console.log('request sent');
+      $("#<%= modal_id %>-submit").attr('disabled', 'disabled');
+    });
+
+    $("body").on('ajax:complete', "#<%= modal_id %> form", function() {
+      console.log('request completed');
+      $("#<%= modal_id %>-submit").removeAttr('disabled');
     });
   });
 <% end %>

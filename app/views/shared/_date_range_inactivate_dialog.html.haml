@@ -1,0 +1,87 @@
+#inactivateDialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      = form_for resource, :url=>inactivation_url, :html=>{:method=>:post} do |f|
+        .modal-header
+          .pull-right
+            - if resource.inactivated?
+              = button_tag translate_helper(:activate), id: 'activate_resource', type: :button, style: "margin-right: 5px;", class: "btn action-button"
+            = button_tag translate_helper(:submit), type: :submit, style: "margin-right: 5px;", class: "btn action-button"
+            = button_tag class: 'btn action-button', data: {dismiss: 'modal'} do
+              = translate_helper(:cancel)
+          .modal-title{:style => "text-align:left;"}
+            %strong
+              = translate_helper(:configure_inactivation_dialog_title)
+        .modal-body.row{:style => "text-align:left; padding-top: 0px;"}
+          #inactivation_errors.colm-sm-12{style:"display: none;"}
+            %p.alert.alert-danger
+          .col-sm-12
+            .col-sm-12{style: 'padding: 0px;'}
+              %label.col-sm-12
+                = translate_helper('permanent_inactive')
+              .form-group.col-sm-12
+                .col-sm-3
+                  %span= translate_helper(:inactive)
+                .col-sm-9
+                  = f.hidden_field :active, id: 'resource_active'
+                  = check_box_tag :permanent_inactive, !resource.active, !resource.active
+              %label.col-sm-12
+                = translate_helper('date_range_inactive')
+              .date_range
+                .form-group.col-sm-12
+                  .col-sm-3
+                    %span= translate_helper(:inactivated_start_date)
+                  .col-sm-9
+                    = f.text_field :inactivated_start_date, class: 'date-picker form-control', readonly: true, id: 'resource_inactivated_start_date'
+                .form-group.col-sm-12
+                  .col-sm-3
+                    %span= translate_helper(:inactivated_end_date)
+                  .col-sm-9
+                    = f.text_field :inactivated_end_date, class: 'date-picker form-control', readonly: true, id: 'resource_inactivated_end_date'
+            .form-group.col-sm-12{style: 'padding-left: 0px;'}
+              .col-sm-3
+                = f.label :active_status_changed_reason, translate_helper(:active_status_change_reason) 
+              .col-sm-9
+                = f.text_area :active_status_changed_reason, class: 'form-control', maxlength: 30
+
+= render 'shared/date_time_picker_javascript'
+
+:javascript
+  $(function() {
+    makeDatePickers();
+
+    if($('#permanent_inactive').is(':checked')) {
+      $( ".date-picker" ).datepicker( "disable" );
+    }
+
+    $('#permanent_inactive').change(function() {
+      var is_checked = $(this).is(':checked');
+      $('#resource_active').val(!is_checked);
+
+      if(is_checked) {
+        $('.date-picker').val('');
+        $( ".date-picker" ).datepicker( "disable" );
+      } else {
+        $( ".date-picker" ).datepicker( "enable" );
+      }
+    });
+
+    $('#activate_resource').click(function() {
+      $('#permanent_inactive').prop('checked', false);
+      $('#resource_active').val(true);
+      $('.date-picker').val('');
+      $('#inactivateDialog form').submit();
+    });
+
+    $('#inactivateDialog form').submit(function() {
+      var is_inactive = $('#permanent_inactive').is(':checked');
+      var start_date = $( "#resource_inactivated_start_date" ).datepicker('getDate');
+      var end_date = $( "#resource_inactivated_end_date" ).datepicker('getDate');
+      if(!is_inactive && end_date && start_date && end_date < start_date) {
+        $('#inactivation_errors p').html("#{translate_helper(:inactivated_end_date_earlier_than_start_date)}");
+        $('#inactivation_errors').show();
+        return false;
+      }
+    });
+  });
+

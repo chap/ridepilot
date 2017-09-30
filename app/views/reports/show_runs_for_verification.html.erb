@@ -58,7 +58,7 @@
               <%= run_fields.collection_select :vehicle_id, @vehicles, :id, :name %>
             </td>
             <td>
-              <%= run_fields.collection_select :driver_id, @drivers, :id, :name %>
+              <%= run_fields.collection_select :driver_id, @drivers, :id, :user_name %>
             </td>
             <td>
               <%= run_fields.text_field :actual_start_time, :size => 8, 

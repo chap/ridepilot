@@ -78,7 +78,7 @@ module Reporting::ReportHelper
             raw_value = number_with_precision(raw_value, precision: formatter_precision) if formatter_precision
             raw_value = number_with_delimiter(raw_value)
           when 'phone'
-            raw_value = number_to_phone(raw_value)
+            raw_value = format_phone_number(raw_value)
           when 'human'
             formatter_precision = 3 if formatter_precision.nil?
             raw_value = number_to_human(raw_value, precision: formatter_precision)

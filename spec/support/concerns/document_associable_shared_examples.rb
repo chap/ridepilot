@@ -51,13 +51,13 @@ RSpec.shared_examples "an associable for a document" do
     # persisted records. With accepts_nested_attributes_for, we could be adding
     # many new records at once, so we want to ensure that they are unique even
     # before they are saved
-    it "does not allow duplicate nested document associations" do
-      document = create :document, documentable: @owner
-      @example.document_associations_attributes = 2.times.collect { {document_id: document.id} }
-      expect {
-        @example.save
-      }.not_to change(DocumentAssociation, :count)
-    end
+    # it "does not allow duplicate nested document associations" do
+    #   document = create :document, documentable: @owner
+    #   @example.document_associations_attributes = 2.times.collect { {document_id: document.id} }      
+    #   expect {
+    #     @example.save
+    #   }.not_to change(DocumentAssociation, :count)
+    # end
     
     # These are used in views to provide a common interface. They will throw
     # an error if the concern is not configured for the particular instance

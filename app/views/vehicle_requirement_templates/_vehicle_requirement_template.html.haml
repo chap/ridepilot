@@ -1,0 +1,7 @@
+%tr
+  %td
+    = link_to vehicle_requirement_template.name, vehicle_requirement_template_path(vehicle_requirement_template, provider_id: params[:provider_id])
+  %td
+    = vehicle_requirement_template.legal? ? translate_helper('yes') : ''
+  %td
+    = vehicle_requirement_template.reoccuring? ? translate_helper('yes') : ''

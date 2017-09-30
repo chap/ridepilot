@@ -1,12 +1,4 @@
-- if @item && @item.errors.any? 
-  %div#error_explanation
-    %h2
-      = translate_helper("lookup_table_error_message", count: @item.errors.count)
-    %ul
-      - @item.errors.full_messages.each do |msg|
-        %li
-          = msg 
-.col-sm-12
-  = render partial: 'dropdown', locals: {tables: @lookup_tables, table: @lookup_table}
-.col-sm-12
-  = render partial: 'table', locals: {table: @lookup_table}
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'admin'
+#page-header.clearfix
+  %h1= translate_helper(:lookup_table)
+= render 'lookup_table', is_provider_only: false

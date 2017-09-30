@@ -1,0 +1,2 @@
+class DriverAddress < Address 
+end

@@ -16,11 +16,26 @@ RSpec.describe VehiclesController, type: :controller do
   }
 
   describe "GET #index" do
+
     it "assigns all vehicles for the current provider as @vehicles" do
-      vehicle_1 = create(:vehicle, :provider => @current_user.current_provider)
-      vehicle_2 = create(:vehicle)
+      vehicle_1 = create(:vehicle, :provider => @current_user.current_provider, :active => true)
+      vehicle_2 = create(:vehicle, :active => true)
       get :index, {}
-      expect(assigns(:vehicles)).to eq([vehicle_1])
+      expect(assigns(:vehicles)).to match([vehicle_1])
+    end
+
+    it "default to only active vehicles" do
+      active_vehicle = create(:vehicle, :provider => @current_user.current_provider, :active => true)
+      inactive_vehicle = create(:vehicle, :provider => @current_user.current_provider, :active => false)
+      get :index, {}
+      expect(assigns(:vehicles)).to match([active_vehicle])
+    end
+
+    it "gets all vehicles with show_inactive param as true" do
+      active_vehicle = create(:vehicle, :provider => @current_user.current_provider, :active => true)
+      inactive_vehicle = create(:vehicle, :provider => @current_user.current_provider, :active => false)
+      get :index, {show_inactive: 'true'}
+      expect(assigns(:vehicles)).to match_array([active_vehicle, inactive_vehicle])
     end
   end
 
@@ -90,7 +105,7 @@ RSpec.describe VehiclesController, type: :controller do
     context "with valid params" do
       let(:new_attributes) {
         {
-          :garaged_location => "Garaged Location"
+          :model => "VM"
         }
       }
 
@@ -98,7 +113,7 @@ RSpec.describe VehiclesController, type: :controller do
         vehicle = create(:vehicle, :provider => @current_user.current_provider)
         expect {
           put :update, {:id => vehicle.to_param, :vehicle => new_attributes}
-        }.to change { vehicle.reload.garaged_location }.from(nil).to("Garaged Location")
+        }.to change { vehicle.reload.model }.from(nil).to("VM")
       end
 
       it "assigns the requested vehicle as @vehicle" do

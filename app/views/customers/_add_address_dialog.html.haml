@@ -1,6 +1,27 @@
+:css
+  .error {
+    color: red;
+  }
+
 - defined?(edit_mode) ? edit_mode : edit_mode = :edit 
-.address-form#customer-address-form
-  = render 'addresses/validate_form', :prefix=>'customer', address: Address.new
+#addAddressDialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        .pull-right
+          - if edit_mode == :show
+            = button_tag class: 'btn action-button', data: {dismiss: 'modal'} do
+              = translate_helper(:ok)
+          - else 
+            = button_tag translate_helper(:save), type: :submit, style: "margin-right: 5px;", class: "btn action-button", id: 'saveAddress'
+            = button_tag class: 'btn action-button', data: {dismiss: 'modal'} do
+              = translate_helper(:cancel)
+        .modal-title{:style => "text-align:left;"}
+          %strong
+            = translate_helper(:customer_saved_address_dialog_title)
+      .modal-body
+        .address-form#customer-address-form
+          = render 'addresses/validate_form', :prefix=>'customer', address: Address.new
 
 = render 'new_address_js'
 
@@ -14,7 +35,7 @@
     $('#addCustomerCommonAddress').click(function(e) {
       e.preventDefault();
       var form = $("#customer-address-form");
-      form.dialog( "open" );  
+      $('#addAddressDialog').modal('show');
       $(".address-form input").removeAttr("disabled").removeAttr("readonly");
       form.find('form')[0].reset();
       form.find('input[type=hidden][name!=prefix]').val('');
@@ -29,11 +50,15 @@
       $(this).parents('tr').remove();
     });
 
+    $('#saveAddress').on('click', function() {
+      $("#customer-address-form form").trigger('submit');
+    });
+
     $('#customerCommonAddressTable').on('click', '.viewAddress', function(e) {
       e.preventDefault();
 
+      $('#addAddressDialog').modal('show');
       var form = $("#customer-address-form");
-      form.dialog( "open" ); 
 
       if(#{edit_mode == :edit}) {
         form.find('form')[0].reset();

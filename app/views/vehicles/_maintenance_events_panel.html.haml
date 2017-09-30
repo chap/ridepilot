@@ -1,0 +1,25 @@
+.panel.panel-primary
+  .panel-heading= translate_helper("vehicle_maintenance_events_heading")
+  %table#vehicle-maintenance-events-table.table.table-striped.table-condensed
+    %thead
+      %tr
+        %th.col-sm-1= translate_helper("service_date")
+        %th.col-sm-1= translate_helper("invoice_date")
+        %th.col-sm-1= translate_helper("odometer")
+        %th.col-sm-1= translate_helper("vendor_name")
+        %th.col-sm-1= translate_helper("invoice_number")
+        %th.col-sm-1= translate_helper("invoice_amount")
+        %th.col-sm-1= translate_helper("reimbursable")
+        %th= translate_helper("services_performed")
+        - unless @readonly
+          %th.col-sm-1
+    %tbody
+      - if @readonly and @vehicle.vehicle_maintenance_events.empty?
+        %tr
+          %td{:colspan => "8"}= translate_helper("vehicle_maintenance_events_empty")
+      = render partial: 'vehicle_maintenance_events/vehicle_maintenance_event', collection: @vehicle.vehicle_maintenance_events.default_order
+  - unless @readonly
+    .panel-footer
+      .clearfix
+        = link_to translate_helper("vehicle_maintenance_event_add_link_title"), new_vehicle_vehicle_maintenance_event_path(@vehicle), class: "btn action-button pull-right", remote: true
+/ END .panel

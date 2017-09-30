@@ -13,7 +13,8 @@
       - else
         = link_to(translate_helper("delete"), @trip, data: {:confirm => translate_helper("delete_trip_confirm")}, :method => :delete, :id => 'trip_delete', :class=>'btn action-button btn-danger') if !@trip.new_record? && can?(:destroy, @trip)
         = link_to translate_helper("edit"), edit_trip_path(@trip), :class=>'btn action-button' if !@trip.new_record? && can?(:edit, @trip)
-        = link_to translate_helper("clone_trip"), clone_trip_path(@trip), :class=>'btn action-button' if can? :create, Trip
+        = link_to translate_helper("clone_trip"), clone_trip_path(@trip), :class=>'btn action-button' if can?(:create, Trip) && @trip.customer && @trip.customer.active?
+        = link_to translate_helper("create_return_trip"), return_trip_path(@trip), :class=>'btn action-button' if can?(:create, Trip) && @trip.is_outbound? && !@trip.return_trip.present? && @trip.customer && @trip.customer.active_for_date?(@trip.date)
         = link_to translate_helper(:back), trips_path, class: "btn btn-default"
     %h1
       = translate_helper("trip")

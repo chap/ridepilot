@@ -1,0 +1,7 @@
+bootbox.confirm("<%= translate_helper(:confirm_creating_next_maintenance_event) %>", function(result){
+  if(result) {
+    $.ajax({
+      url: "<%=new_vehicle_vehicle_maintenance_compliance_path(vehicle: vehicle, format: :js)%>&schedule_id=<%=schedule_id%>"
+    });
+  }
+});

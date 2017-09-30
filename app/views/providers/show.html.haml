@@ -1,0 +1,20 @@
+#page-header.row
+  - if can? :manage, @provider
+    .pull-right
+      = link_to translate_helper("create_first_admin_user"), new_user_provider_users_path(@provider), class: "btn action-button" if @provider.active? && !@provider.has_admin?
+      - if can? :index, Provider
+        = link_to translate_helper("providers_link_text"), providers_path, class: "btn action-button"
+      - if @provider.active?
+        = button_tag :type => 'button', id: 'inactivateProvider', "data-target" => "#inactivateProviderDialog", "data-toggle" => "modal", :class => "btn action-button" do
+          = translate_helper(:inactivate)
+      - else
+        = link_to translate_helper("reactivate"), reactivate_provider_path(@provider), method: :post, :class=>'btn action-button', :data => { :confirm => translate_helper(:reactivate_provider_confirmation)}
+      = link_to translate_helper("edit_provider_button"), edit_provider_path(@provider), class: "btn action-button"
+  = render 'title'
+
+- if @provider.active?
+  = render 'template', partial_name: 'profile', hide_header: true
+  = render 'inactivate_dialog'
+- else
+  = render 'profile'
+  = render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'provider'

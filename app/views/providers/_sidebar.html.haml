@@ -1,0 +1,31 @@
+:css
+  /* Sidebar navigation */
+  .nav-sidebar {
+    margin-right: -21px; /* 20px padding + 1px border */
+    margin-bottom: 20px;
+    margin-left: -20px;
+  }
+  .nav-sidebar > li > a {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+  .nav-sidebar > .active > a,
+  .nav-sidebar > .active > a:hover,
+  .nav-sidebar > .active > a:focus {
+    color: #fff;
+    background-color: #336699;
+  }
+
+%ul.nav.nav-sidebar
+
+  %li{class: action_name == "show" ? 'active' : ''}
+    %a{href: provider_path(@provider)}
+      = translate_helper('provider_profile_label')
+  - ['general', 'users', 'drivers', 'vehicles', 'addresses', 'customers'].each_with_index do |section, index|
+    %li{class: action_name == section ? 'active' : ''}
+      %a{href: polymorphic_path(@provider, action: section)}
+        = "#{index + 1}." 
+        = translate_helper("provider_#{section}_label")
+        = show_provider_setting_alert(@provider, section)
+
+  

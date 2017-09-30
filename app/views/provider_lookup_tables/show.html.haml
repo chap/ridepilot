@@ -1,0 +1,4 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'provider'
+#page-header.clearfix
+  %h1= translate_helper(:provider_lookup_table)
+= render 'lookup_tables/lookup_table', is_provider_only: true

@@ -1,0 +1,6 @@
+= form_for address, :method=>:post, remote: true, html: {:class=>'address-search', 'data-id-element' => "#trip_#{prefix}_address_id", 'data-label-element' => "##{prefix}_search_address"} do |form|
+  = hidden_field_tag 'address_id', address.id
+  = hidden_field_tag 'prefix', prefix
+  %fieldset
+    %ol.section
+      = render 'addresses/provider_common_address_form_fields', form: form, address: address, prefix: prefix

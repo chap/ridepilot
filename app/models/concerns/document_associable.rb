@@ -8,9 +8,13 @@ module DocumentAssociable
   extend ActiveSupport::Concern
 
   included do
-    has_many :document_associations, as: :associable, dependent: :destroy, inverse_of: :associable
+    has_many :document_associations, as: :associable, inverse_of: :associable, dependent: :destroy
     accepts_nested_attributes_for :document_associations, allow_destroy: true, reject_if: proc { |attributes| attributes['document_id'].blank? }
-    validate  :uniqueness_of_document_associations_in_memory
+    
+    has_many :documents, through: :document_associations, dependent: :destroy
+    accepts_nested_attributes_for :documents, allow_destroy: true
+    
+    # validate  :uniqueness_of_document_associations_in_memory
     
     private
 
@@ -21,11 +25,19 @@ module DocumentAssociable
     # the problem.
     def uniqueness_of_document_associations_in_memory
       validate_uniqueness_of_in_memory(
-        document_associations,
+        document_associations.where.not(document_id: nil),
         [:document_id, :associable_type, :associable_id],
         'Document associations documents can\'t be associated to the same record more than once.'
       )
     end
+    
+  end
+  
+  # Custom build method for adding an associated document
+  def build_document(document_params)    
+    self.document_associations.build(
+      document: Document.new(document_params)
+    )
   end
   
   # This is mainly available for testing
@@ -90,5 +102,3 @@ module DocumentAssociable
     end
   end
 end
-
-

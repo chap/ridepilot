@@ -14,11 +14,12 @@ function googlePlaceParser(place) {
   };
 
   var addrComponents = place.address_components || [];
+  var route = null;
   addrComponents.forEach(function(comp) {
     if(comp.types.indexOf('street_number') >= 0) {
       addrData.street_number = comp.long_name;
     } else if(comp.types.indexOf('route') >= 0) {
-      addrData.route = comp.long_name;
+      route = comp.long_name;
     } else if(comp.types.indexOf('street_address') >= 0) {
       addrData.address = comp.long_name;
     } else if(
@@ -34,8 +35,8 @@ function googlePlaceParser(place) {
   });
 
   if(!addrData.street_address) {
-    if(addrData.street_number && addrData.route) {
-      addrData.address = addrData.street_number + " " + addrData.route;
+    if(addrData.street_number && route) {
+      addrData.address = addrData.street_number + " " + route;
     }
     else if(place.name) {
       addrData.address = place.name;

@@ -1,0 +1,60 @@
+- remote ||= false
+- legal = params[:legal] == 'true' || @vehicle_compliance.legal?
+- @vehicle_requirement_templates = legal ? VehicleRequirementTemplate.legal.provider_accessible(current_provider_id) : VehicleRequirementTemplate.non_legal.provider_accessible(current_provider_id)
+= nested_form_for [@vehicle, @vehicle_compliance], remote: remote do |f|
+  = f.hidden_field :legal, value: legal
+  - if @vehicle_compliance.errors.any?
+    .panel.panel-danger
+      .panel-heading= translate_helper("vehicle_compliance_form_error", count: @vehicle_compliance.errors.count)
+      .panel-body
+        %ul
+          - @vehicle_compliance.errors.full_messages.each do |msg|
+            %li= msg
+  .row
+    .col-md-12
+      .panel.panel-primary
+        .panel-body.form-horizontal
+          .form-group
+            .col-md-3.control-label
+              %label= translate_helper("vehicle_requirement_template_field_label")
+            .col-md-9
+              = f.collection_select :vehicle_requirement_template_id, @vehicle_requirement_templates, :id, :name, { include_blank: true }, { class: "form-control", id: "vehicle_requirement_template", disabled: @readonly }
+          .form-group
+            = f.label :event, translate_helper("vehicle_compliance_form_event"), class: "col-md-3 control-label"
+            .col-md-9
+              = f.text_field :event, class: "form-control", disabled: @readonly
+          .form-group
+            = f.label :notes, translate_helper("vehicle_compliance_form_notes"), class: "col-md-3 control-label"
+            .col-md-9
+              = f.text_area :notes, class: "form-control", rows: 3, disabled: @readonly
+          .form-group
+            = f.label :due_date, translate_helper("vehicle_compliance_form_due_date"), class: "col-md-3 control-label"
+            .col-md-9
+              .input-group.datepicker-icon
+                = f.text_field :due_date, class: "form-control datepicker", disabled: @readonly
+                - unless @readonly
+                  .input-group-btn
+                    %button.btn.btn-default{:type => "button"}
+                      = image_tag "calendar-clock.png"
+          .form-group
+            = f.label :compliance_date, translate_helper("vehicle_compliance_form_compliance_date"), class: "col-md-3 control-label"
+            .col-md-9
+              .input-group.datepicker-icon
+                = f.text_field :compliance_date, class: "form-control datepicker", disabled: @readonly
+                - unless @readonly
+                  .input-group-btn
+                    %button.btn.btn-default{:type => "button"}
+                      = image_tag "calendar-clock.png"
+        / END .panel-body
+      / END .panel
+      = render partial: "document_associations/form_panel", locals: {f: f, documents: @vehicle_compliance.vehicle.documents}
+    / END .col-md-12
+  / END .row
+  .row.form-actions= f.submit translate_helper("vehicle_compliance_form_submit"), class: "btn action-button" unless @readonly
+
+  :javascript
+    $('#vehicle_requirement_template').change(function() {
+      if($(this).val()) {
+        $('#vehicle_compliance_event').val($(this).find('option:selected').text());
+      }      
+    });

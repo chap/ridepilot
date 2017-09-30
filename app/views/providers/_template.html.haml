@@ -1,0 +1,31 @@
+:css
+  /* Hide for mobile, show later */
+  .provider_sidebar {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .provider_sidebar {
+      position: fixed;
+      z-index: 1000;
+      display: block;
+      overflow-x: hidden;
+      overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+      background-color: #f5f5f5;
+      border-right: 1px solid #eee;
+    }
+  }
+
+- hide_header = false if local_assigns[:hide_header].nil?
+
+- unless hide_header
+  %div.clearfix#page-header
+    = render 'title'
+
+.row
+  .col-sm-12
+    .col-sm-3.col-md-2.provider_sidebar
+      = render 'sidebar'
+    .col-sm-9.col-sm-offset-3.col-md-10.col-md-offset-2
+      = render partial_name
+
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'provider' 

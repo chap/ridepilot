@@ -1,0 +1,77 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: true, tab_class: 'vehicles'
+#page-header.row
+  .col-sm-12{style: 'padding: 0px;'}
+    - if can? :create, Vehicle
+      .pull-right
+        = link_to translate_helper("new_vehicle_link_text"), new_vehicle_path, class: "btn action-button"
+    %h1= translate_helper("index_vehicle_heading")
+.row
+  .col-sm-12.pull-right
+    .checkbox
+      %label
+        %input#show_active_only{type: 'checkbox'}
+          = translate_helper(:show_inactive)
+  .col-sm-12
+    %table#vehicles-table.table.table-striped.table-bordered
+      %thead
+        %tr
+          %th= translate_helper("name")
+          %th= translate_helper("vehicle_year")
+          %th= translate_helper("vehicle_make")
+          %th= translate_helper("vehicle_model")
+          %th= translate_helper("license_plate")
+          %th= translate_helper("vin")
+          %th= translate_helper("vehicle_location")
+          %th= translate_helper("vehicle_form_active_label")
+          %th= translate_helper("vehicle_form_last_odometer_reading")
+          %th= translate_helper("vehicle_overdue_events")
+          %th= translate_helper("vehicle_expired_warranties")
+      %tbody
+        = render partial: 'vehicle', collection: @vehicles
+        
+  -# APPROVED VENDORS LIST FORM
+  .col-sm-6
+    %h2=translate_helper(:vendor_list)
+    - if current_provider && current_provider.vendor_list
+      -# .form-group
+      .col-sm-11
+        = link_to translate_helper(:vendor_list_download), 
+            current_provider.vendor_list.document.url,
+            class: "form-control btn btn-link",
+            target: :blank
+      -if can? :manage, Vehicle
+        .col-sm-1
+          = link_to remove_vendor_list_provider_path(current_provider), 
+              method: :delete,
+              class: "btn btn-danger btn-sm",
+              data: { confirm: translate_helper(:remove_vendor_list_confirm) } do
+            %i.fa.fa-remove{'aria-hidden' => true}
+    - else
+      .col-sm-12
+        %h5.text-muted.text-center= translate_helper(:no_vendor_list)
+    
+    %br
+    %br
+    %hr
+        
+    - if can? :manage, Vehicle
+      = form_for current_provider, 
+          url: upload_vendor_list_provider_path(current_provider),
+          method: :patch,
+          html: {multipart: true} do |f|
+        =f.hidden_field :name
+        .form-group
+          = f.label :vendor_list, translate_helper(:vendor_list), class: "col-md-3 control-label"
+          .col-md-9
+            =f.file_field :vendor_list, disabled: @readonly, class: "form-control"
+        .form-group
+          =f.submit translate_helper(:upload_vendor_list), class: "btn action-button form-control"
+
+:javascript
+  $(function() {
+    $('#vehicles-table').dataTable();
+    $('#show_active_only').prop('checked', #{params[:show_inactive] == 'true'});
+    $('#show_active_only').change(function() {
+      window.location.href = "#{vehicles_path}?show_inactive=" + $(this).is(':checked')
+    });
+  });

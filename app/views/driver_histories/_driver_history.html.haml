@@ -1,0 +1,17 @@
+%tr{:class => "driver_history-#{driver_history.id}"}
+  %td
+    %p.form-control-static
+      = driver_history.event_date.to_s(:long)
+  %td
+    %p.form-control-static
+      = link_to driver_history.event, polymorphic_path([driver_history.driver, driver_history], action: @readonly ? nil : :edit), remote: true
+      - if driver_history.documents.present?
+        %i.fa.fa-paperclip{'aria-hidden' => true}
+  - unless @readonly
+    %td
+      = link_to polymorphic_path([driver_history.driver, driver_history]), 
+          remote: true, 
+          method: :delete, 
+          data: { confirm: translate_helper("driver_history_delete_confirm") }, 
+          class: "btn btn-danger btn-sm pull-right" do
+        %i.fa.fa-remove{'aria-hidden' => true}

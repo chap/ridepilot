@@ -1,0 +1,3 @@
+$('#modal-dialog').modal('hide');
+$('.dataTables_empty').remove();
+$("<%= j (render @vehicle_maintenance_schedule) %>").hide().appendTo('#schedules_table tbody').slideDown('slow');

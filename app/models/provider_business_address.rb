@@ -1,0 +1,2 @@
+class ProviderBusinessAddress < Address
+end

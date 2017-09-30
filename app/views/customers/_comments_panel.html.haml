@@ -1,0 +1,17 @@
+- edit_mode = :edit if !defined? edit_mode
+
+.panel.panel-primary#customer_comments_panel
+  .panel-heading
+    %h3.panel-title
+      = translate_helper(:customer_comments_panel)
+  .panel-body{style: 'padding: 5px;'}
+    .form-group.col-sm-12
+      .col-sm-3
+        = f.label :comments, translate_helper(:customer_comments) 
+      .col-sm-9
+        = f.text_area :comments, class: 'form-control'
+    - if edit_mode == :show
+      .pull-right
+        = link_to translate_helper(:view_customer_comments_report), 
+            customer_comments_report_customer_path(@customer),
+            class: "btn action-button"

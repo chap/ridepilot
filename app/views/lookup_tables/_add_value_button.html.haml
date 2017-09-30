@@ -1,9 +1,10 @@
+- url = is_provider_only ? add_value_provider_lookup_table_path(table) : add_value_lookup_table_path(table)
 = button_tag :type => 'button', id: 'addLookupTableValue', "data-target" => "#addLookupTableValueDialog", "data-toggle" => "modal", :class => "btn action-button" do
   = translate_helper(:add)
 #addLookupTableValueDialog.modal.fade.col-sm-12{"aria-describedby" => translate_helper(:add_value), :role => "dialog", "aria-hidden" => 'true', :tabindex => "-1"}
   .modal-dialog
     .modal-content
-      = form_for :lookup_table, url: add_value_lookup_table_path(table), method: :post do |f|
+      = form_for :lookup_table, url: url, method: :post do |f|
         .modal-header
           = button_tag class: 'btn action-button pull-right', data: {dismiss: 'modal'} do
             = translate_helper(:cancel)

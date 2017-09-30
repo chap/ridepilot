@@ -1,0 +1,46 @@
+= form_for @vehicle do |f| 
+  - if @vehicle.errors.any? 
+    .panel.panel-danger
+      .panel-heading
+        = translate_helper("vehicle_form_error_message", count: @vehicle.errors.count) 
+      .panel-body
+        %ul
+          - @vehicle.errors.full_messages.each do |msg| 
+            %li= msg 
+
+  .row
+    - if @vehicle.persisted?
+      .col-sm-12.col-md-6
+        = render 'details_panel', f: f
+        = render 'garage_panel', f: f
+        = render 'additional_info_panel', f: f
+      .col-sm-12.col-md-6
+        = render 'documentation_panel', f: f
+        = render 'maintenance_events_panel', f: f
+        = render 'compliance_events_panel', f: f
+        = render 'warranties_panel', f: f
+        = render 'legal_requirements_panel'
+        = render 'non_legal_requirements_panel'
+        - if @readonly
+          - logs = TrackerActionLog.for(@vehicle).order(created_at: :desc)
+          = render 'shared/action_log_panel', logs: logs if logs.any?
+    - else
+      .col-md-6
+        = render 'details_panel', f: f
+      .col-md-6
+        = render 'garage_panel', f: f
+        = render 'additional_info_panel', f: f
+        - if @readonly
+          - logs = TrackerActionLog.for(@vehicle).order(created_at: :desc)
+          = render 'shared/action_log_panel', logs: logs if logs.any?
+
+  - unless @readonly 
+    .row.form-actions
+      = f.submit translate_helper("vehicle_form_submit"), class: "btn action-button" 
+
+= render 'shared/hide_invisible_form_fields_js', model_name: "vehicle", table_name: 'vehicles', provider_id:  current_provider.try(:id) 
+
+- if @readonly
+  = render 'shared/readonly_modal_dialog', modal_id: "modal-dialog" 
+- else 
+  = render 'shared/modal_dialog', modal_id: "modal-dialog" 

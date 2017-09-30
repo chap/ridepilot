@@ -2,6 +2,8 @@ require 'faker'
 
 FactoryGirl.define do
   factory :provider do
-    name { Faker::Lorem.words(2).join(' ') }
+    sequence(:name) {|n| "sample_provider_#{n}" }
+    advance_day_scheduling 21
+    cab_enabled true
   end
 end

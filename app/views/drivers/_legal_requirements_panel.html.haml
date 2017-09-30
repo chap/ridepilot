@@ -1,0 +1,20 @@
+.panel.panel-primary
+  .panel-heading
+    = translate_helper("legal_driver_compliances_heading")
+  .panel-body{style: 'padding: 0px;'}
+    .col-sm-12
+      .checkbox.pull-right
+        %label
+          %input#show_past_legal{type: 'checkbox'}
+            %b= translate_helper(:show_past)
+    = render 'driver_compliances_table', driver_compliances: @driver.driver_compliances.incomplete.legal.default_order, legal: true
+  - unless @readonly
+    .panel-footer
+      .clearfix
+        = link_to translate_helper("driver_legal_requirements_add_link_title"), new_driver_driver_compliance_path(@driver, legal: true), class: "btn action-button pull-right", remote: true
+:javascript
+  $(function() {
+    $('#show_past_legal').change(function() {
+      $.ajax({url: "#{driver_driver_compliances_path(@driver)}?readonly=#{@readonly}&legal=true&show_past=" + $(this).is(':checked')});
+    });
+  });

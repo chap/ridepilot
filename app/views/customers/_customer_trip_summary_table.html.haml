@@ -1,0 +1,24 @@
+%table#customerTripSummaryTable.table.table-striped.table-bordered
+  %thead
+    %tr
+      %th= translate_helper("pickup_date") 
+      %th= translate_helper("pickup_address_column") 
+      %th= translate_helper("pickup_time_column") 
+      %th= translate_helper("dropoff_address_column")
+      %th= translate_helper("appointment_time_column") 
+  %tbody
+    - if trips.empty?
+      %p= translate_helper('no_trips')
+    - else
+      - trips.each do |trip|
+        %tr{data: {trip_id: trip.id}}
+          %td
+            = format_time_for_listing_day trip.pickup_time
+          %td
+            = trip.pickup_address.try :address_text
+          %td
+            = format_time_for_listing trip.pickup_time
+          %td
+            = trip.dropoff_address.try :address_text
+          %td
+            = format_time_for_listing trip.appointment_time if trip.appointment_time

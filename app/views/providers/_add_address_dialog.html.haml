@@ -1,0 +1,48 @@
+:css
+  .error {
+    color: red;
+  }
+
+#addAddressDialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        .pull-right
+          = button_tag translate_helper(:save), type: :submit, style: "margin-right: 5px;", class: "btn action-button", id: 'saveAddress'
+          = button_tag class: 'btn action-button', data: {dismiss: 'modal'} do
+            = translate_helper(:cancel)
+        .modal-title{:style => "text-align:left;"}
+          %strong
+            = translate_helper(:new_provider_common_address_dialog_title)
+      .modal-body
+        .address-form#provider-address-form
+          = render 'addresses/new_provider_common_address_form', :prefix=>'provider_common_address', address: ProviderCommonAddress.new(provider: @provider)
+
+:javascript
+  $(function() {
+    $('#addProviderCommonAddress').click(function(e) {
+      e.preventDefault();
+      var form = $("#provider-address-form");
+      $('#addAddressDialog').modal('show');
+      form.find('form')[0].reset();
+      form.find('input[type=hidden][name!=prefix]').val('');
+      form.find('.error').html('');
+    });
+
+    $('#saveAddress').on('click', function() {
+      $("#provider-address-form form").trigger('submit');
+    });
+
+    // happens after you submit an address (not autocomplete)
+    // an id should be returned, and then the form should close.
+    // if no id is returned, error messages are filled in. 
+    $("body").on('ajax:success', '.address-search', function(evt, data, status, xhr){
+      if (data && data.hasOwnProperty('id')) {
+        $('#addAddressDialog').modal('hide');
+        window.location.href = "#{addresses_provider_path(current_provider)}";
+      } else {
+        showAddressValidationErrors(this, data);
+      }
+    })
+  });
+  

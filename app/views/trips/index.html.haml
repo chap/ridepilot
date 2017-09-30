@@ -2,41 +2,127 @@
 .clearfix.row#page-header{style: 'padding: 0px;'}
   - if can? :create, Trip
     = link_to translate_helper("new_trip_link_text"), new_trip_path, :class=>'btn action-button pull-right'
+  - if can? :create, RepeatingTrip
+    = link_to translate_helper("new_repeating_trip_text"), new_repeating_trip_path, :class=>'btn action-button pull-right'
+  - if can? :index, RepeatingTrip
+    = link_to translate_helper("repeating_trips"), repeating_trips_path, :class=>'btn action-button pull-right'
   %h1= translate_helper("trips")+ ": " + format_time_as_title_for_listing_day(@start_pickup_date) + " - " + format_time_as_title_for_listing_day(@end_pickup_date)
   .clearfix
 
 .col-md-3{style: 'padding: 0px 15px 0px 0px;'}
   = render :partial => 'filters'
-.col-md-9{style: 'padding: 0px;'}
-  .checkbox.pull-right
-    %label
-      %input#hide_trip_calendar{type: 'checkbox'}
-      %b
-        = translate_helper("hide_calendar")
-  = render 'calendar', base_path: trips_path, resources: @day_resources, events: @trips_json
+- unless can?(:edit, Trip)
+  .col-md-9{style: 'padding: 0px;'}
+    = render 'list'
+- else
+  .col-md-9{style: 'padding: 0px;'}
+    .cancel-selected-trips.dropdown{style: 'margin-bottom: 5px;'}
+      %button.btn.btn-primary.dropdown-toggle{type: 'button', data: {toggle: 'dropdown'}} 
+        =translate_helper(:change_selected_trips_result)
+        %span.caret
+      %ul.dropdown-menu
+        -@trip_results.each do |tr|
+          %li
+            %a{href: '#', 'data-trip-result-id' => tr[1] }
+              =tr[0]
+    = render 'list'
 
-  = render 'list'
+  = render 'trips/trip_result_reason_dialog'
 
-:javascript
-  $(function() {
-    // hide/unhide calendar
-    function manage_calendar_hidden_status() {
-      var is_calendar_hidden = (localStorage.getItem('trip_calendar_hidden') == 'true');
-      if(is_calendar_hidden) {
-        $('#calendar').hide();
-      } else {
-        $('#calendar').show();
+  :javascript
+    $(function() {
+      // Initialize a helper object with the trip result reason modal, and a list of cancellation codes.
+      var trh = new TripResultHelper(
+        "#tripResultReasonDialog",
+        #{TripResult.reason_needed_result_ids}
+      );
+
+      // One checkbox to rule them all
+      $('.master-select-checkbox').change(function() {
+        $('.trip-selected').prop('checked', $(this).prop('checked'));
+      });
+      
+      var clearCheckboxes = function() {
+        $('.master-select-checkbox').prop('checked', false).trigger('change');
       }
-    }
 
-    $('#hide_trip_calendar').change(function() {
-      var checked = $(this).prop('checked');
-      localStorage.setItem('trip_calendar_hidden', checked || false);
+      // Handler for changing an individual trip result
+      $('.trip_table_result_column select').change(function() {
+        var resultCode = $(this).val();
+        var form = $(this).closest('form');
+        var resultReasonInput = form.find('input#trip_result_reason');
+        if(trh.isReasonNeeded(resultCode)) { // If result is a code that needs to ask for reason...
+          trh.prepareModal(
+            resultReasonInput.val(), // Set result reason input to current value
+            true, // Show result reason input
+            {
+              confirm: function() { // update the result reason based on user input, and submit form
+                resultReasonInput.val(trh.modalInput.val());
+                form.submit();
+              },
+              skip: function() { // Just submit the form
+                form.submit();
+              }
+            }
+          );
+          trh.showModal();
+        } else { // If result is NOT a cancel code...
+          form.submit(); // ...just submit the form as-is.
+        }
 
-      manage_calendar_hidden_status();
+      });
+
+      // Handler for changing multiple selected trip results
+      $('.cancel-selected-trips a').click(function() {
+        var checkedBoxes = $('.trip-selected:checked');
+        if(checkedBoxes.length === 0) { return; } // Return if no trips are selected
+
+        var tripRows = checkedBoxes.closest('tr.trip');
+        var resultCode = $(this).data('trip-result-id');
+        var resultSelectors = tripRows.find('.trip_table_result_column select');
+        var forms = resultSelectors.closest('form');
+        var resultReasonInputs = forms.find('input#trip_result_reason');
+
+        if(trh.isReasonNeeded(resultCode)) { // If result is a code that needs to ask for reason...
+          trh.prepareModal(
+            "", // Set result reason input to blank
+            true, // Show result reason input
+            { // Prepare modal responses:
+              confirm: function() { // update the results and result reason and submit form
+                resultSelectors.val(resultCode);
+                resultReasonInputs.val(trh.modalInput.val());
+                forms.submit();
+                clearCheckboxes();
+              },
+              skip: function() { // just update results and submit the form
+                resultSelectors.val(resultCode);
+                forms.submit();
+                clearCheckboxes();
+              },
+              cancel: function() { // don't update results or submit form
+                return;
+              }
+            }
+          )
+        } else { // If result is NOT a cancel code...
+          trh.prepareModal(
+            "", // Set result reason input to blank
+            false, // Don't show result reason input
+            { // Prepare modal responses:
+              confirm: function() {
+                resultSelectors.val(resultCode);
+                forms.submit();
+                clearCheckboxes();
+              },
+              cancel: function() {
+                return;
+              }
+            }
+          )
+        }
+
+        trh.showModal();
+        
+      });
+
     });
-
-    manage_calendar_hidden_status();
-    $('#hide_trip_calendar').prop('checked', (localStorage.getItem('trip_calendar_hidden') == 'true'));
-  });
-

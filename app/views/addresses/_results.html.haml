@@ -1,0 +1,7 @@
+- if @addresses.present?
+  - for address in @addresses
+    = render 'addresses/provider_common_address', address: address
+- else
+  %tr
+    %td
+      No results for ‘#{@term}’

@@ -1,0 +1,27 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'admin'
+#page-header.row
+  .col-sm-12.col-md-6
+    %h1= translate_helper("edit_recurring_driver_compliance_heading")
+  .col-sm-12.col-md-6
+    .pull-right
+      %button#recurring_driver_compliance_form_submit.btn.action-button
+        = translate_helper("update")
+      = link_to translate_helper("cancel"), @recurring_driver_compliance, class: "btn action-button"
+- if @readonly
+  .panel.panel-info
+    .panel-heading
+      %h2.panel-title= translate_helper("recurring_driver_compliance_form_readonly_notice_heading")
+    .panel-body
+      %p= translate_helper("recurring_driver_compliance_form_readonly_notice")
+- else
+  = render partial: "new_event_notice"
+= render partial: "form"
+
+:javascript
+  $(document).ready(function(){
+    $("form.edit_recurring_driver_compliance .form-actions").hide();
+    
+    $("#recurring_driver_compliance_form_submit").on("click", function(){
+      $("form.edit_recurring_driver_compliance").submit();
+    });
+  });

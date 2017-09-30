@@ -1,0 +1,18 @@
+%tr{class:"vehicle_maintenance_schedule-#{vehicle_maintenance_schedule.id}"}
+  %td= vehicle_maintenance_schedule.name
+  %td= vehicle_maintenance_schedule.mileage
+  %td
+    -if vehicle_maintenance_schedule.document && vehicle_maintenance_schedule.document.document.present?
+      =link_to  vehicle_maintenance_schedule.document.document_file_name, 
+                vehicle_maintenance_schedule.document.document.url, 
+                target: :blank
+  %td
+    .pull-right
+      = link_to translate_helper(:edit), polymorphic_path([vehicle_maintenance_schedule.vehicle_maintenance_schedule_type, vehicle_maintenance_schedule], action: :edit), remote: true, class: "btn btn-primary btn-sm" if can?(:edit, vehicle_maintenance_schedule)
+      -if can?(:delete, vehicle_maintenance_schedule)
+        = link_to polymorphic_path([vehicle_maintenance_schedule.vehicle_maintenance_schedule_type, vehicle_maintenance_schedule]), 
+            method: :delete, 
+            remote: true, 
+            data: { confirm: translate_helper("vehicle_maintenance_schedule_delete_confirm") }, 
+            class: "btn btn-danger btn-sm" do
+          %i.fa.fa-remove{'aria-hidden' => true}

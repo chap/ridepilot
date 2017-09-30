@@ -1,3 +1,5 @@
+- url = is_provider_only ? destroy_value_provider_lookup_table_path(table) : destroy_value_lookup_table_path(table)
+
 = button_tag :type => 'button', id: 'deleteLookupTableValue', "data-target" => "#deleteLookupTableValueDialog", "data-toggle" => "modal", disabled: 'disabled', :class => "btn btn-danger action-button" do
   = translate_helper(:delete)
 
@@ -5,7 +7,7 @@
 #deleteLookupTableValueDialog.modal.fade.col-sm-12{"aria-describedby" => translate_helper(:delete_value), :role => "dialog", "aria-hidden" => 'true', :tabindex => "-1"}
   .modal-dialog
     .modal-content
-      = form_for table, url: destroy_value_lookup_table_path(table), method: :put do |f|
+      = form_for table, url: url, method: :put do |f|
         .modal-header
           = button_tag class: 'btn action-button pull-right', data: {dismiss: 'modal'} do
             = translate_helper(:cancel)
@@ -21,7 +23,7 @@
     var confirm_delete_message = "#{confirm_delete_message}";
     $('#deleteLookupTableValueDialog').on('show.bs.modal', function (e) {
       var form = $(this).find('form');
-      var baseUrl = "#{destroy_value_lookup_table_path(table)}";
+      var baseUrl = "#{url}";
       var currentValue = $('#lookupTable').DataTable().row($('#lookupTable .selected')).data();
       var newUrl = baseUrl + "?model_id=" + $('#lookupTable .selected').data('model-id');
       form.prop('action', newUrl);

@@ -1,135 +1,103 @@
 class Trip < ActiveRecord::Base
   include RequiredFieldValidatorModule
-  include RecurringRideCoordinator
+  include TripCore
+  include PublicActivity::Common
 
   acts_as_paranoid # soft delete
-  
-  schedules_occurrences_with :repeating_trip,
-    with_attributes: -> (trip) {
-      attrs = {}
-      RepeatingTrip.ride_coordinator_attributes.each {|attr| attrs[attr] = trip.send(attr) }
-      attrs['driver_id'] = trip.repetition_driver_id
-      attrs['vehicle_id'] = trip.repetition_vehicle_id
-      attrs['customer_informed'] = trip.repetition_customer_informed
-      attrs['schedule_attributes'] = {
-        repeat:        1,
-        interval_unit: "week", 
-        start_date:    trip.pickup_time.to_date.to_s,
-        interval:      trip.repetition_interval, 
-        monday:        trip.repeats_mondays    ? 1 : 0,
-        tuesday:       trip.repeats_tuesdays   ? 1 : 0,
-        wednesday:     trip.repeats_wednesdays ? 1 : 0,
-        thursday:      trip.repeats_thursdays  ? 1 : 0,
-        friday:        trip.repeats_fridays    ? 1 : 0,
-        saturday:      trip.repeats_saturdays  ? 1 : 0,
-        sunday:        trip.repeats_sundays    ? 1 : 0
-      }
-      attrs
-    },
-    destroy_future_occurrences_with: -> (trip) {
-      # Be sure not delete occurrences that have already happened.
-      trips = if trip.pickup_time < Time.zone.now
-        Trip.repeating_based_on(trip.repeating_trip).after_today.not_called_back
-      else 
-        Trip.repeating_based_on(trip.repeating_trip).after(trip.pickup_time).not_called_back
-      end
-
-      schedule = trip.repeating_trip.schedule
-      Trip.transaction do
-        trips.find_each do |t|
-          t.destroy unless schedule.occurs_on?(t.pickup_time)
-        end
-      end
-    },
-    unlink_past_occurrences_with: -> (trip) {
-      if trip.pickup_time < Time.zone.now
-        Trip.repeating_based_on(trip.repeating_trip).today_and_prior.update_all "repeating_trip_id = NULL"
-      else 
-        Trip.repeating_based_on(trip.repeating_trip).prior_to(trip.pickup_time).update_all "repeating_trip_id = NULL"
-      end
-    }
 
   has_paper_trail
-  
-  attr_accessor :driver_id, :vehicle_id
+
+  attr_accessor :driver_id, :vehicle_id   #,:date #Custom date setter and getter in trip_core.rb
 
   belongs_to :called_back_by, -> { with_deleted }, class_name: "User"
-  belongs_to :customer, -> { with_deleted }, inverse_of: :trips
-  belongs_to :dropoff_address,  -> { with_deleted }, class_name: "Address"
-  belongs_to :funding_source, -> { with_deleted }
-  belongs_to :mobility, -> { with_deleted }
-  belongs_to :pickup_address, -> { with_deleted }, class_name: "Address"
-  belongs_to :provider, -> { with_deleted }
   belongs_to :run
-  belongs_to :service_level, -> { with_deleted }
-  belongs_to :trip_purpose, -> { with_deleted }
   belongs_to :trip_result, -> { with_deleted }
-  has_one    :donation
   has_one    :return_trip, class_name: "Trip", foreign_key: :linking_trip_id
   belongs_to :outbound_trip, class_name: 'Trip', foreign_key: :linking_trip_id
-
+  belongs_to :repeating_trip
+  has_one    :donation
 
   delegate :label, to: :run, prefix: :run, allow_nil: true
-  delegate :name, to: :customer, prefix: :customer, allow_nil: true
-  delegate :name, to: :trip_purpose, prefix: :trip_purpose, allow_nil: true
   delegate :code, :name, to: :trip_result, prefix: :trip_result, allow_nil: true
-  delegate :name, to: :service_level, prefix: :service_level, allow_nil: true
 
-  # Trip is now manually assigned to a run via trips_runs controller
-  # we dont need to compute or create a run when a new trip is created or updated
-  #before_validation :compute_run
-  
-  serialize :guests
-
-  validates :appointment_time, presence: true
-  validates :attendant_count, numericality: {greater_than_or_equal_to: 0}
-  validates :customer, associated: true, presence: true
-  validates :dropoff_address, associated: true, presence: true
-  validates :guest_count, numericality: {greater_than_or_equal_to: 0}
   validates :mileage, numericality: {greater_than: 0, allow_blank: true}
-  validates :pickup_address, associated: true, presence: true
-  validates :pickup_time, presence: true
-  validates :trip_purpose_id, presence: true
-  validates_datetime :appointment_time, presence: true
-  validates_datetime :pickup_time, presence: true
   validate :driver_is_valid_for_vehicle
   validate :vehicle_has_open_seating_capacity
   validate :vehicle_has_mobility_device_capacity
   validate :completable_until_trip_appointment_day
   validate :provider_availability
-  validates :mobility_device_accommodations, numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_blank: true }
   validate :return_trip_later_than_outbound_trip
-  validate :dropff_time_and_pickup_time_gap
+  validate :within_advance_day_scheduling
+  validate :customer_active
 
-  accepts_nested_attributes_for :customer
-
-  scope :after,              -> (pickup_time) { where('trips.pickup_time > ?', pickup_time.utc) }
-  scope :after_today,        -> { where('CAST(trips.pickup_time AS date) > ?', Date.today.in_time_zone.utc) }
-  scope :by_funding_source,  -> (name) { includes(:funding_source).references(:funding_source).where("funding_sources.name = ?", name) }
+  scope :after,              -> (pickup_time) { where('pickup_time > ?', pickup_time.utc) }
+  scope :after_today,        -> { where('CAST(pickup_time AS date) > ?', Date.today.in_time_zone.utc) }
+  scope :today_and_prior,    -> { where('CAST(pickup_time AS date) <= ?', Date.today.in_time_zone.utc) }
+  scope :prior_to_today,     -> { where('CAST(pickup_time AS date) < ?', Date.today.in_time_zone.utc) }
+  scope :during,             -> (pickup_time, appointment_time) { 
+                                  where('NOT ((pickup_time < ? AND appointment_time < ?) OR (pickup_time > ? AND appointment_time > ?))', 
+                                  pickup_time.utc, appointment_time.utc, pickup_time.utc, appointment_time.utc) }
+  scope :for_date,           ->(date) { where(pickup_time: date.beginning_of_day..date.end_of_day) }
+  scope :for_date_range,     -> (from_date, to_date) { where(pickup_time: from_date.beginning_of_day..to_date.end_of_day) } 
+  scope :prior_to,           -> (pickup_time) { where('pickup_time < ?', pickup_time.to_datetime.in_time_zone.utc) } 
+  scope :has_scheduled_time, -> { where.not(pickup_time: nil) }
   scope :by_result,          -> (code) { includes(:trip_result).references(:trip_result).where("trip_results.code = ?", code) }
-  scope :by_service_level,   -> (level) { includes(:service_level).references(:service_level).where("service_levels.name = ?", level) }
-  scope :by_trip_purpose,    -> (name) { includes(:trip_purpose).references(:trip_purpose).where("trip_purposes.name = ?", name) }
   scope :called_back,        -> { where('called_back_at IS NOT NULL') }
-  scope :completed,          -> { Trip.by_result('COMP') }
-  scope :during,             -> (pickup_time, appointment_time) { where('NOT ((trips.pickup_time < ? AND trips.appointment_time < ?) OR (trips.pickup_time > ? AND trips.appointment_time > ?))', pickup_time.utc, appointment_time.utc, pickup_time.utc, appointment_time.utc) }
+  scope :completed,          -> { joins(:trip_result).where(trip_results: {code: 'COMP'}) }
   scope :for_cab,            -> { where(cab: true) }
-  scope :for_date,           -> (date) { where('trips.pickup_time >= ? AND trips.pickup_time < ?', date.to_datetime.in_time_zone.utc, date.to_datetime.in_time_zone.utc + 1.day) }
-  scope :for_date_range,     -> (start_date, end_date) { where('trips.pickup_time >= ? AND trips.pickup_time < ?', start_date.to_datetime.in_time_zone.utc, end_date.to_datetime.in_time_zone.utc) }
-  scope :for_driver,         -> (driver_id) { not_for_cab.where(runs: {driver_id: driver_id}).joins(:run) }
-  scope :for_provider,       -> (provider_id) { where(provider_id: provider_id) }
-  scope :for_vehicle,        -> (vehicle_id) { not_for_cab.where(runs: {vehicle_id: vehicle_id}).joins(:run) }
-  scope :has_scheduled_time, -> { where.not(pickup_time: nil).where.not(appointment_time: nil) }
-  scope :incomplete,         -> { where(trip_result: nil) }
-  scope :individual,         -> { joins(:customer).where(customers: {group: false}) }
-  scope :not_called_back,    -> { where('called_back_at IS NULL') }
   scope :not_for_cab,        -> { where(cab: false) }
-  scope :prior_to,           -> (pickup_time) { where('trips.pickup_time < ?', pickup_time.to_datetime.in_time_zone.utc) }
-  scope :scheduled,          -> { includes(:trip_result).references(:trip_result).where("trips.trip_result_id is NULL or trip_results.code = 'COMP'") }
-  scope :today_and_prior,    -> { where('CAST(trips.pickup_time AS date) <= ?', Date.today.in_time_zone.utc) }
-  scope :turned_down,        -> { Trip.by_result('TD') }
+  scope :for_driver,         -> (driver_id) { not_for_cab.where(runs: {driver_id: driver_id}).joins(:run) }
+  scope :for_vehicle,        -> (vehicle_id) { not_for_cab.where(runs: {vehicle_id: vehicle_id}).joins(:run) }
+  scope :incomplete,         -> { where(trip_result: nil) }
+  scope :empty_or_completed, -> { includes(:trip_result).references(:trip_result).where("trips.trip_result_id is NULL or trip_results.code = 'COMP'") }
+  scope :turned_down,        -> { joins(:trip_result).where(trip_results: {code: 'TD'}) }
+  scope :scheduled,          -> { where("cab = ? or run_id is not NULL", true) }
+  scope :repeating_based_on, ->(scheduler) { where(repeating_trip_id: scheduler.try(:id)) }
+  scope :outbound,           ->() { where(direction: 'outbound') }
+  scope :return,             ->() { where(direction: 'return') }
 
+  # List of attributes of which the change would affect the run
+  ATTRIBUTES_CAN_DISRUPT_RUN = [
+    'customer_id',
+    'pickup_time',
+    'appointment_time',
+    'pickup_address_id',
+    'dropoff_address_id',
+    'mobility_id',
+    'guest_count',
+    'attendant_count',
+    'group_size',
+    'mobility_device_accommodations'
+  ]
+
+  def self.attributes_can_disrupt_run
+    ATTRIBUTES_CAN_DISRUPT_RUN
+  end
+
+  # Special date attr_reader sends back pickup/appointment time date, or instance var if present
   def date
-    pickup_time.to_date
+    return @date if @date
+    return pickup_time.to_date if pickup_time
+    return appointment_time.to_date if appointment_time
+    return nil
+  end
+
+  # Special date attr_writer sets @date instance variable. Accepts a Date object or a date string
+  # This date is used in setting pickup and appointment time attributes
+  def date=(date)
+    return false if date.blank?
+    @date = Date.parse(date.to_s)
+    # Refresh pickup and appointment time with new date
+    self.pickup_time = pickup_time #unless pickup_time.to_date == @date
+    self.appointment_time = appointment_time #unless appointment_time.to_date == @date
+  end
+
+  # Takes a time and a date object, and returns a time object on the passed Date
+  def time_on_date(t, d)
+    return nil unless t
+    return t unless d
+    t = t.to_time.in_time_zone
+    Time.zone.local(d.year, d.month, d.day, t.hour, t.min, 0) # parse as local time
   end
 
   def complete
@@ -151,13 +119,17 @@ class Trip < ActiveRecord::Base
   def driver_id
     @driver_id || run.try(:driver_id)
   end
-  
+
+  # When setting pickup_time, set with @date attribute if present
   def pickup_time=(datetime)
-    write_attribute :pickup_time, format_datetime(datetime)
+    write_attribute :pickup_time,
+      time_on_date(format_datetime(datetime), date)
   end
-  
+
+  # When setting appointment_time, set with @date attribute if present
   def appointment_time=(datetime)
-    write_attribute :appointment_time, format_datetime(datetime)
+    new_appointment_time = datetime ? time_on_date(format_datetime(datetime), date) : nil
+    write_attribute :appointment_time, new_appointment_time
   end
 
   def run_text
@@ -169,117 +141,55 @@ class Trip < ActiveRecord::Base
       "(No run specified)"
     end
   end
-  
-  def trip_size
-    if customer.try(:group)
-      group_size
-    else 
-      guest_count + attendant_count + 1
-    end
-  end
-
-  def trip_count
-    trip_size
-  end
-
-  def repetition_customer_informed=(value)
-    @repetition_customer_informed = (value == "1" || value == true)
-  end
-
-  def repetition_customer_informed
-    if @repetition_customer_informed.nil?
-      @repetition_customer_informed = repeating_trip.try :customer_informed
-    else
-      @repetition_customer_informed
-    end
-  end
-
-  def is_in_district?
-    pickup_address.try(:in_district) && dropoff_address.try(:in_district)
-  end
 
   def adjusted_run_id
     cab ? Run::CAB_RUN_ID : (run_id ? run_id : Run::UNSCHEDULED_RUN_ID)
   end
 
   def as_calendar_json
-    return if appointment_time < pickup_time
-    # if trip spans multiple day, should spit into several objects by each day
-    common_data = {
+    return if appointment_time && appointment_time < pickup_time
+    
+    {
       id: id,
       pickup_time: pickup_time.iso8601,
-      appointment_time: appointment_time.iso8601,
-      title: customer_name + "\n" + pickup_address.try(:address_text).to_s
+      appointment_time: appointment_time.try(:iso8601),
+      title: customer_name + "\n" + pickup_address.try(:address_text).to_s,
+      start: pickup_time.iso8601,
+      "end": appointment_time ? appointment_time.iso8601 : date.end_of_day.iso8601,
+      resource: pickup_time.to_date.to_s(:js)
     }
-
-    if pickup_time.to_date == appointment_time.to_date
-      common_data.merge({
-        start: pickup_time.iso8601,
-        "end": appointment_time.iso8601,
-        resource: pickup_time.to_date.to_s(:js)
-      })
-    else
-      start_time, end_time = pickup_time, appointment_time
-      events = []
-      while end_time.to_date != start_time.to_date
-        new_event_data = common_data.dup
-        events << new_event_data.merge({
-          start: start_time.iso8601,
-          "end": start_time.end_of_day.iso8601,
-          resource: start_time.to_date.to_s(:js)
-        })
-
-        start_time = start_time.beginning_of_day + 1.day
-      end
-
-      if start_time <= appointment_time
-        events << common_data.dup.merge({
-          start: start_time.iso8601,
-          "end": appointment_time.iso8601,
-          resource: start_time.to_date.to_s(:js)
-        })
-      end
-    end
   end
-  
+
   def as_run_event_json
-    return if appointment_time < pickup_time
-    # run calendar requires start and end should be within one day
-    end_time = appointment_time.to_date == pickup_time.to_date ? 
-      appointment_time : pickup_time.end_of_day
+    return if appointment_time && appointment_time < pickup_time
 
     {
       id: id,
       pickup_time: pickup_time.iso8601,
-      appointment_time: appointment_time.iso8601,
+      appointment_time: appointment_time.try(:iso8601),
       start: pickup_time.iso8601,
-      "end": end_time.iso8601,
+      "end": appointment_time ? appointment_time.iso8601 : date.end_of_day.iso8601,
       title: customer_name + "\n" + pickup_address.try(:address_text).to_s,
       resource: adjusted_run_id
     }
   end
 
-  def update_donation(user, amount)
-    return unless user && amount
-
-    if self.donation
-      self.donation.update_attributes(user: user, amount: amount)
-    elsif self.id && self.customer
-      self.donation = Donation.create(date: Time.current, user: user, customer: self.customer, trip: self, amount: amount)
-      self.save
-    end
+  def is_cancelled_or_turned_down?
+    trip_result && (trip_result.cancelled? || trip_result.turned_down?)
   end
 
-  def is_no_show_or_turn_down?
-    trip_result && ['NS', 'TD'].index(trip_result.code)
+  # Is the trip result one of several codes that needs reason
+  def result_need_reason?
+    trip_result && TripResult.is_reason_needed?(trip_result.code)
   end
-    
+
   def clone_for_future!
     cloned_trip = self.dup
-    
+
     cloned_trip.pickup_time = nil
     cloned_trip.appointment_time = nil
     cloned_trip.trip_result = nil
+    cloned_trip.result_reason = nil
     cloned_trip.customer_informed = false
     cloned_trip.called_back_by = nil
     cloned_trip.donation = nil
@@ -287,24 +197,38 @@ class Trip < ActiveRecord::Base
     cloned_trip.cab = false
     cloned_trip.repeating_trip = nil
     cloned_trip.drive_distance = nil
+    cloned_trip.outbound_trip = nil
+    cloned_trip.direction = :outbound
 
     cloned_trip
   end
 
-  def clone_for_return!(pickup_time_str, appointment_time_str)
+  def clone_for_return!(pickup_time_str = nil, appointment_time_str = nil)
+
     return_trip = self.dup
     return_trip.direction = :return
     return_trip.pickup_address = self.dropoff_address
     return_trip.dropoff_address = self.pickup_address
-    return_trip.pickup_time = nil
-    return_trip.pickup_time = Time.zone.parse(pickup_time_str, self.pickup_time.beginning_of_day) if pickup_time_str
-    return_trip.appointment_time = nil
-    # assume same-day trip
-    return_trip.appointment_time = Time.zone.parse(appointment_time_str, self.pickup_time.beginning_of_day) if appointment_time_str
-    return_trip.outbound_trip = self
-    return_trip.drive_distance = nil
 
+    # Set date to outbound trip date, and assume pickup and appt time will be on that date
+    return_trip.date = self.date
+    return_trip.pickup_time = pickup_time_str
+    return_trip.appointment_time = appointment_time_str
+
+    return_trip.outbound_trip = self
+    return_trip.repeating_trip = nil
+    return_trip.drive_distance = nil
+    return_trip.trip_result = nil
+    return_trip.result_reason = nil
     return_trip
+  end
+
+  def clone_for_repeating_trip!
+    daily_trip_clone = self.clone_for_future!
+    repeating_trip = RepeatingTrip.new
+    repeating_trip.attributes = daily_trip_clone.attributes.select{ |k, v| repeating_trip.attributes.keys.include? k.to_s }
+
+    repeating_trip
   end
 
   def is_linked?
@@ -352,7 +276,7 @@ class Trip < ActiveRecord::Base
       code = :scheduled_to_cab
       name = 'Scheduled to Cab'
       message = TranslationEngine.translate_text(:trip_has_been_scheduled_to_cab)
-    else  
+    else
       code = :requested
       name = 'Requested'
       message = TranslationEngine.translate_text(:trip_has_been_requested)
@@ -375,10 +299,60 @@ class Trip < ActiveRecord::Base
     end
   end
 
+  # Move past scheduled trips in Standby queue to Unmet Need
+  def self.move_prior_standby_to_unmet!
+    unmet = TripResult.find_by_code('UNMET')
+    Trip.where(provider_id: Provider.active.pluck(:id)).prior_to_today.scheduled.standby.update_all(trip_result_id: unmet.id) if unmet.present?
+  end
+
+  def scheduled?
+    run.present? || cab
+  end
+
+  # check if any attribute change would disrupt a run
+  def run_disrupted_by_trip_changes?
+    disruption_attrs_changed = self.changes.keys & Trip.attributes_can_disrupt_run
+    actual_changes = []
+
+    if disruption_attrs_changed.any?
+      actual_changes = disruption_attrs_changed
+      # filter out the case when you changed a nil to 0, in this case, we don't think it's a change
+      disruption_attrs_changed.each do |attr_key|
+        prev_val = self.try("#{attr_key}_was")
+        val = self.try(attr_key)
+        next unless (prev_val.blank? || prev_val == 0) && (val.blank? || val == 0)
+        actual_changes = actual_changes - [attr_key]
+      end
+    end
+
+    actual_changes.any?
+  end
+
+  def unschedule_trip
+    if self.run.present?
+      self.run = nil
+      self.save(validate: false)
+    elsif provider && provider.cab_enabled? && self.cab
+      self.cab = false
+      self.save(validate: false)
+    end
+  end
+
+  def update_donation(user, amount)
+    return unless user && amount
+
+    if self.donation
+      self.donation.update_attributes(user: user, amount: amount)
+    elsif self.id && self.customer
+      self.donation = Donation.create(date: Time.current, user: user, customer: self.customer, trip: self, amount: amount)
+      self.save
+    end
+  end
+
   private
-  
+
   def driver_is_valid_for_vehicle
-    # This will error if a run was found or extended for this vehicle and time, 
+    # This will error if a run was found or extended for this vehicle and time,
     # but the driver for the run is not the driver selected for the trip
     if self.run.try(:driver_id).present? && self.driver_id.present? && self.run.driver_id.to_i != self.driver_id.to_i
       errors.add(:driver_id, TranslationEngine.translate_text(:driver_is_valid_for_vehicle_validation_error))
@@ -386,6 +360,7 @@ class Trip < ActiveRecord::Base
   end
 
   # Check if the run's vehicle has open capacity at the time of this trip
+  # TODO: refactor needed to deal with re-arranging pickup and dropoff orders from different trip
   def vehicle_has_open_seating_capacity
     if run.try(:vehicle_id).present? && pickup_time.present? && appointment_time.present?
       vehicle_open_seating_capacity = run.vehicle.try(:open_seating_capacity, pickup_time, appointment_time, ignore: self)
@@ -395,6 +370,7 @@ class Trip < ActiveRecord::Base
   end
 
   # Check if the run's vehicle has enough mobility accommodations at the time of this trip
+  # TODO: refactor needed to deal with re-arranging pickup and dropoff orders from different trip
   def vehicle_has_mobility_device_capacity
     if mobility_device_accommodations && run.try(:vehicle_id).present? && pickup_time.present? && appointment_time.present?
       vehicle_mobility_capacity = run.vehicle.try(:open_mobility_device_capacity, pickup_time, appointment_time, ignore: self)
@@ -405,7 +381,7 @@ class Trip < ActiveRecord::Base
 
   # Can only allow to set trip as complete until day of the trip
   def completable_until_trip_appointment_day
-    if complete && Time.current < appointment_time.in_time_zone.beginning_of_day
+    if complete && Time.current < pickup_time.in_time_zone.beginning_of_day
       errors.add(:base, TranslationEngine.translate_text(:completable_until_trip_appointment_day_validation_error))
     end
   end
@@ -420,148 +396,38 @@ class Trip < ActiveRecord::Base
     if is_linked?
       if is_outbound? && appointment_time
         errors.add(:base, TranslationEngine.translate_text(:outbound_trip_dropoff_time_no_later_than_return_trip_pickup_time)) if appointment_time > return_trip.pickup_time
-      elsif is_return? && pickup_time
+      elsif is_return? && pickup_time && outbound_trip.appointment_time
         errors.add(:base, TranslationEngine.translate_text(:return_trip_pickup_time_no_earlier_than_outbound_trip_dropoff_time)) if pickup_time < outbound_trip.appointment_time
       end
     end
   end
 
-  def dropff_time_and_pickup_time_gap
-    time_gap_in_mins = (appointment_time - pickup_time) / 60 if appointment_time && pickup_time
-    errors.add(:base, TranslationEngine.translate_text(:violate_provider_min_time_gap, provider_name: provider.try(:name), min_gap: provider.min_trip_time_gap_in_mins)) if provider && time_gap_in_mins && (time_gap_in_mins < provider.min_trip_time_gap_in_mins)
-  end
-
-  def compute_run    
-    return true if run_id || cab || vehicle_id.blank? || provider_id.blank?
-
-    if !pickup_time or !appointment_time 
-      return true # we'll error out in validation
-    end
-
-    Trip.transaction do
-      # When the trip is saved, we need to find or create a run for it. This 
-      # will depend on the driver and vehicle.  
-      self.run = Run.where("scheduled_start_time <= ? and scheduled_end_time >= ? and vehicle_id=? and provider_id=?", pickup_time, appointment_time, vehicle_id, provider_id).first
-
-      if run.nil?
-        # Find the next/previous runs for this vehicle and, if necessary, split 
-        # or change times on them
-
-        previous_run = Run.where("scheduled_start_time <= ? and vehicle_id=? and provider_id=? ", appointment_time, vehicle_id, provider_id).order("scheduled_start_time").last
-
-        next_run = Run.where("scheduled_start_time >= ? and vehicle_id=? and provider_id=? ", pickup_time, vehicle_id, provider_id).order("scheduled_start_time").first
-
-        # There are four possible cases: either the previous or the next run
-        # could overlap the trip, or neither could.
-
-        if previous_run and previous_run.scheduled_end_time > pickup_time
-          # previous run overlaps trip
-          if next_run and next_run.scheduled_start_time < appointment_time
-            # Next run overlaps trip too
-            return handle_overlapping_runs(previous_run, next_run)
-          else
-            # Just the previous run
-            if previous_run.scheduled_start_time.to_date != pickup_time.to_date
-              self.run = make_run
-            else
-              self.run = previous_run
-              previous_run.update_attributes! scheduled_end_time: run.appointment_time
-            end
-          end
-        else
-          if next_run and next_run.scheduled_start_time < appointment_time
-            # Just the next run
-            if next_run.scheduled_start_time.to_date != pickup_time.to_date
-              self.run = make_run
-            else
-              self.run = next_run
-              next_run.update_attributes! scheduled_start_time: run.pickup_time
-            end
-          else
-            # No overlap, create a new run
-            self.run = make_run
-          end
-        end
-      end
-    end
-  end
-
-  def handle_overlapping_runs(previous_run, next_run)
-    Trip.transaction do
-      # Can we unify the runs?
-      if next_run.driver_id == previous_run.driver_id
-        self.run = unify_runs(previous_run, next_run)
-        return
-      end
-
-      # Now, can we push the start of the second run later?
-      first_trip = next_run.trips.first
-      if first_trip.scheduled_start_time > appointment_time
-        # Yes, we can
-        next_run.update_attributes! scheduled_start_time: appointment_time
-        previous_run.update_attributes! scheduled_end_time: appointment_time
-        self.run = previous_run
-      else
-        # No, the second run is fixed. Can we push the end of the first run 
-        # earlier?
-        last_trip = previous_run.trips.last
-        if last_trip.scheduled_end_time <= pickup_time
-          # Yes, we can
-          previous_run.update_attributes! scheduled_end_time: pickup_time
-          next_run.update_attributes! scheduled_start_time: appointment_time
-          self.run = next_run
-        else
-          return false
-        end
-      end
-    end
-  end
-
-  def unify_runs(before, after)
-    Trip.transaction do
-      before.update_attributes! scheduled_end_time: after.scheduled_end_time, end_odometer: after.end_odometer
-      for trip in after.trips
-        trip.run = before
-      end
-      after.destroy
-    end
-    return before
-  end
-
-  def make_run
-    Run.create!({
-      provider_id:          provider_id,
-      date:                 pickup_time.to_date,
-      scheduled_start_time: Time.zone.local(
-        pickup_time.year,
-        pickup_time.month,
-        pickup_time.day,
-        BUSINESS_HOURS[:start],
-        0, 0
-      ),
-      scheduled_end_time:   Time.zone.local(
-        pickup_time.year,
-        pickup_time.month,
-        pickup_time.day,
-        BUSINESS_HOURS[:end],
-        0, 0
-      ),
-      vehicle_id:           vehicle_id,
-      driver_id:            driver_id,
-      complete:             false,
-      paid:                 true
-    })
-  end
-
+  # Formats a variety of inputs as a Time object, and catches errors.
+  # If a time string (e.g. "10:00 AM") is sent along with a date param, will
+  # create the time at the given date. Defaults to today.
   def format_datetime(datetime)
     if datetime.is_a?(String)
       begin
         Time.zone.parse(datetime.gsub(/\b(a|p)\b/i, '\1m').upcase)
-      rescue 
+      rescue
         nil
       end
     else
       datetime
     end
   end
+
+  def within_advance_day_scheduling
+    advance_day_scheduling = provider.try(:get_advance_day_scheduling)
+    if date && advance_day_scheduling.present? && (date - Date.current).to_i > advance_day_scheduling
+      errors.add(:date, TranslationEngine.translate_text(:beyond_advance_day_scheduling) % {advance_day_scheduling: advance_day_scheduling})
+    end
+  end
+
+  def customer_active
+    if customer && date && !customer.active_for_date?(date)
+      errors.add(:customer, TranslationEngine.translate_text(:customer_inactive_for_trip_date)) 
+    end
+  end
+
 end

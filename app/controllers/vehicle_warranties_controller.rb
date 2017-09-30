@@ -1,41 +1,50 @@
 class VehicleWarrantiesController < ApplicationController
   load_and_authorize_resource :vehicle
-  load_and_authorize_resource :vehicle_warranty, through: :vehicle
+  before_action :load_vehicle_warranty
+  
+  include DocumentAssociableController
   
   respond_to :html, :js
 
   # GET /vehicle_warranties/new
   def new
-    prep_edit
+  end
+
+  def show
+    @readonly = true
   end
 
   # GET /vehicle_warranties/1/edit
   def edit
-    prep_edit
   end
 
   # POST /vehicle_warranties
   def create
+    params = build_new_documents(vehicle_warranty_params)
+    @vehicle_warranty.assign_attributes(params)
+    
     if @vehicle_warranty.save
       respond_to do |format|
         format.html { redirect_to @vehicle, notice: 'Vehicle warranty was successfully created.' }
         format.js
       end
     else
-      prep_edit
+      show_documents_reminder
       render :new
     end
   end
 
   # PATCH/PUT /vehicle_warranties/1
   def update
-    if @vehicle_warranty.update(vehicle_warranty_params)
+    params = build_new_documents(vehicle_warranty_params)
+    
+    if @vehicle_warranty.update(params)
       respond_to do |format|
         format.html { redirect_to @vehicle, notice: 'Vehicle warranty was successfully updated.' }
         format.js
       end
     else
-      prep_edit
+      show_documents_reminder
       render :edit
     end
   end
@@ -51,11 +60,17 @@ class VehicleWarrantiesController < ApplicationController
 
   private
   
-  def prep_edit
-    @vehicle_warranty.document_associations.build
+  def load_vehicle_warranty
+    @vehicle_warranty = VehicleWarranty.find_by_id(params[:id]) || 
+                        @vehicle.vehicle_warranties.build
   end
 
   def vehicle_warranty_params
-    params.require(:vehicle_warranty).permit(:description, :notes, :expiration_date, document_associations_attributes: [:id, :document_id, :_destroy])
+    params.require(:vehicle_warranty).permit(
+      :description, 
+      :notes, 
+      :expiration_date, 
+      documents_attributes: documents_attributes
+    )
   end
 end

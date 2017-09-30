@@ -1,0 +1,38 @@
+<% remote ||= false %>
+<%= nested_form_for [@vehicle_maintenance_schedule_type, @vehicle_maintenance_schedule], remote: remote do |f| %>
+  <% if @vehicle_maintenance_schedule.errors.any? %>
+    <div class="panel panel-danger">
+      <div class="panel-heading"><%= translate_helper("vehicle_maintenance_schedule_form_error", count: @vehicle_maintenance_schedule.errors.count) %></div>
+      <div class="panel-body">
+        <ul>
+          <% @vehicle_maintenance_schedule.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+  
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-primary">
+        <div class="panel-body form-horizontal">
+          <div class="form-group">
+            <%= f.label :name, translate_helper("vehicle_maintenance_schedule_name"), class: "col-md-3 control-label" %>
+            <div class="col-md-9">
+              <%= f.text_field :name, class: "form-control", required: true %>
+            </div>
+          </div>
+          <div class="form-group">
+            <%= f.label :mileage, translate_helper("vehicle_maintenance_schedule_mileage"), class: "col-md-3 control-label" %>
+            <div class="col-md-9">
+              <%= f.number_field :mileage, class: "form-control", required: true, min: 0 %>
+            </div>
+          </div>
+        </div><!-- END .panel-body -->
+      </div><!-- END .panel -->
+    </div><!-- END .col-md-12 -->
+  </div><!-- END .row -->
+  
+  <div class="row form-actions"><%= f.submit translate_helper("vehicle_maintenance_schedule_form_submit"), class: "btn action-button" %></div>
+<% end %>

@@ -9,10 +9,12 @@
     <%= format_time_for_listing trip.pickup_time %>
   </td>
   <td>
-    <% if trip.appointment_time.try(:to_date) != trip.pickup_time.try(:to_date) %>
-      <%= format_simple_full_datetime trip.appointment_time %>
-    <% else %>
-      <%= format_time_for_listing trip.appointment_time %>
+    <% if trip.appointment_time %>
+      <% if trip.appointment_time.try(:to_date) != trip.pickup_time.try(:to_date) %>
+        <%= format_simple_full_datetime trip.appointment_time %>
+      <% else %>
+        <%= format_time_for_listing trip.appointment_time %>
+      <% end %>
     <% end %>
   </td>
   <td>

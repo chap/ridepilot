@@ -1,0 +1,6 @@
+%tr{class:"vehicle_maintenance_schedule_type-#{vehicle_maintenance_schedule_type.id}"}
+  %td
+    %span.form-control-static
+      = link_to vehicle_maintenance_schedule_type.name, polymorphic_path([vehicle_maintenance_schedule_type, VehicleMaintenanceSchedule])
+    = link_to "X", polymorphic_path(vehicle_maintenance_schedule_type), method: :delete, remote: true, data: { confirm: translate_helper("vehicle_maintenance_schedule_type_delete_confirm") }, class: "btn btn-danger btn-sm pull-right" if can?(:delete, vehicle_maintenance_schedule_type)
+    = link_to translate_helper(:edit), polymorphic_path(vehicle_maintenance_schedule_type, action: :edit), remote: true, class: "btn btn-primary btn-sm pull-right" if can?(:edit, vehicle_maintenance_schedule_type)

@@ -1,0 +1,7 @@
+bootbox.confirm("<%= translate_helper(:confirm_creating_reoccuring_event) %>", function(result){
+  if(result) {
+    $.ajax({
+      url: "<%=new_vehicle_vehicle_compliance_path(vehicle: vehicle, format: :js)%>&legal=<%=legal%>&vehicle_requirement_template_id=<%=vehicle_requirement_template_id%>"
+    });
+  }
+});

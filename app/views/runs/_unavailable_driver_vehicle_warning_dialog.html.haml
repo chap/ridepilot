@@ -1,0 +1,25 @@
+#unavailable_warning_dialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1", data: {"backdrop": "static", "keyboard": false }}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        .pull-right
+          = button_tag class: 'btn action-button btn-danger', id: 'confirm_warning', role: 'button' do
+            = translate_helper(:proceed_button)
+          = button_tag class: 'btn action-button', id: 'cancel_warning', role: 'button' do
+            = translate_helper(:back)
+        .modal-title{:style => "text-align:left;"}
+          %strong
+            = translate_helper(:unavailable_warning_dialog_title)
+      .modal-body.row{:style => "text-align:left; margin: 0px;"}
+        %b= translate_helper(:unavailable_warning_message)
+        %ul.col-sm-12#unavailable_warning_messages
+
+  :javascript
+    $('#confirm_warning').click(function() {
+      $('#unavailable_warning_dialog').modal('hide');
+      $('.run_form').submit();
+    });
+
+    $('#cancel_warning').click(function() {
+      $('#unavailable_warning_dialog').modal('hide');
+    });
