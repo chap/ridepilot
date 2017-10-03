@@ -8,6 +8,7 @@
 %table#trips_report_table
   %thead
     %tr
+      %th Recur?
       %th= translate_helper("pickup_date_column")
       %th= translate_helper("customer_column")
       %th= translate_helper("customer_phone_number_column")
@@ -22,6 +23,9 @@
   %tbody
     - @trips.each do |trip|
       %tr.trip{"data-trip-id" => trip.id }
+        %td
+          - if trip.repeating_trip_id.present?
+            Recur
         %td
           = format_time_for_listing_day trip.pickup_time
         %td

@@ -1,5 +1,12 @@
 <td>
   <%= link_to(translate_helper("view"), trip_path(trip)) %>
+  <% if trip.repeating_trip_id.present? %>
+    <div class="pull-right">
+      <span class="label label-info">
+        Recur
+      </span>
+    </div>
+  <% end %>
 </td>
 <td>
   <%= link_to trip.customer.name, trip.customer, :title => translate_helper("view_customer_record_link_text") %>

@@ -3,6 +3,9 @@
     %input.trip-selected{type: "checkbox"}
   %td
     = link_to(translate_helper("view"), trip_path(trip))
+    - if trip.repeating_trip_id.present?
+      %span.label.label-info
+        Recur
   %td
     = format_time_for_listing_day trip.pickup_time
   %td

@@ -6,10 +6,14 @@
       = link_to translate_helper("view"), run_path(run)
   %td
     = run.name
-    - if run.cancelled?
-      .pull-right
+    .pull-right
+      - if run.cancelled?
         %span.label.label-danger
           Cancelled
+
+      - if run.repeating_run_id.present?
+        %span.label.label-info
+          Recur
   %td= run.date.to_s(:long)
   %td= run.scheduled_start_time.try(:to_s,:time_only)
   %td= run.scheduled_end_time.try(:to_s,:time_only)
