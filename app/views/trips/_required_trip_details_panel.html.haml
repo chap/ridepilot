@@ -66,7 +66,7 @@
       .col-sm-3
         = f.label :trip_purpose, translate_helper("trip_purpose")
       .col-sm-9
-        = f.select :trip_purpose_id, @trip_purposes.map { |tp| [tp.name, tp.id] }, {:include_blank => true}, {class: 'form-control'}
+        = f.select :trip_purpose_id, @trip_purposes.map { |tp| [tp.name, tp.id] }, {:include_blank => true}, {class: 'form-control trip_purpose_id'}
 
 :javascript
   $(function() {

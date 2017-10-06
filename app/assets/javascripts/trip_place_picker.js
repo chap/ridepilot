@@ -109,6 +109,7 @@ $(function() {
     $('input.trip_dropoff_google_address').val('');
     if(data == 'saved_places') {
       $('input.trip_dropoff_address_id').val(addr.id);
+      $('.trip_purpose_id').val(addr.trip_purpose_id);
       $('#dropoff_address_notes').val(addr.notes);
     } else if (data == 'google_places') {
       process_google_address(addr, 'dropoff');

@@ -3,7 +3,7 @@
 - if check_if_verify_client_code(@customer)
   :javascript
     $(function() {
-      $('form').on('submit', function(e) {
+      $('#customerForm').on('submit', function(e) {
         var form = this;
         e.preventDefault();
 
