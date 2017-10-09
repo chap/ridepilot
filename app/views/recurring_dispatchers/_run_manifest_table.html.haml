@@ -11,7 +11,6 @@
       %th= translate_helper(:run_manifest_table_header_occupancy)
       %th= translate_helper(:run_manifest_table_header_fare)
       %th= translate_helper(:run_manifest_table_header_comments)
-      %th= translate_helper(:run_manifest_table_header_trip_result)
       %th= translate_helper(:run_manifest_table_header_customer_phone)
       %th= translate_helper(:run_manifest_table_header_actions)
   %tbody
@@ -35,7 +34,6 @@
           %td= itin[:capacity]
           %td= itin[:fare]
           %td= itin[:comments]
-          %td= itin[:result]
           %td= simple_format(itin[:phone].join('<br>')) unless itin[:phone].empty?
           %td
             = link_to repeating_trip_path(itin[:trip_id], from_dispatch: true, run_id: run_id), style: 'padding-right: 5px;', title: "View details" do 
