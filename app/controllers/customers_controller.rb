@@ -1,5 +1,5 @@
 class CustomersController < ApplicationController
-  load_and_authorize_resource :except=>[:autocomplete, :found, :edit, :create, :show, :update, :delete_photo, :inactivate, :reactivate, :prompt_code, :verify_code]
+  load_and_authorize_resource :except=>[:autocomplete, :found, :edit, :create, :show, :update, :delete_photo, :inactivate, :reactivate, :prompt_code, :verify_code, :data_for_trip, :get_eligibilities_for_trip]
 
   def autocomplete
     customers = Customer.for_provider(current_provider_id).by_term( params['term'].downcase, 10 ).accessible_by(current_ability)
