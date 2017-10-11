@@ -11,6 +11,7 @@
         = f.submit translate_helper(:update), class: 'btn action-button'
         = link_to translate_helper(:cancel), customers_path, class: "btn btn-default"
       - else
+        = link_to translate_helper("new_trip_link_text"), new_trip_path(:customer_id=>@customer.id), :class=>'btn action-button' unless @customer.inactivated? || @read_only_customer
         - if @customer.permanent_inactivated? && can?(:reactivate, @customer)
           = link_to translate_helper("reactivate"), reactivate_customer_path(@customer), method: :post, :class=>'btn action-button', :data => { :confirm => translate_helper(:reactivate_confirmation)}
         - elsif can?(:inactivate, @customer)
