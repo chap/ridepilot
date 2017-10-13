@@ -10,4 +10,4 @@
   %td
     = driver.compliant? ? translate_helper("no") : translate_helper("yes")
   %td
-    = driver.run_hours
+    = number_with_precision(driver.run_hours, precision: 2, strip_insignificant_zeros: true)
