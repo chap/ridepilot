@@ -134,8 +134,7 @@ class Run < ActiveRecord::Base
   # Returns the total hours of a collection of runs
   def self.total_hours(opts={actual: true})
     query_str = opts[:actual] ? 'actual_end_time - actual_start_time' : 'scheduled_end_time - scheduled_start_time'
-    query_result = sum(query_str).to_s.to_time
-    return query_result ? query_result.seconds_since_midnight / 3600.0 : 0
+    sum("extract(epoch from (#{query_str}))") / 3600.0
   end
 
   # Returns length in hours for an individual run. Use scheduled hours
