@@ -13,6 +13,7 @@ class CustomersController < ApplicationController
   end
 
   def get_eligibilities_for_trip
+    @customer = Customer.for_provider(current_provider_id).where(id: params[:id]).first
   end
 
   def found
