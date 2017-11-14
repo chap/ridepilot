@@ -32,9 +32,9 @@ class Trip < ActiveRecord::Base
   validate :fit_run_schedule
 
   scope :after,              -> (pickup_time) { where('pickup_time > ?', pickup_time.utc) }
-  scope :after_today,        -> { where('CAST(pickup_time AS date) > ?', Date.today.in_time_zone.utc) }
-  scope :today_and_prior,    -> { where('CAST(pickup_time AS date) <= ?', Date.today.in_time_zone.utc) }
-  scope :prior_to_today,     -> { where('CAST(pickup_time AS date) < ?', Date.today.in_time_zone.utc) }
+  scope :after_today,        -> { where('pickup_time > ?', Date.today.end_of_day) }
+  scope :today_and_prior,    -> { where('pickup_time <= ?', Date.today.end_of_day) }
+  scope :prior_to_today,     -> { where('pickup_time < ?', Date.today.beginning_of_day) }
   scope :during,             -> (pickup_time, appointment_time) { 
                                   where('NOT ((pickup_time < ? AND appointment_time < ?) OR (pickup_time > ? AND appointment_time > ?))', 
                                   pickup_time.utc, appointment_time.utc, pickup_time.utc, appointment_time.utc) }
@@ -308,9 +308,9 @@ class Trip < ActiveRecord::Base
     end
   end
 
-  # Mark past scheduled trips as driver_notified
+  # Mark scheduled trips (for past and today) as driver_notified
   def self.mark_past_scheduled_trips_as_driver_notified!
-    self.prior_to_today.scheduled.not_for_cab.driver_not_notified.update_all(driver_notified: true)
+    self.today_and_prior.scheduled.not_for_cab.driver_not_notified.update_all(driver_notified: true)
   end
 
   # Move past trips in Standby queue to Unmet Need
