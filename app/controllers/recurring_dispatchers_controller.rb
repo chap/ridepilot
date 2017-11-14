@@ -121,7 +121,7 @@ class RecurringDispatchersController < ApplicationController
     run_ids = RepeatingRun.for_provider(current_provider_id).active
       .collect{|rr| rr.id if rr.try("repeats_#{RepeatingRun::DAYS_OF_WEEK[@day_of_week]}s")}
       .compact
-    @runs = RepeatingRun.where(id: run_ids).order(:name, :scheduled_start_time)
+    @runs = RepeatingRun.where(id: run_ids)
 
     trip_ids = RepeatingTrip.for_provider(current_provider_id).active
       .collect{|rr| rr.id if rr.try("repeats_#{RepeatingTrip::DAYS_OF_WEEK[@day_of_week]}s")}

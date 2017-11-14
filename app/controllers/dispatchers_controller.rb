@@ -120,11 +120,6 @@ class DispatchersController < ApplicationController
     end
   end
 
-  # Ajax to update Run filter given a new date
-  def runs_by_date
-    @runs = Run.for_provider(current_provider_id).for_date(Utility.new.parse_date(params[:run_trip_day])).order(:name)
-  end
-
   def run_trips
     @run = Run.find_by_id params[:run_id]
   end
@@ -197,7 +192,7 @@ class DispatchersController < ApplicationController
   def query_trips_runs
     filters_hash = runs_trips_params || {}
 
-    @runs = Run.not_cancelled.for_provider(current_provider_id).order(:name, :date, :scheduled_start_time)
+    @runs = Run.not_cancelled.for_provider(current_provider_id)
     @runs = @runs.where(id: filters_hash[:run_id]) unless filters_hash[:run_id].blank?
     filter_runs
 
