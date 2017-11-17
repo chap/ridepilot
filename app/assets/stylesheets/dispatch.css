@@ -10,6 +10,10 @@
   padding: 0px;
 }
 
+.dropdown-menu li a {
+  white-space: normal !important;
+}
+
 #unassigned_trips_panel {
   overflow-y: auto;
 }
