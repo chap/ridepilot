@@ -11,6 +11,12 @@ module DispatchHelper
       run.trips
     end
 
+    manifest_order = if is_recurring
+      run.repeating_run_manifest_orders.for_wday(recurring_dispatch_wday).first.try(:manifest_order)
+    else
+      run.manifest_order
+    end
+
     trips.each do |trip|
       trip_data = {
         trip: trip,
@@ -21,9 +27,12 @@ module DispatchHelper
         comments: trip.notes,
         result: is_recurring ? nil : (trip.trip_result.try(:name) || 'Pending')
       }
-      pickup_sort_key = time_portion(trip.pickup_time).try(:to_i).to_s + "_1"
+
+      pickup_sort_key = time_portion(trip.pickup_time)
+      itin_id = "trip_#{trip.id}_leg_1"
       itins << trip_data.merge(
-        id: "trip_#{trip.id}_leg_1",
+        id: itin_id,
+        ordinal: ((manifest_order || []).any? ? manifest_order.index(itin_id) : -1),
         leg_flag: 1,
         time: trip.pickup_time,
         sort_key: pickup_sort_key,
@@ -31,10 +40,11 @@ module DispatchHelper
       )
 
       if is_recurring || !TripResult::CANCEL_CODES_BUT_KEEP_RUN.include?(trip.trip_result.try(:code))
-        dropoff_sort_time = trip.appointment_time ? time_portion(trip.appointment_time) : time_portion(trip.pickup_time)
-        dropoff_sort_key = dropoff_sort_time.try(:to_i).to_s + "_2"
+        dropoff_sort_key = trip.appointment_time ? time_portion(trip.appointment_time) : time_portion(trip.pickup_time)
+        itin_id = "trip_#{trip.id}_leg_2"
         itins << trip_data.merge(
-          id: "trip_#{trip.id}_leg_2",
+          id: itin_id,
+          ordinal: ((manifest_order || []).any? ? manifest_order.index(itin_id) : -1),
           leg_flag: 2,
           time: trip.appointment_time,
           sort_key: dropoff_sort_key,
@@ -42,22 +52,11 @@ module DispatchHelper
         )
       end
     end
-    
-    manifest_order = if is_recurring
-      run.repeating_run_manifest_orders.for_wday(recurring_dispatch_wday).first.try(:manifest_order)
-    else
-      run.manifest_order
-    end
-    
 
     itins = if manifest_order && manifest_order.any?
-      itins.sort_by { |itin| 
-        ordinal = manifest_order.index(itin[:id]) 
-        # put unindexed itineraries at the bottom
-        ordinal ? "a_#{ordinal}" : "b_#{itin[:sort_key]}" 
-      }
+      itins.sort_by { |itin| [itin[:ordinal] >= 0, itin[:ordinal], itin[:sort_key], itin[:leg_flag]] }
     else
-      itins.sort_by { |itin| itin[:sort_key] }
+      itins.sort_by { |itin| [itin[:sort_key], itin[:leg_flag]] }
     end
 
     # calculate occupancy
