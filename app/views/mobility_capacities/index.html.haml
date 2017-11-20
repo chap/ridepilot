@@ -1,5 +1,17 @@
 - editable = can? :manage, MobilityCapacity
 .col-sm-12{style: 'padding: 10px;'}
+  - mobility_type_table = LookupTable.find_by_name('mobilities')
+  - if mobility_type_table
+    %h2.section-header= translate_helper("configure_mobility_types")
+    = link_to translate_helper("mobility_types_link_text"), lookup_table_path(mobility_type_table), target: '_blank'
+    %hr
+
+  - capacity_type_table = LookupTable.find_by_name('capacity_types')
+  - if capacity_type_table
+    %h2.section-header= translate_helper("configure_capacity_types")
+    = link_to translate_helper("capacity_types_link_text"), lookup_table_path(capacity_type_table), target: '_blank'
+    %hr
+
   %h2= translate_helper(:mobility_capacities_link_text)
   - if editable
     .pull-right{style: 'padding-bottom: 5px;'}

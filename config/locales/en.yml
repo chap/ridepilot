@@ -1436,9 +1436,11 @@ en:
   vehicle_capacity_configuration_delete_confirm: "Are you sure to delete this configuration?"
   vehicle_capacity_configuration_form_new_heading: "New Configuration"
   vehicle_capacity_configuration_form_edit_heading: "Edit Configuration"
-  configure_provider_capacity_types: "Configure Provider Specific Capacity Types"
-  provider_capacity_types_link_text: "Provider-specific Capacity Types"
-  capacity_type_label: "Capacity Type"
+  configure_capacity_types: "Configure Capacity Types"
+  capacity_types_link_text: "Capacity Types"
+  capacity_type_label: "Capacity Type Lookup Table"
+  configure_mobility_types: "Configure Mobility Types"
+  mobility_types_link_text: "Mobility Type Lookup Table"
 
   # mobility capacity mappings
   mobility_capacities_link_text: "Mapping Mobility Types to Capacity Types"
