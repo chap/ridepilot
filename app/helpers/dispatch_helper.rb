@@ -32,7 +32,7 @@ module DispatchHelper
       itin_id = "trip_#{trip.id}_leg_1"
       itins << trip_data.merge(
         id: itin_id,
-        ordinal: ((manifest_order || []).any? ? manifest_order.index(itin_id) : -1),
+        ordinal: (manifest_order.try(:index, itin_id) || -1),
         leg_flag: 1,
         time: trip.pickup_time,
         sort_key: pickup_sort_key,
@@ -41,10 +41,10 @@ module DispatchHelper
 
       if is_recurring || !TripResult::CANCEL_CODES_BUT_KEEP_RUN.include?(trip.trip_result.try(:code))
         dropoff_sort_key = trip.appointment_time ? time_portion(trip.appointment_time) : time_portion(trip.pickup_time)
-        itin_id = "trip_#{trip.id}_leg_2"
+        do_itin_id = "trip_#{trip.id}_leg_2"
         itins << trip_data.merge(
-          id: itin_id,
-          ordinal: ((manifest_order || []).any? ? manifest_order.index(itin_id) : -1),
+          id: do_itin_id,
+          ordinal: (manifest_order.try(:index, do_itin_id) || -1),
           leg_flag: 2,
           time: trip.appointment_time,
           sort_key: dropoff_sort_key,
@@ -54,7 +54,7 @@ module DispatchHelper
     end
 
     itins = if manifest_order && manifest_order.any?
-      itins.sort_by { |itin| [itin[:ordinal] >= 0, itin[:ordinal], itin[:sort_key], itin[:leg_flag]] }
+      itins.sort_by { |itin| [itin[:ordinal] >= 0 ? 0 : 1, itin[:ordinal], itin[:sort_key], itin[:leg_flag]] }
     else
       itins.sort_by { |itin| [itin[:sort_key], itin[:leg_flag]] }
     end
