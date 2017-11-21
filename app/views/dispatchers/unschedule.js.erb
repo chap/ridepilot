@@ -1,11 +1,7 @@
 <% if @target_trip_ids.any? %>
   <% if @prev_run.present? %>
     var prev_run_id = <%= @prev_run.id %>;
-    var trip_ids = <%= @target_trip_ids.to_json.html_safe %>;
-    trip_ids.forEach(function(trip_id) {
-      $('#run_trips_panel_' + prev_run_id).find('tr[data-trip-id=' + trip_id + ']').remove();
-    });
-    $('#run_trips_panel_' + prev_run_id).find('span.run_summary').html("<%= j simple_format(run_summary(@prev_run)) %>")
+    $('#run_trips_panel_' + prev_run_id).replaceWith("<%= j render('dispatchers/run_trips_panel', run: @prev_run) %>");
     $('#runs_panel table tbody tr[data-run-id=' + prev_run_id + '] td.trips_count').html(<%= @prev_run.reload.trips.count%>);
   <% end %>
 
