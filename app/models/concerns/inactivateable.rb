@@ -8,8 +8,8 @@ module Inactivateable
   included do
 
     scope :active,          -> { where(active: true) }
-    scope :active_for_date, -> (date) { where("active = ? and (inactivated_start_date is NULL or inactivated_start_date > ?) and (inactivated_end_date is NULL or inactivated_end_date < ?)", true, date, date) }
-
+    scope :active_for_date, -> (date) { where("active = ? and (inactivated_start_date > ? or inactivated_end_date < ? or (inactivated_end_date is null and inactivated_start_date is null))", true, date, date) }
+    
     def inactivated?
       # permanent inactive
       # or, inactive for a date range
