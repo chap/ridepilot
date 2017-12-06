@@ -7,5 +7,16 @@ FactoryGirl.define do
     provider
     customer
     trip_purpose
+
+    # SCHEDULE ATTRS
+    start_date { Date.today } # Set the schedule start date to equal date field
+    repetition_interval 1   # Setting this messes up the recurring_ride_coordinator shared examples 
+    repeats_mondays { start_date.monday? }
+    repeats_tuesdays { start_date.tuesday? }
+    repeats_wednesdays { start_date.wednesday? }
+    repeats_thursdays { start_date.thursday? }
+    repeats_fridays { start_date.friday? }
+    repeats_saturdays { start_date.saturday? }
+    repeats_sundays { start_date.sunday? }
   end
 end
