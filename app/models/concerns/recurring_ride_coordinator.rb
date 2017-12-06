@@ -6,6 +6,7 @@ module RecurringRideCoordinator
   DAYS_OF_WEEK = %w{sunday monday tuesday wednesday thursday friday saturday}
 
   included do
+    validate :repeating_schedule_day_present
     before_validation   :update_schedule_attributes
     after_save    :instantiate_recurring_ride_coordinators
 
@@ -32,6 +33,16 @@ module RecurringRideCoordinator
         []
       end
     end
+
+    private
+
+    # At least one day of the week must be checked to create a repeating run
+    def repeating_schedule_day_present
+      unless Date::DAYNAMES.any? {|d| self.send("repeats_#{d.downcase}s").present? }
+        errors.add(:schedule_attributes,  "must have at least one day of the week checked for repeating schedule")
+      end
+    end
+
   end
   
   module ClassMethods

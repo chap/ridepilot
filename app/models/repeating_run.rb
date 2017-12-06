@@ -21,7 +21,6 @@ class RepeatingRun < ActiveRecord::Base
   
   validate :driver_availability
   validate :vehicle_availability
-  validate :repeating_schedule_day_present
   
   has_many :runs # Child runs created by this RepeatingRun's scheduler
 
@@ -179,14 +178,6 @@ class RepeatingRun < ActiveRecord::Base
     end
   end
   ###
-  
-  
-  # At least one day of the week must be checked to create a repeating run
-  def repeating_schedule_day_present
-    unless Date::DAYNAMES.any? {|d| self.send("repeats_#{d.downcase}s").present? }
-      errors.add(:schedule_attributes,  "must have at least one day of the week checked for repeating schedule")
-    end
-  end
   
   
   ### DRIVER AVAILABILITY ###
