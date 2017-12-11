@@ -4,7 +4,7 @@ var recur_row = recur_table.find("tr[data-date-value=" + day_of_week+ "]");
 recur_row.find('input.is_all_day').prop('checked', false);
 recur_row.find('td.is_all_day_filled').removeClass('is_all_day_filled');
 recur_row.find('td.is_filled').removeClass('is_filled');
-recur_row.find('td.hour_cell').prop("title", "");
+recur_row.find('td.hour_cell:not(.is_disabled)').prop("title", "");
 
 $('table#daily_availability_table').floatThead('destroy');
 $('table#daily_availability_table').replaceWith("<%= j (render 'shared/availability_table', is_daily: true, operatable: @operatable) %>");

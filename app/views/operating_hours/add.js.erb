@@ -6,13 +6,18 @@ var recur_row = recur_table.find("tr[data-date-value=" + day_of_week+ "]");
 
 if(is_all_day) {
   recur_row.find('td.is_filled').removeClass('is_filled');
-  recur_row.find('td.hour_cell').addClass('is_all_day_filled');
-  recur_row.find('td.hour_cell').prop('title', "All day");
+  recur_row.find('td.hour_cell:not(.is_disabled)').addClass('is_all_day_filled');
+  var provider_hours = <%= current_provider.hours_per_day_of_week(params[:date_flag]) || [] %>;
+  if(provider_hours && provider_hours != [0, 24]) {
+    recur_row.find('td.hour_cell:not(.is_disabled)').prop("title", format_hour(provider_hours[0]) + "-" + format_hour(provider_hours[1]));
+  } else {
+    recur_row.find('td.hour_cell:not(.is_disabled)').prop('title', "All day");
+  }
 } else if(is_unavailable) {
   recur_row.find('input.is_all_day').prop('checked', false);
   recur_row.find('td.is_filled').removeClass('is_filled');
   recur_row.find('td.is_all_day_filled').removeClass('is_all_day_filled');
-  recur_row.find('td.hour_cell').prop('title', "");
+  recur_row.find('td.hour_cell:not(.is_disabled)').prop('title', "");
 } else {
   $('#modal-dialog').modal('hide');
   var has_error = <%= @has_error || false %>;
@@ -21,7 +26,7 @@ if(is_all_day) {
   } else {
     recur_row.find('input.is_all_day').prop('checked', false);
     recur_row.find('td.is_all_day_filled').removeClass('is_all_day_filled');
-    recur_row.find('td.hour_cell').prop('title', "");
+    recur_row.find('td.hour_cell:not(.is_disabled)').prop('title', "");
     
     function find_hour_block(time_flag) {
       var time_ranges = <%= @time_ranges || [] %>;
@@ -37,7 +42,7 @@ if(is_all_day) {
 
       return hour_block;
     }
-    recur_row.find('td.hour_cell').each(function(){
+    recur_row.find('td.hour_cell:not(.is_disabled)').each(function(){
       var time_flag = parseFloat($(this).data('time-flag'));
       var hour_block = find_hour_block(time_flag);
       if(hour_block) {

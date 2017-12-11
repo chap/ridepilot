@@ -85,9 +85,14 @@
             %th{colspan: tick_count}
               %div{style: 'width: 100%; white-space:nowrap;'}
                 - label_tick_count = ticks.select{|x| !x[1].blank?}.size
+                - last_label_tick = ticks.reverse.select{|x| !x[1].blank?}.first
+                - divided_by = label_tick_count - 1 + (max_hour - ticks.last[0]).to_f / get_availability_tick_hour_gap
                 - ticks.each_with_index do |tick, index|
-                  - next if tick[1].blank?
-                  %span.hour_tick_label{style: "width: #{100/label_tick_count.to_f}%;"}= tick[1]
+                  - next if tick[1].blank? || tick == last_label_tick
+                  %span.hour_tick_label{style: "width: #{100/divided_by.to_f}%;"}= tick[1]
+                - last_pct = 100/divided_by.to_f * (max_hour - ticks.last[0]).to_f / get_availability_tick_hour_gap
+                %span.hour_tick_label{style: "width: #{last_pct}%;"}
+                  = last_label_tick[1] if last_pct > 5
                 %span.hour_tick_label= max_hour_label
             
             - if can?(:edit, Run)
@@ -101,7 +106,8 @@
                 - ticks.each do |tick|
                   - class_name = !(r[:start_time_diff] >= tick[0]) && !(r[:end_time_diff] <= tick[0]) ? "is_filled" : ""
                   - class_name = 'is_driver_filled' if !class_name.blank? && !r[:driver_id].blank?
-                  %td.chart_cell{style: "white-space: nowrap !important; color: white;", class: class_name || "", data: {time_flag: tick[0]}}
+                  - title = "Time range: #{format_hour_label(r[:start_time_diff])}-#{format_hour_label(r[:end_time_diff])}"
+                  %td.chart_cell{style: "white-space: nowrap !important; color: white;", title: title, class: class_name || "", data: {time_flag: tick[0]}}
                 - if can?(:edit, Run)
                   %td.pull-right
                     = link_to '#', method: 'patch', remote: true, class: r[:driver_id].blank? ? "unassign_driver_link link_disabled" : "unassign_driver_link" do 

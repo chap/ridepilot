@@ -12,17 +12,17 @@
   provider_hours_by_wday = {}
   current_provider.operating_hours.reorder(:day_of_week).each do |op_hour|
     if op_hour.is_unavailable
-      min_hour = 0
-      max_hour = 0
+      p_min_hour = 0
+      p_max_hour = 0
     elsif op_hour.is_all_day
-      min_hour = 0
-      max_hour = 24
+      p_min_hour = 0
+      p_max_hour = 24
     elsif op_hour.start_time && op_hour.end_time
-      min_hour = (op_hour.start_time - op_hour.start_time.at_beginning_of_day) / 3600.0
-      max_hour = (op_hour.end_time - op_hour.end_time.at_beginning_of_day) / 3600.0
-      max_hour = 24 if max_hour == 0
+      p_min_hour = (op_hour.start_time - op_hour.start_time.at_beginning_of_day) / 3600.0
+      p_max_hour = (op_hour.end_time - op_hour.end_time.at_beginning_of_day) / 3600.0
+      p_max_hour = 24 if p_max_hour == 0
     end
-    provider_hours_by_wday[op_hour.day_of_week] = [min_hour, max_hour]
+    provider_hours_by_wday[op_hour.day_of_week] = [p_min_hour, p_max_hour]
   end
   recurring_hours = operatable.operating_hours.pluck(:id, :day_of_week, :is_all_day, :is_unavailable, :start_time, :end_time)
   
@@ -113,12 +113,8 @@
     background-color: #ffe664;
   }
 
-  .is_filled {
+  .is_filled, .is_all_day_filled {
     background-color: #3eb76a;
-  }
-
-  .is_all_day_filled {
-    background-color: #1e5d35;
   }
 
   .hour_tick_label {
@@ -136,13 +132,19 @@
       %th
       %th All Day
       - tick_count = ticks.size
-      %th{colspan: tick_count}
-        %div{style: 'width: 100%; white-space:nowrap;'}
-          - label_tick_count = ticks.select{|x| !x[1].blank?}.size
-          - ticks.each_with_index do |tick, index|
-            - next if tick[1].blank?
-            %span.hour_tick_label{style: "width: #{100/label_tick_count.to_f}%;"}= tick[1]
-          %span.hour_tick_label= max_hour_label
+      - if tick_count > 0
+        %th{colspan: tick_count}
+          %div{style: 'width: 100%; white-space:nowrap;'}
+            - label_tick_count = ticks.select{|x| !x[1].blank?}.size
+            - last_label_tick = ticks.reverse.select{|x| !x[1].blank?}.first
+            - divided_by = label_tick_count - 1 + (max_hour - ticks.last[0]).to_f / get_availability_tick_hour_gap
+            - ticks.each_with_index do |tick, index|
+              - next if tick[1].blank? || tick == last_label_tick
+              %span.hour_tick_label{style: "width: #{100/divided_by.to_f}%;"}= tick[1]
+            - last_pct = 100/divided_by.to_f * (max_hour - ticks.last[0]).to_f / get_availability_tick_hour_gap
+            %span.hour_tick_label{style: "width: #{last_pct}%;"}
+              = last_label_tick[1] if last_pct > 5
+            %span.hour_tick_label= max_hour_label 
       
       - if can?(:edit, operatable)
         %th
@@ -168,7 +170,7 @@
               - hour_block = time_ranges.select{|x| x[0] <= tick[0] && x[1] > tick[0]}.first
               - is_filled = hour_block.present?
               - class_name = "is_filled" if is_filled
-            - title = hour_tooltip(is_on_leave, is_provider_unavailable, is_all_day, hour_block.try(:[], 0), hour_block.try(:[], 1))
+            - title = hour_tooltip(is_on_leave, is_provider_unavailable, is_all_day, hour_block.try(:[], 0), hour_block.try(:[], 1), provider_hours)
             %td.hour_cell{style: "white-space: nowrap !important; color: white;", class: class_name || "", data: {time_flag: tick[0]}, title: title}
           - if can?(:edit, operatable)
             %td{style: 'width: 100px !important; white-space: normal !important;'}

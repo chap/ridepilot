@@ -5,17 +5,22 @@ var daily_row = daily_table.find("tr[data-date-value=" + date+ "]");
 daily_row.find('input.is_all_day').prop('checked', false);
 daily_row.find('td.is_all_day_filled').removeClass('is_all_day_filled');
 daily_row.find('td.is_filled').removeClass('is_filled');
-daily_row.find('td.hour_cell').prop('title', "");
+daily_row.find('td.hour_cell:not(.is_disabled)').prop('title', "");
 
 var recur_row = $('table.recur_availability tr[data-date-value=' + day_of_week + ']');
 if (recur_row.find('td.hour_cell').hasClass('is_all_day_filled')) {
   daily_row.find('input.is_all_day').prop('checked', true);
-  daily_row.find('td.hour_cell').addClass('is_all_day_filled');
-  daily_row.find('td.hour_cell').prop('title', "All day");
+  daily_row.find('td.hour_cell:not(.is_disabled)').addClass('is_all_day_filled');
+  var provider_hours = <%= current_provider.hours_per_day_of_week(@day_of_week) || [] %>;
+  if(provider_hours && provider_hours != [0, 24]) {
+    daily_row.find('td.hour_cell:not(.is_disabled)').prop("title", format_hour(provider_hours[0]) + "-" + format_hour(provider_hours[1]));
+  } else {
+    daily_row.find('td.hour_cell:not(.is_disabled)').prop('title', "All day");
+  }
 } else {
   recur_row.find('td.is_filled').each(function() {
     var time_flag = $(this).data('time-flag');
-    var daily_cell = daily_row.find('td.hour_cell[data-time-flag="' + time_flag + '"]');
+    var daily_cell = daily_row.find('td.hour_cell[data-time-flag="' + time_flag + '"]:not(.is_disabled)');
     daily_cell.addClass('is_filled');
     daily_cell.prop('title', $(this).prop('title'));
   });

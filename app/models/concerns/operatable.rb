@@ -60,6 +60,28 @@ module Operatable
         false
       end
     end
+
+    # get number index of operating hours
+    def hours_per_day_of_week(day_of_week)
+      op_hour = self.operating_hours.for_day_of_week(day_of_week).first
+      if op_hour
+        if op_hour.is_unavailable
+          p_min_hour = 0
+          p_max_hour = 0
+        elsif op_hour.is_all_day
+          p_min_hour = 0
+          p_max_hour = 24
+        elsif op_hour.start_time && op_hour.end_time
+          p_min_hour = (op_hour.start_time - op_hour.start_time.at_beginning_of_day) / 3600.0
+          p_max_hour = (op_hour.end_time - op_hour.end_time.at_beginning_of_day) / 3600.0
+          p_max_hour = 24 if p_max_hour == 0
+        end
+
+        [p_min_hour, p_max_hour]
+      else
+        []
+      end
+    end
   end
 end
 

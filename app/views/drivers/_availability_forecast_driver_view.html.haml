@@ -8,6 +8,9 @@
 
     day_of_week = date.wday
 
+    # get provider operating hours
+    provider_hours = current_provider.hours_per_day_of_week(day_of_week)
+
     run_driver_array = @total_assigned_runs.pluck(:id, :name, :scheduled_start_time, :scheduled_end_time, :driver_id)
 
     row_data = @total_available_drivers.map{|d| 
@@ -44,15 +47,25 @@
 
       if is_unavailable
         time_ranges = []
+        available_text = "Unavailable"
       elsif is_all_day
-        time_ranges = [[0, 24]]
+        if provider_hours.blank?
+          time_ranges = [[0, 24]]
+          available_text = "Available all day"
+        else
+          time_ranges = [provider_hours]
+          available_text = "Available hours: " + time_ranges.sort.map{|t| "#{format_hour_label(t[0])}-#{format_hour_label(t[1])}"}.join(', ')
+        end
+      else
+        available_text = "Available hours: " + time_ranges.sort.map{|t| "#{format_hour_label(t[0])}-#{format_hour_label(t[1])}"}.join(', ')
       end
 
       {
         id: driver_id,
         name: d.user_name,
         runs: runs || [],
-        time_ranges: time_ranges || []
+        time_ranges: time_ranges || [],
+        available_text: available_text
       }}
   end
 
@@ -92,6 +105,10 @@
     background-color: #167ea0 !important;
   }
 
+  .driver-availability-table td.chart_cell.is_disabled {
+    background-color: lightgray !important;
+  }
+
   .hour_tick_label {
     display: inline-block;
     padding: 0px;
@@ -124,13 +141,19 @@
           %thead
             %th
             - tick_count = ticks.size
-            %th{colspan: tick_count}
-              %div{style: 'width: 100%; white-space:nowrap;'}
-                - label_tick_count = ticks.select{|x| !x[1].blank?}.size
-                - ticks.each_with_index do |tick, index|
-                  - next if tick[1].blank?
-                  %span.hour_tick_label{style: "width: #{100/label_tick_count.to_f}%;"}= tick[1]
-                %span.hour_tick_label= max_hour_label
+            - if ticks.any?
+              %th{colspan: tick_count}
+                %div{style: 'width: 100%; white-space:nowrap;'}
+                  - label_tick_count = ticks.select{|x| !x[1].blank?}.size
+                  - last_label_tick = ticks.reverse.select{|x| !x[1].blank?}.first
+                  - divided_by = label_tick_count - 1 + (max_hour - ticks.last[0]).to_f / get_availability_tick_hour_gap
+                  - ticks.each_with_index do |tick, index|
+                    - next if tick[1].blank? || tick == last_label_tick
+                    %span.hour_tick_label{style: "width: #{100/divided_by.to_f}%;"}= tick[1]
+                  - last_pct = 100/divided_by.to_f * (max_hour - ticks.last[0]).to_f / get_availability_tick_hour_gap
+                  %span.hour_tick_label{style: "width: #{last_pct}%;"}
+                    = last_label_tick[1] if last_pct > 5
+                  %span.hour_tick_label= max_hour_label
             
             - if can?(:edit, Run)
               %th
@@ -147,16 +170,24 @@
                 - has_run = false
                 - ticks.each do |tick|
                   - run = runs.select{|r| !(r[:end_time_diff] <= tick[0]) && !(r[:start_time_diff] >= tick[0])}.first
-                  - has_run = true if run
-                  - class_name = run ? 'is_run_filled' : ""
-                  - if class_name.blank?
-                    - class_name = 'is_filled' if time_ranges.select{|r| tick[0] >= r[0] && tick[0] <= r[1]}
+                  - if run
+                    - has_run = true
+                    - class_name = 'is_run_filled'
+                    - title = "Run time range: #{format_hour_label(run[:start_time_diff])}-#{format_hour_label(run[:end_time_diff])}"
+                  - else
+                    - if !provider_hours.blank? && !(provider_hours[0] <= tick[0] && provider_hours[1] >= tick[0])
+                      - class_name = 'is_disabled'
+                      - title = "Provider not operating"
+                    - else
+                      - if time_ranges.select{|r| tick[0] >= r[0] && tick[0] <= r[1]}.any?
+                        - class_name = 'is_filled'
+                        - title = r[:available_text]
                   - run_name = run ? run[:name] : ""
                   - if !run_name.blank? && run_name != last_run_name
                     - last_run_name = run_name
                     - class_name += " name_cell"
                   
-                  %td.chart_cell{style: "white-space: nowrap !important; color: white;", class: class_name || "", data: {time_flag: tick[0], run_name: run_name, run_id: run && run[:id], run_start_time: run && run[:start_time_diff], run_end_time: run && run[:end_time_diff]}}
+                  %td.chart_cell{style: "white-space: nowrap !important; color: white;", title: title, class: class_name || "", data: {time_flag: tick[0], run_name: run_name, run_id: run && run[:id], run_start_time: run && run[:start_time_diff], run_end_time: run && run[:end_time_diff]}}
                 - if can?(:edit, Run)
                   %td.pull-right
                     = link_to '#', class: has_run ? "unassign_run_link" : "unassign_run_link link_disabled" do 

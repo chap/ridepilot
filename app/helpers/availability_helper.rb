@@ -1,5 +1,13 @@
 module AvailabilityHelper
 
+  def get_availability_tick_hour_gap
+    min_hour = current_provider.driver_availability_min_hour || 6
+    max_hour = current_provider.driver_availability_max_hour || 22
+
+    # tick gaps
+    ((max_hour - min_hour) / 8.to_f).ceil
+  end
+
   def get_availability_chart_ticks(interval_min = 30)
     min_hour = current_provider.driver_availability_min_hour || 6
     max_hour = current_provider.driver_availability_max_hour || 22
@@ -43,13 +51,17 @@ module AvailabilityHelper
     end 
   end
 
-  def hour_tooltip(is_on_leave, is_provider_unavailable, is_all_day, start_hour, end_hour)
+  def hour_tooltip(is_on_leave, is_provider_unavailable, is_all_day, start_hour, end_hour, provider_hours)
     if is_on_leave
       "Planned Leave"
     elsif is_provider_unavailable
       "Provider not operating"
     elsif is_all_day
-      "All day"
+      if provider_hours.blank? || provider_hours == [0, 24]
+        "All day"
+      else
+        "#{format_hour_label(provider_hours[0].to_f)} - #{format_hour_label(provider_hours[1].to_f)}"
+      end
     elsif start_hour && end_hour
       "#{format_hour_label(start_hour.to_f)} - #{format_hour_label(end_hour.to_f)}"
     end
