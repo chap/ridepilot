@@ -180,7 +180,8 @@ namespace :ridepilot do
       vehicle_maintenance_compliances_heading: "Preventive Maintenance Logs (PM)",
       provider_form_fields_required_for_run_completion: "Fields required for a run to be considered completed",
       vehicle_maintenance_compliances_empty: "No compliance events exist for this vehicle",
-      cancel_run: "Cancel"
+      cancel_run: "Cancel",
+      unavailable_driver_for_run_time_range_warning: "Driver is not available within the run scheduled time range."
     }
 
     en_locale = Locale.find_by_name 'en'
