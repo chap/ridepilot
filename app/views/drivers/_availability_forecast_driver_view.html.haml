@@ -142,15 +142,15 @@
             %th
             - tick_count = ticks.size
             - if ticks.any?
-              %th{colspan: tick_count}
+              %th{colspan: tick_count, style: 'padding: 0px;'}
                 %div{style: 'width: 100%; white-space:nowrap;'}
                   - label_tick_count = ticks.select{|x| !x[1].blank?}.size
                   - last_label_tick = ticks.reverse.select{|x| !x[1].blank?}.first
-                  - divided_by = label_tick_count - 1 + (max_hour - ticks.last[0]).to_f / get_availability_tick_hour_gap
+                  - divided_by = label_tick_count - 1 + (max_hour - last_label_tick[0]).to_f / get_availability_tick_hour_gap
                   - ticks.each_with_index do |tick, index|
                     - next if tick[1].blank? || tick == last_label_tick
                     %span.hour_tick_label{style: "width: #{100/divided_by.to_f}%;"}= tick[1]
-                  - last_pct = 100/divided_by.to_f * (max_hour - ticks.last[0]).to_f / get_availability_tick_hour_gap
+                  - last_pct = 100/divided_by.to_f * (max_hour - last_label_tick[0]).to_f / get_availability_tick_hour_gap
                   %span.hour_tick_label{style: "width: #{last_pct}%;"}
                     = last_label_tick[1] if last_pct > 5
                   %span.hour_tick_label= max_hour_label
