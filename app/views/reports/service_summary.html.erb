@@ -4,22 +4,17 @@
 <div class="filter-form" style="padding-top: 10px;">
 <%= form_for @query, :url=>url_for(:action=>:service_summary), :html=>{:method=>:get} do |f| %>
   <fieldset class="select-month">
-    <div class="col-sm-12">
-      <div class="col-sm-2">
+
         <%= f.label  :start_date, translate_helper(:service_summary_start_date)%>
-      </div>
-      <div class="col-sm-10">
+
         <%= f.date_select  :start_date, :order => [:month, :day, :year] rescue nil%>
-      </div>
-    </div>
-   <div class="col-sm-12">
-      <div class="col-sm-2">
+
         <%= f.label  :end_date, translate_helper(:service_summary_end_date)%>
-      </div>
-      <div class="col-sm-10">
+
         <%= f.date_select  :end_date, :order => [:month, :day, :year] rescue nil%>
-      </div>
-    </div>
+
+      <%= f.submit translate_helper("update"), class: 'btn action-button' %>
+
   </fieldset>
 <% end %>
 </div>
