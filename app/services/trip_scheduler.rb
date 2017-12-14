@@ -38,6 +38,7 @@ class TripScheduler
   end
 
   def unschedule
+    remove_trip_manifest(@trip.run, @trip.id)
     @trip.cab = false 
     @trip.run = nil 
     @trip.is_stand_by = false
@@ -45,6 +46,7 @@ class TripScheduler
   end
 
   def schedule_to_standby
+    remove_trip_manifest(@trip.run, @trip.id)
     @trip.cab = false 
     @trip.run = nil 
     @trip.is_stand_by = true
@@ -52,6 +54,7 @@ class TripScheduler
   end
 
   def schedule_to_cab
+    remove_trip_manifest(@trip.run, @trip.id)
     @trip.cab = true 
     @trip.run = nil 
     @trip.is_stand_by = false
@@ -76,10 +79,16 @@ class TripScheduler
     end
 
     if errors.empty?
+      prev_run = @trip.run
       @trip.cab = false
       @trip.is_stand_by = false
       @trip.run = @run
-      @errors = @trip.errors.full_messages unless @trip.save
+      if @trip.save
+        remove_trip_manifest(prev_run, @trip.id)
+        @run.add_trip_manifest!(@trip.id)
+      else  
+        @errors = @trip.errors.full_messages 
+      end
     end
 
   end
@@ -113,6 +122,12 @@ class TripScheduler
       message: error_text || '',
       trip_event_json: is_success ? @trip.as_run_event_json : nil
     }
+  end
+
+  def remove_trip_manifest(run, trip_id)
+    if run 
+      run.delete_trip_manifest!(trip_id)
+    end
   end
 
   private
