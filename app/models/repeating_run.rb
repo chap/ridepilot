@@ -160,7 +160,7 @@ class RepeatingRun < ActiveRecord::Base
     if manifest && !manifest.manifest_order.blank? 
       # remove it first in case same trip was left over
       delete_trip_manifest!(trip_id, wday)
-      
+
       #scan from the beginning to injert based on scheduled_pickup_time
       unless manifest.manifest_order.blank?
         trip = RepeatingTrip.find_by_id trip_id
@@ -201,6 +201,7 @@ class RepeatingRun < ActiveRecord::Base
           manifest.manifest_order.insert appt_index, "trip_#{trip_id}_leg_2" if appt_index && appt_index <= manifest.manifest_order.size
           manifest.save(validate: false)
         end
+      end
     end
   end
 
