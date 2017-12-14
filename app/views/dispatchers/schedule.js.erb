@@ -11,7 +11,7 @@ var prev_run_id = <%= params[:prev_run_id] || false %> || null;
 
   var run_id = <%= params[:run_id] || false %> || null;
   if(run_id) {
-    $('#run_trips_panel_' + run_id).replaceWith("<%= j render('dispatchers/run_trips_panel', run: @run) %>");
+    $('#run_trips_panel_' + run_id).replaceWith("<%= j render('dispatchers/run_trips_panel', run: @run.reload) %>");
     $('#runs_panel table tbody tr[data-run-id=' + run_id + '] td.trips_count').html(<%= @run.reload.trips.count%>);
   }
 <% else %>

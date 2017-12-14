@@ -200,12 +200,15 @@ class Run < ActiveRecord::Base
               action_time = is_pickup ? a_trip.pickup_time : a_trip.appointment_time
               next unless action_time
 
-              pickup_index = index if action_time > trip_pickup_time
+              pickup_index = index if !pickup_index && action_time > trip_pickup_time
 
-              if trip_appt_time
-                appt_index = index if action_time > trip_appt_time
-              else
-                appt_index = pickup_index + 1 if pickup_index
+              if !appt_index
+                if trip_appt_time
+                  appt_index = index if action_time > trip_appt_time
+                  appt_index += 1 if pickup_index && pickup_index == appt_index
+                else
+                  appt_index = pickup_index + 1 if pickup_index
+                end
               end
 
               break if pickup_index && appt_index
