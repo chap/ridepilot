@@ -84,6 +84,7 @@ class RecurringDispatchersController < ApplicationController
     @run = RepeatingRun.find_by_id params[:run_id]
     if @run && @run.weekday_assignments.for_wday(@day_of_week).any?
       @run.weekday_assignments.for_wday(@day_of_week).delete_all
+      @run.repeating_run_manifest_orders.for_wday(@day_of_week).delete_all
       TrackerActionLog.cancel_run(@run, current_user, RepeatingRun::DAYS_OF_WEEK[@day_of_week])
     end
 
