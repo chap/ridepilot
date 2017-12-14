@@ -164,6 +164,7 @@ class Run < ActiveRecord::Base
   # "Cancels" a run: removes any trips from that run
   def cancel!
     self.cancelled = true
+    self.manifest_order = nil
     self.save(validate: false)
     
     trips.clear # Doesn't actually destroy the records, just removes the association
@@ -171,7 +172,66 @@ class Run < ActiveRecord::Base
   
   # Cancels all runs in the collection, returning the count of trips removed from runs
   def self.cancel_all
+    self.update_all(manifest_order: nil)
+
     Trip.where(run_id: self.all.pluck(:id)).update_all(run_id: nil)
+  end
+
+  def add_trip_manifest!(trip_id)
+    unless self.manifest_order.blank? 
+      # remove it first in case same trip record was left previously
+      delete_trip_manifest!(trip_id)
+
+      #scan from the beginning to injert based on scheduled_pickup_time
+      unless self.manifest_order.blank?
+        trip = Trip.find_by_id trip_id
+        if trip
+          trip_pickup_time = trip.pickup_time
+          trip_appt_time = trip.appointment_time
+          pickup_index = nil 
+          appt_index = nil
+
+          self.manifest_order.each_with_index do |leg_name, index|
+            leg_name_parts = leg_name.split('_')
+            leg_trip_id = leg_name_parts[1]
+            is_pickup = leg_name_parts[3] == '1'
+            a_trip = Trip.find_by_id leg_trip_id
+            if a_trip 
+              action_time = is_pickup ? a_trip.pickup_time : a_trip.appointment_time
+              next unless action_time
+
+              pickup_index = index if action_time > trip_pickup_time
+
+              if trip_appt_time
+                appt_index = index if action_time > trip_appt_time
+              else
+                appt_index = pickup_index + 1 if pickup_index
+              end
+
+              break if pickup_index && appt_index
+            end
+          end
+          
+          unless pickup_index
+            pickup_index = manifest_order.size 
+            appt_index = pickup_index + 1
+          end
+
+          # Injert at certain index
+          self.manifest_order.insert pickup_index, "trip_#{trip_id}_leg_1" if pickup_index && pickup_index <= self.manifest_order.size
+          self.manifest_order.insert appt_index, "trip_#{trip_id}_leg_2" if appt_index && appt_index <= self.manifest_order.size
+          self.save(validate: false)
+        end
+      end
+    end
+  end
+
+  def delete_trip_manifest!(trip_id)
+    unless self.manifest_order.blank? 
+      self.manifest_order.delete "trip_#{trip_id}_leg_1"
+      self.manifest_order.delete "trip_#{trip_id}_leg_2"
+      self.save(validate: false)
+    end
   end
 
   def as_calendar_json

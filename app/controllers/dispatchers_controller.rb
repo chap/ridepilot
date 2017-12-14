@@ -235,6 +235,7 @@ class DispatchersController < ApplicationController
     @need_to_update_trips_panel = @new_status_id == session[:unassigned_trip_status_id].try(:to_i)
     target_trips = Trip.where(id: @target_trip_ids)
     if target_trips.any?
+      prev_run_ids = target_trips.pluck(:run_id).uniq
       case @new_status_id
       when Run::STANDBY_RUN_ID
         target_trips.update_all(cab: false, is_stand_by: true, run_id: nil)
@@ -242,6 +243,15 @@ class DispatchersController < ApplicationController
         target_trips.update_all(cab: true, is_stand_by: false, run_id: nil)
       when Run::UNSCHEDULED_RUN_ID
         target_trips.update_all(cab: false, is_stand_by: false, run_id: nil)
+      end
+
+      # remove trip from prev_run manifest order
+      if prev_run_ids.any?
+        Run.where(id: prev_run_ids).each do |prev_run|
+          @target_trip_ids.each do |trip_id|
+            prev_run.delete_trip_manifest!(trip_id)
+          end
+        end
       end
     end
   end
