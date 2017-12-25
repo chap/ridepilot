@@ -221,6 +221,29 @@
     });
   }
 
+  // window height changes, then need to update splitter position and container height
+  function on_window_resize() {
+    var prev_height = $('#dispatch_runs_trips').height();
+    var new_height = $(window).outerHeight() - 180; // exclude page nav bar and footer height
+    $('#dispatch_runs_trips').height(new_height);
+    if(splitter) {
+      var prev_pos = splitter.position();
+      var new_pos = new_height - (prev_height - prev_pos);
+      if((new_height - new_pos) < 40) {
+        new_pos = new_height - 40;
+
+        var collapseButton = $('#unassigned_trips_container').find('.panel-expand-collapse-reverse');
+        var panel = $('#unassigned_trips_panel');
+        
+        if(!collapseButton.hasClass('panel-collapsed')) {
+          reverse_collapse_panel(panel);
+          localStorage.setItem('dispatch_unassigned_trips_collapsed', '0'); 
+        } 
+      }
+      splitter.position(new_pos);
+    }
+  }
+
   function update_splitter_position() {
     if(!splitter) {
       return;
@@ -232,23 +255,29 @@
 
   // page main entry point
   $(function() {  
-    // init the splitter between Runs section and Trips section
-    var splitter_height = $(document).outerHeight() - 150;
+     // init the splitter between Runs section and Trips section
+    var splitter_height = $(window).outerHeight() - 200;
+    console.log(splitter_height);
     splitter = $('#dispatch_runs_trips').height(splitter_height).split({
-      position: splitter_height - 200,
+      position: '80%',
       limit: 40,
       onDrag: function(e) {
         var collapseButton = $('#unassigned_trips_container').find('.panel-expand-collapse-reverse');
         var panel = $('#unassigned_trips_panel');
+        var is_collapsed = collapseButton.hasClass('panel-collapsed');
         if($('#unassigned_trips_container').height() > 40) {
           if(collapseButton.hasClass('panel-collapsed')) {
+            is_collapsed = false;
             reverse_expand_panel(panel);
           }
         } else if($('#unassigned_trips_container').height() <= 40) {
           if(!collapseButton.hasClass('panel-collapsed')) {
+            is_collapsed = true;
             reverse_collapse_panel(panel);
           }
-        } 
+        }
+        
+        localStorage.setItem('dispatch_unassigned_trips_collapsed', (is_collapsed ? '0' : '1')); 
       }
     });
 
@@ -290,14 +319,9 @@
       if(panel.attr('id') == 'unassigned_trips_panel') {
         localStorage.setItem('recurring_dispatch_unassigned_trips_collapsed', (is_collapsed ? '0' : '1'));
         if(is_collapsed) {
-          if(splitter) {
-            splitter.prev_trips_height = $('#unassigned_trips_container').height();
-          }
           $('#unassigned_trips_container').height(panel.find('.panel-heading').outerHeight());
         } else {
-          if(splitter.prev_trips_height) {
-            $('#unassigned_trips_container').height(splitter.prev_trips_height);
-          }
+          $('#unassigned_trips_container').height(200);
         }
         update_splitter_position();
       }
@@ -401,5 +425,9 @@
 
     load_runs_panel();
     load_unassigned_trips_panel();
+
+    $(window).on('resize', function() {
+      on_window_resize();
+    });
   });
   
