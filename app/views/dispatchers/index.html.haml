@@ -457,8 +457,12 @@
     });
 
     // master checkbox to select/unselect all
-    $(document).on('change', '.master-select-checkbox', function(e){
-      $(this).parents('table').find('input.trip-selected').prop('checked', $(this).prop('checked'));
+    $(document).on('change', '#unassigned_trips_table .master-select-checkbox', function(e){
+      $('#unassigned_trips_table').find('input.trip-selected').prop('checked', $(this).prop('checked'));
+    });
+
+    $(document).on('change', '.run_trips_panel .master-select-checkbox', function(e){
+      $(this).parents('.run_trips_panel').find('input.trip-selected').prop('checked', $(this).prop('checked'));
     });
 
     // unassigned trips panel checkbox

@@ -753,6 +753,7 @@ class ReportsController < ApplicationController
   def ineligible_customer_status_report
     query_params = params[:query] || {}
     @query = Query.new(query_params)
+
     if params[:query]
       @report_params = [["Provider", current_provider.name]]
       @customers = Customer.for_provider(current_provider_id).order("lower(last_name)", "lower(first_name)")
@@ -773,6 +774,7 @@ class ReportsController < ApplicationController
   def inactive_driver_status_report
     query_params = params[:query] || {}
     @query = Query.new(query_params)
+
     if params[:query]
       @report_params = [["Provider", current_provider.name]]
       @drivers = Driver.for_provider(current_provider_id).default_order
@@ -794,6 +796,7 @@ class ReportsController < ApplicationController
   def customer_donation_report
     query_params = params[:query] || {start_date: Date.today.prev_month + 1, end_date: Date.today + 1}
     @query = Query.new(query_params)
+
     if params[:query]
       @report_params = [["Provider", current_provider.name]]
       @report_params << ["Date Range", "#{@query.start_date.strftime('%m/%d/%Y')} - #{@query.before_end_date.strftime('%m/%d/%Y')}"]
@@ -868,6 +871,7 @@ class ReportsController < ApplicationController
     query_params = params[:query] || {start_date: Date.today.prev_month + 1, end_date: Date.today + 1}
     @query = Query.new(query_params)
     @active_customers = Customer.active_for_date(Date.today).for_provider(current_provider_id)
+    
     if params[:query]
       @report_params = [["Provider", current_provider.name]]
       @report_params << ["Date Range", "#{@query.start_date.strftime('%m/%d/%Y')} - #{@query.before_end_date.strftime('%m/%d/%Y')}"]
