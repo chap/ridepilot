@@ -292,7 +292,20 @@
     var splitter_height = $(document).outerHeight() - 150;
     splitter = $('#dispatch_runs_trips').height(splitter_height).split({
       position: splitter_height - 200,
-      limit: 40
+      limit: 40,
+      onDrag: function(e) {
+        var collapseButton = $('#unassigned_trips_container').find('.panel-expand-collapse-reverse');
+        var panel = $('#unassigned_trips_panel');
+        if($('#unassigned_trips_container').height() > 40) {
+          if(collapseButton.hasClass('panel-collapsed')) {
+            reverse_expand_panel(panel);
+          }
+        } else if($('#unassigned_trips_container').height() <= 40) {
+          if(!collapseButton.hasClass('panel-collapsed')) {
+            reverse_collapse_panel(panel);
+          }
+        } 
+      }
     });
 
     // Initialize a helper object with the trip result reason modal, and a list of cancellation codes.
