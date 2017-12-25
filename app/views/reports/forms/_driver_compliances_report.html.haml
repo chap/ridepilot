@@ -1,4 +1,8 @@
-= form_for @query, :url=>url_for(:action=>:driver_compliances_report), :html=>{:method=>:get} do |f| 
+:ruby
+  action_name = @saved_report ? :show_saved_report : @custom_report.name
+  @active_drivers ||= Driver.for_provider(current_provider_id).active.default_order
+
+= form_for @query, :url=>url_for(:action=> action_name), :html=>{:method=>:get} do |f| 
   %fieldset
     = f.date_select  :start_date, :order => [:month,:day,:year] rescue nil
     = translate_helper("through") 

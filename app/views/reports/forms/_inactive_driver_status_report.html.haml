@@ -1,5 +1,6 @@
 :ruby
   action_name = @saved_report ? :show_saved_report : @custom_report.name
+  
 = form_for @query, :url=>url_for(:action=>action_name), :html=>{:method=>:get} do |f| 
   %fieldset
     %label
