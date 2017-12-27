@@ -356,9 +356,9 @@ class Run < ActiveRecord::Base
     end
 
     (provider.fields_required_for_run_completion & Run::FIELDS_FOR_COMPLETION.map(&:to_s)).each do |extra_field|
-      if extra_field == "paid" && extra_field.nil?
+      if extra_field == "paid" && self.send(extra_field).nil?
         reasons << "Paid field is not specified"
-      elsif extra_field == "unpaid_driver_break_time" && extra_field.nil?
+      elsif extra_field == "unpaid_driver_break_time" && self.send(extra_field).nil?
         reasons << "Driver Unpaid Break Time field is not specified"
       end
     end
