@@ -262,12 +262,13 @@ class Customer < ActiveRecord::Base
     Address.where(id: prev_addr_ids-existing_addr_ids).update_all(deleted_at: Time.current)
 
     # update addresses
+    address_attrs = Address.column_names
     address_objects.each_with_index do |addr_hash, index|
       if addr_hash[:id]
         addr = Address.find_by_id(addr_hash[:id])
-        addr.update_attributes addr_hash.except(:label, :lat, :lon)
+        addr.update_attributes addr_hash.select{|r| address_attrs.include?(r.to_s)}
       else
-        addr = addresses.new(addr_hash.except(:label, :lat, :lon).merge(customer_id: self.try(:id)))
+        addr = addresses.new(addr_hash.select{|r| address_attrs.include?(r.to_s)}.merge(customer_id: self.try(:id)))
       end
 
       self.address = addr if index == mailing_address_index
