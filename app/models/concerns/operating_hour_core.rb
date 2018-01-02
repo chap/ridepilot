@@ -100,6 +100,8 @@ module OperatingHourCore
     end
 
     def operating_for_time?(time_of_day = Time.current.strftime('%H:%M'))
+      time_of_day = time_of_day.strftime('%H:%M') if time_of_day && !time_of_day.is_a?(String)
+
       is_operating = false
 
       first_recur_config = self.first
@@ -130,6 +132,9 @@ module OperatingHourCore
     end
 
     def operating_between_time?(start_time = Time.current.strftime('%H:%M'), end_time = Time.current.strftime('%H:%M'))
+      start_time = start_time.strftime('%H:%M') if start_time && !start_time.is_a?(String)
+      end_time = end_time.strftime('%H:%M') if end_time && !end_time.is_a?(String)
+      
       is_operating = false
 
       first_recur_config = self.first

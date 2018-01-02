@@ -15,6 +15,8 @@ module Available
     # 3. daily_operating_hour?
     # 4. (recurring) operating_hour?
     def available?(date = Date.current, time_of_day = Time.current.strftime('%H:%M'))
+      time_of_day = time_of_day.strftime('%H:%M') if time_of_day && !time_of_day.is_a?(String)
+
       day_of_week = date.wday
       # first check provider
       if !is_provider_available?(day_of_week, time_of_day)
@@ -42,6 +44,9 @@ module Available
     end
 
     def available_between?(date = Time.current, start_time = Time.current.strftime('%H:%M'), end_time = Time.current.strftime('%H:%M'))
+      start_time = start_time.strftime('%H:%M') if start_time && !start_time.is_a?(String)
+      end_time = end_time.strftime('%H:%M') if end_time && !end_time.is_a?(String)
+
       day_of_week = date.wday
       # first check provider
       if !is_provider_available?(day_of_week, start_time) || !is_provider_available?(day_of_week, end_time)
@@ -71,6 +76,8 @@ module Available
     private 
 
     def is_provider_available?(day_of_week = Date.current.wday, time_of_day = Time.current.strftime('%H:%M'))
+      time_of_day = time_of_day.strftime('%H:%M') if time_of_day && !time_of_day.is_a?(String)
+      
       if self.respond_to?(:provider) && !self.provider.available?(day_of_week, time_of_day)
         false
       else

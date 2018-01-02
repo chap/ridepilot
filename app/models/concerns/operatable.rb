@@ -17,6 +17,8 @@ module Operatable
     end
     
     def available?(day_of_week = Time.current.wday, time_of_day = Time.current.strftime('%H:%M'))
+      time_of_day = time_of_day.strftime('%H:%M') if time_of_day && !time_of_day.is_a?(String)
+
       # If no operating hours are defined, assume available
       return true unless operating_hours.any?
       
@@ -40,6 +42,9 @@ module Operatable
     end
 
     def available_between?(day_of_week = Time.current.wday, start_time = Time.current.strftime('%H:%M'), end_time = Time.current.strftime('%H:%M'))
+      start_time = start_time.strftime('%H:%M') if start_time && !start_time.is_a?(String)
+      end_time = end_time.strftime('%H:%M') if end_time && !end_time.is_a?(String)
+      
       # If no operating hours are defined, assume available
       return true unless operating_hours.any?
       
