@@ -19,7 +19,7 @@
             - is_latlng_coded = address.try(:coded_by_lat_lng?)
             - is_latlng = is_latlng_coded || !params[:address_lat].blank? || !params[:address_lon].blank?
             .latlng_fields{style: is_latlng ? "" : 'display: none;'}
-              = number_field_tag "address_lat", (is_latlng_coded && address.try(:latitude)) || params[:address_lat], class: "form-control", placeholder: "laitudue", min: -90, max: 90, style: 'width: 40%;', disabled: @readonly
+              = number_field_tag "address_lat", (is_latlng_coded && address.try(:latitude)) || params[:address_lat], class: "form-control", placeholder: "latitude", min: -90, max: 90, style: 'width: 40%;', disabled: @readonly
               = number_field_tag "address_lon", (is_latlng_coded && address.try(:longitude)) || params[:address_lon], class: "form-control", placeholder: "longitude", min: -180, max: 180, style: 'width: 40%;', disabled: @readonly
             .address_fields{style: is_latlng ? 'display: none;' : ""}
               = text_field_tag "#{prefix}_full_address", address.try(:address_text), disabled: @readonly, class: "address_search form-control", style: "width: 100%;"

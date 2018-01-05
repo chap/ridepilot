@@ -52,7 +52,7 @@
           - is_pickup_latlng_coded = @trip.pickup_address.try(:coded_by_lat_lng?) 
           - is_pickup_latlng = is_pickup_latlng_coded || !params[:trip_pickup_lat].blank? || !params[:trip_pickup_lon].blank?
           .latlng_fields{style: is_pickup_latlng ? "" : 'display: none;'}
-            = number_field_tag "trip_pickup_lat", (is_pickup_latlng_coded && @trip.pickup_address.try(:latitude)) || params[:trip_pickup_lat], class: "form-control", placeholder: "laitudue", min: -90, max: 90, style: 'width: 40%;'
+            = number_field_tag "trip_pickup_lat", (is_pickup_latlng_coded && @trip.pickup_address.try(:latitude)) || params[:trip_pickup_lat], class: "form-control", placeholder: "latitude", min: -90, max: 90, style: 'width: 40%;'
             = number_field_tag "trip_pickup_lon", (is_pickup_latlng_coded && @trip.pickup_address.try(:longitude)) || params[:trip_pickup_lon], class: "form-control", placeholder: "longitude", min: -180, max: 180, style: 'width: 40%;'
           .address_fields{style: is_pickup_latlng ? 'display: none;' : ""}
             = text_field_tag "pickup_address", (!is_pickup_latlng && @trip.pickup_address.try(:one_line_text)) || params[:pickup_address], class: "form-control trip-address-picker", style: "width: 100%;"
@@ -73,7 +73,7 @@
           - is_dropoff_latlng_coded = @trip.dropoff_address.try(:coded_by_lat_lng?)
           - is_dropoff_latlng = is_dropoff_latlng_coded || !params[:trip_dropoff_lat].blank? || !params[:trip_dropoff_lon].blank?
           .latlng_fields{style: is_dropoff_latlng ? "" : 'display: none;'}
-            = number_field_tag "trip_dropoff_lat", (is_dropoff_latlng_coded && @trip.dropoff_address.try(:latitude)) || params[:trip_dropoff_lat], class: "form-control", placeholder: "laitudue", min: -90, max: 90, style: 'width: 40%;'
+            = number_field_tag "trip_dropoff_lat", (is_dropoff_latlng_coded && @trip.dropoff_address.try(:latitude)) || params[:trip_dropoff_lat], class: "form-control", placeholder: "latitude", min: -90, max: 90, style: 'width: 40%;'
             = number_field_tag "trip_dropoff_lon", (is_dropoff_latlng_coded && @trip.dropoff_address.try(:longitude)) || params[:trip_dropoff_lon], class: "form-control", placeholder: "longitude", min: -180, max: 180, style: 'width: 40%;'
           .address_fields{style: is_dropoff_latlng ? 'display: none;' : ""}
             = text_field_tag "dropoff_address", (!is_dropoff_latlng && @trip.dropoff_address.try(:one_line_text)) || params[:dropoff_address], class: "form-control trip-address-picker", style: "width: 100%;"
