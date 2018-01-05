@@ -11,7 +11,7 @@
     # get provider operating hours
     provider_hours = current_provider.hours_per_day_of_week(day_of_week)
 
-    run_driver_array = @total_assigned_runs.pluck(:id, :name, :scheduled_start_time, :scheduled_end_time, :driver_id)
+    run_driver_array = @total_assigned_runs.pluck(:id, :name, :scheduled_start_time, :scheduled_end_time, :driver_id, :date)
 
     row_data = @total_available_drivers.map{|d| 
       driver_id = d.id
@@ -21,6 +21,7 @@
           name: r[1],
           start_time_diff: (r[2] - r[2].at_beginning_of_day) / 3600.0,
           end_time_diff: (r[3] - r[3].at_beginning_of_day) / 3600.0,
+          driver_available: d.available_between?(r[5], r[2], r[3])
         }
       }
       time_ranges = []
@@ -105,6 +106,10 @@
     background-color: #167ea0 !important;
   }
 
+  .driver-availability-table td.chart_cell.driver_not_available {
+    background-color: #f16969 !important;
+  }
+
   .driver-availability-table td.chart_cell.is_disabled {
     background-color: lightgray !important;
   }
@@ -174,6 +179,9 @@
                     - has_run = true
                     - class_name = 'is_run_filled'
                     - title = "Run time range: #{format_hour_label(run[:start_time_diff])}-#{format_hour_label(run[:end_time_diff])}"
+                    - unless run[:driver_available]
+                      - class_name += " driver_not_available"
+                      - title += " (Driver Not Available)"
                   - else
                     - if !provider_hours.blank? && !(provider_hours[0] <= tick[0] && provider_hours[1] >= tick[0])
                       - class_name = 'is_disabled'

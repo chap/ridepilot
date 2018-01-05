@@ -13,6 +13,7 @@
       start_time_diff: (r.scheduled_start_time - r.scheduled_start_time.at_beginning_of_day) / 3600.0,
       end_time_diff: (r.scheduled_end_time - r.scheduled_end_time.at_beginning_of_day) / 3600.0,
       driver_id: r.driver_id,
+      driver_available: r.driver && r.driver.available_between?(r.date, r.scheduled_start_time, r.scheduled_end_time),
       driver_name: r.driver.try(:user_name)
     }}
   end
@@ -51,6 +52,10 @@
 
   .run-availability-table td.chart_cell.is_driver_filled {
     background-color: #be10c5 !important;
+  }
+
+  .run-availability-table td.chart_cell.driver_not_available {
+    background-color: #f16969 !important;
   }
 
   .hour_tick_label {
@@ -105,8 +110,12 @@
                   = link_to r[:name], run_path(r[:id]), target: '_blank'
                 - ticks.each do |tick|
                   - class_name = !(r[:start_time_diff] >= tick[0]) && !(r[:end_time_diff] <= tick[0]) ? "is_filled" : ""
-                  - class_name = 'is_driver_filled' if !class_name.blank? && !r[:driver_id].blank?
                   - title = "Time range: #{format_hour_label(r[:start_time_diff])}-#{format_hour_label(r[:end_time_diff])}"
+                  - if !class_name.blank? && !r[:driver_id].blank?
+                    - class_name = 'is_driver_filled'
+                    - unless r[:driver_available]
+                      - class_name += " driver_not_available" 
+                      - title += " (Driver Not Available)"
                   %td.chart_cell{style: "white-space: nowrap !important; color: white;", title: title, class: class_name || "", data: {time_flag: tick[0]}}
                 - if can?(:edit, Run)
                   %td.pull-right
