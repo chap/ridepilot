@@ -2,7 +2,8 @@
 #page-header.row
   .col-sm-12{style: 'padding: 0px;'}
     .pull-right
-      = link_to translate_helper("driver_availability_forecast_link_text"), availability_forecast_drivers_path, class: "btn action-button"
+      - if can? :manage, Driver
+        = link_to translate_helper("driver_availability_forecast_link_text"), availability_forecast_drivers_path, class: "btn action-button"
       - if can? :create, Driver
         = link_to translate_helper("new_driver_link_text"), new_driver_path, class: "btn action-button"
     %h1

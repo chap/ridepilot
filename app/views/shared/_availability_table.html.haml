@@ -162,7 +162,7 @@
             = row[:label]
           %td{style: 'width: 50px !important; white-space: normal !important;'}
             - unless is_disabled
-              = check_box_tag "all_day", "is_all_day", is_all_day, disabled: is_disabled, class: "is_all_day"
+              = check_box_tag "all_day", "is_all_day", is_all_day, disabled: is_disabled || !can?(:edit, operatable), class: "is_all_day" 
           - ticks.each do |tick|
             - is_provider_unavailable = provider_hours.any? ? !(provider_hours[0] <= tick[0] && provider_hours[1] > tick[0]) : false
             - class_name = is_on_leave ? "is_on_leave" : (is_provider_unavailable ? "is_disabled" : (is_all_day ? "is_all_day_filled" : ""))
