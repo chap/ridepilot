@@ -340,6 +340,7 @@ class TripsController < ApplicationController
 
     respond_to do |format|
       if @trip.is_all_valid?(current_provider_id) && @trip.save
+        @trip.post_process_trip_result_changed!(current_user)
         @trip.update_donation current_user, params[:customer_donation].to_f if params[:customer_donation].present?
         TripDistanceCalculationWorker.perform_async(@trip.id) #sidekiq needs to run
         @ask_for_return_trip = true if @trip.is_outbound?
@@ -412,8 +413,10 @@ class TripsController < ApplicationController
     is_address_changed = @trip.pickup_address_id_changed? || @trip.dropoff_address_id_changed?
     is_trip_result_changed = @trip.trip_result_id_changed?
     is_run_disrupted = @trip.run_disrupted_by_trip_changes?
+    trip_result_changed = @trip.changes.include?(:trip_result_id)
     respond_to do |format|
       if @trip.is_all_valid?(current_provider_id) && @trip.save
+        @trip.post_process_trip_result_changed!(current_user) if trip_result_changed
         @trip.unschedule_trip if is_run_disrupted
         @trip.update_donation current_user, params[:customer_donation].to_f if params[:customer_donation].present?
         TripDistanceCalculationWorker.perform_async(@trip.id) if is_address_changed
