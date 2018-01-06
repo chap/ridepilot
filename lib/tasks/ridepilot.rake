@@ -346,7 +346,7 @@ namespace :ridepilot do
   end
 
   desc 'Remove provider-specific capacity types'
-  task :remove_provider_speicif_capacity_types => :environment do
+  task :remove_provider_specific_capacity_types => :environment do
     ct_table = ProviderLookupTable.find_by_name "capacity_types"
     if ct_table
       ct_table.delete
