@@ -1236,6 +1236,7 @@ class ReportsController < ApplicationController
 
   def pdf_template
     report_name = @custom_report.name
+    layout = report_name == 'manifest' ? 'portrait' : 'landscape'
 
     {
       pdf: "#{report_name}",
@@ -1253,7 +1254,7 @@ class ReportsController < ApplicationController
       :show_as_html => params[:debug].present?,
       :template => "reports/show.pdf.haml",
       :layout => 'pdf.html',
-      :orientation => 'landscape',
+      :orientation => layout,
       :footer => {
           :center => view_context.format_for_pdf_printing(Time.now),
           :right => 'Page [page] of [topage]'
