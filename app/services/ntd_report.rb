@@ -42,9 +42,6 @@ class NtdReport
     @weekday_trips = @trips.where("extract(dow from pickup_time) in (?)", (1..5).to_a)
     @sat_trips = @trips.where("extract(dow from pickup_time) = ?", 6)
     @sun_trips = @trips.where("extract(dow from pickup_time) = ?", 0)
-
-    # ntd_reportable vehicles
-    @vehicles = Vehicle.ntd_reportable.for_provider(@provider.try(:id))
   end
 
   def process_periods_of_service
@@ -74,15 +71,15 @@ class NtdReport
   end
 
   def process_operations
-    @num_max_operated_vehicles = @runs.group("extract(month from date)").count("distinct(vehicle_id)")
+    @num_max_operated_vehicles = @trips.group("extract(month from runs.date)").count("distinct(runs.vehicle_id)")
 
     @num_unlinked_passenger_weekday_trips = sum_monthly_trip_size @weekday_trips
     @num_unlinked_passenger_sat_trips = sum_monthly_trip_size @sat_trips
     @num_unlinked_passenger_sun_trips = sum_monthly_trip_size @sun_trips
 
-    @days_operated_weekday = count_monthly_days_operated @weekday_runs
-    @days_operated_sat = count_monthly_days_operated @sat_runs
-    @days_operated_sun = count_monthly_days_operated @sun_runs
+    @days_operated_weekday = count_monthly_days_operated @weekday_trips
+    @days_operated_sat = count_monthly_days_operated @sat_trips
+    @days_operated_sun = count_monthly_days_operated @sun_trips
 
     (1..12).each do |m|
       # Vehicles operated in maximum service
@@ -112,21 +109,29 @@ class NtdReport
   end
 
   def process_miles_and_hours
-    @total_miles_weekday = sum_monthly_total_miles @weekday_runs
-    @total_miles_sat = sum_monthly_total_miles @sat_runs
-    @total_miles_sun = sum_monthly_total_miles @sun_runs
+    @weekday_stats = monthly_miles_hours @weekday_trips
+    @sat_stats = monthly_miles_hours @sat_trips
+    @sun_stats = monthly_miles_hours @sun_trips
 
-    @revenue_miles_weekday = sum_monthly_revenue_miles @weekday_runs
-    @revenue_miles_sat = sum_monthly_revenue_miles @sat_runs
-    @revenue_miles_sun = sum_monthly_revenue_miles @sun_runs
+    @total_miles_weekday = @weekday_stats[:total_miles]
+    @total_miles_sat = @sat_stats[:total_miles]
+    @total_miles_sun = @sun_stats[:total_miles]
 
-    @passenger_miles_weekday = sum_monthly_passenger_miles @weekday_runs
-    @passenger_miles_sat = sum_monthly_passenger_miles @sat_runs
-    @passenger_miles_sun = sum_monthly_passenger_miles @sun_runs
+    @revenue_miles_weekday = @weekday_stats[:revenue_miles]
+    @revenue_miles_sat = @sat_stats[:revenue_miles]
+    @revenue_miles_sun = @sun_stats[:revenue_miles]
 
-    @total_hours_weekday = sum_monthly_total_hours @weekday_runs
-    @total_hours_sat = sum_monthly_total_hours @sat_runs
-    @total_hours_sun = sum_monthly_total_hours @sun_runs
+    @passenger_miles_weekday = @weekday_stats[:passenger_miles]
+    @passenger_miles_sat = @sat_stats[:passenger_miles]
+    @passenger_miles_sun = @sun_stats[:passenger_miles]
+
+    @total_hours_weekday = @weekday_stats[:total_hours]
+    @total_hours_sat = @sat_stats[:total_hours]
+    @total_hours_sun = @sun_stats[:total_hours]
+
+    @total_revenue_hours_weekday = @weekday_stats[:total_revenue_hours]
+    @total_revenue_hours_sat = @sat_stats[:total_revenue_hours]
+    @total_revenue_hours_sun = @sun_stats[:total_revenue_hours]
 
     (1..12).each do |m|
       # Total Actual Miles
@@ -166,22 +171,14 @@ class NtdReport
       total_hours_sun = @total_hours_sun[m.to_f]
       @worksheet[51][m + 4].change_value(total_hours_sun) unless total_hours_sun.nil?
 
-      # Total Vehicle Revenue Hours: based on revenue_miles / total_miles ratio
-      if total_miles_weekday && total_hours_weekday
-        revenue_pct = revenue_miles_weekday / total_miles_weekday.to_f  
-        revenue_hours_weekday = total_hours_weekday * revenue_pct
-        @worksheet[54][m + 4].change_value(revenue_hours_weekday) unless revenue_hours_weekday.nil?
-      end
-      if total_miles_sat && total_hours_sat
-        revenue_pct = revenue_miles_sat / total_miles_sat.to_f  
-        revenue_hours_sat = total_hours_sat * revenue_pct
-        @worksheet[55][m + 4].change_value(revenue_hours_sat) unless revenue_hours_sat.nil?
-      end
-      if total_miles_sun && total_hours_sun
-        revenue_pct = revenue_miles_sun / total_miles_sun.to_f  
-        revenue_hours_sun = total_hours_sun * revenue_pct
-        @worksheet[56][m + 4].change_value(revenue_hours_sun) unless revenue_hours_sun.nil?
-      end
+      # Total Revenue Hours
+      total_revenue_hours_weekday = @total_revenue_hours_weekday[m.to_f]
+      @worksheet[54][m + 4].change_value(total_revenue_hours_weekday) unless total_revenue_hours_weekday.nil?
+      total_revenue_hours_sat = @total_revenue_hours_sat[m.to_f]
+      @worksheet[55][m + 4].change_value(total_revenue_hours_sat) unless total_revenue_hours_sat.nil?
+      total_revenue_hours_sun = @total_revenue_hours_sun[m.to_f]
+      @worksheet[56][m + 4].change_value(total_revenue_hours_sun) unless total_revenue_hours_sun.nil?
+
     end
   end
 
@@ -214,30 +211,20 @@ class NtdReport
     trips.group("extract(month from pickup_time)").sum("customer_space_count + guest_count + attendant_count")
   end
 
-  def count_monthly_days_operated(runs)
-    runs.group("extract(month from date)").count("distinct(date)")
+  def count_monthly_days_operated(trips)
+    trips.group("extract(month from runs.date)").count("distinct(runs.date)")
   end
 
-  def sum_monthly_total_miles(runs)
-    runs.joins(:run_distance).group("extract(month from date)").sum("total_dist")
-  end
-
-  def sum_monthly_passenger_miles(runs)
-    runs.joins(:run_distance).group("extract(month from date)").sum("passenger_miles")
-  end
-
-  def sum_monthly_total_hours(runs)
-    # if actual hours provided, then use it, otherwise use scheduled run duration
-    actual_hours = runs.where("actual_start_time is NOT NULL and actual_end_time is NOT NULL").group("extract(month from date)").sum("extract(epoch from (actual_end_time - actual_start_time))")
-    sche_hours = runs.where.not("actual_start_time is NOT NULL and actual_end_time is NOT NULL").group("extract(month from date)").sum("extract(epoch from (scheduled_end_time - scheduled_start_time))")
-
-    # need to transform seconds to hours
-    actual_hours.merge(sche_hours){ |k, a_value, b_value| (a_value + b_value)}.each_with_object({}) { |(key, value), hash| hash[key] = (value || 0) / 3600.0 }
-  end
-
-  def sum_monthly_revenue_miles(runs)
-    # NTD algorithum: include the miles from the first pickup to last dropoff
-    runs.joins(:run_distance).group("extract(month from date)").sum("revenue_miles + non_revenue_miles")
+  def monthly_miles_hours(trips)
+    run_ids = trips.pluck(:run_id).uniq
+    runs_rel = Run.where(id: run_ids).joins(:run_distance).group("extract(month from runs.date)")
+    {
+      total_miles: runs_rel.sum("run_distances.ntd_total_miles"),
+      revenue_miles: runs_rel.sum("run_distances.ntd_total_revenue_miles"),
+      passenger_miles: runs_rel.sum("run_distances.ntd_total_passenger_miles"),
+      total_hours: runs_rel.sum("run_distances.ntd_total_hours"),
+      total_revenue_hours: runs_rel.sum("run_distances.ntd_total_revenue_hours"),
+    }
   end
 
 end

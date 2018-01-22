@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180107042410) do
+ActiveRecord::Schema.define(version: 20180122215028) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -911,6 +911,11 @@ ActiveRecord::Schema.define(version: 20180107042410) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.float    "passenger_miles"
+    t.float    "ntd_total_miles"
+    t.float    "ntd_total_revenue_miles"
+    t.float    "ntd_total_passenger_miles"
+    t.float    "ntd_total_hours"
+    t.float    "ntd_total_revenue_hours"
   end
 
   create_table "runs", force: true do |t|

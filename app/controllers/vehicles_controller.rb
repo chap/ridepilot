@@ -171,7 +171,6 @@ class VehiclesController < ApplicationController
       :garage_phone_number,
       :vehicle_maintenance_schedule_type_id,
       :vehicle_type_id,
-      :ntd_reportable,
       :garage_address_attributes => [
         :provider_id,
         :address,

@@ -391,10 +391,22 @@ class Run < ActiveRecord::Base
     sum("extract(epoch from (#{query_str}))") / 3600.0
   end
 
+  def duration_in_hours
+    actual_start_time && actual_end_time ? hours_operated : hours_scheduled
+  end
+
   # Returns length in hours for an individual run. Use scheduled hours
   def hours_scheduled
     seconds = scheduled_end_time - scheduled_start_time
     seconds / 3600.0
+  end
+
+  # Returns length in hours for an individual run. Use scheduled hours
+  def hours_operated
+    if actual_start_time && actual_end_time
+      seconds = actual_end_time - actual_start_time
+      seconds / 3600.0
+    end
   end
 
   # sum up number_of_passengers in each tracking type from completed trips

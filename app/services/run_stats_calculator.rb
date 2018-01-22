@@ -25,6 +25,10 @@ class RunStatsCalculator
     deadhead_to_garage = 0
     passenger_miles = 0
 
+    #NTD related
+    non_ntd_miles = 0
+    non_ntd_passenger_miles = 0
+
     from_address = @run.from_garage_address || @run.vehicle.try(:garage_address)
     to_address = itins.first.address
     time = @run.scheduled_start_time
@@ -44,7 +48,12 @@ class RunStatsCalculator
         passenger_miles += dist * itin.capacity.to_f
       else
         non_revenue_miles += dist
-      end         
+      end    
+
+      unless itin.trip.try(:ntd_reportable?)     
+        non_ntd_miles += dist
+        non_ntd_passenger_miles += dist * itin.capacity.to_f
+      end
     end
 
     last_stop = itins.last
@@ -62,6 +71,13 @@ class RunStatsCalculator
     run_distance.deadhead_from_garage = deadhead_from_garage
     run_distance.deadhead_to_garage = deadhead_to_garage
     run_distance.passenger_miles = passenger_miles
+    #NTD
+    run_distance.ntd_total_miles = total_dist - non_ntd_miles
+    run_distance.ntd_total_revenue_miles = revenuse_miles + non_revenue_miles - non_ntd_miles
+    run_distance.ntd_total_passenger_miles = passenger_miles - non_ntd_passenger_miles
+    run_distance.ntd_total_hours = @run.duration_in_hours * (run_distance.ntd_total_miles / run_distance.total_dist) #preportional to distance %
+    run_distance.ntd_total_revenue_hours = @run.duration_in_hours * (run_distance.ntd_total_revenue_miles / run_distance.total_dist)
+
     run_distance.save
   end
 
