@@ -340,6 +340,7 @@ class TripsController < ApplicationController
 
     respond_to do |format|
       if @trip.is_all_valid?(current_provider_id) && @trip.save
+        @trip.run.add_trip_manifest!(@trip.id) if @trip.run
         @trip.post_process_trip_result_changed!(current_user)
         @trip.update_donation current_user, params[:customer_donation].to_f if params[:customer_donation].present?
         TripDistanceCalculationWorker.perform_async(@trip.id) #sidekiq needs to run
@@ -443,6 +444,7 @@ class TripsController < ApplicationController
   def destroy
     @trip = Trip.find(params[:id])
     run = @trip.run 
+    run.delete_trip_manifest!(@trip.id) if run
     @trip.destroy
     #if run 
     #  TrackerActionLog.trips_removed_from_run(run, [@trip], current_user)

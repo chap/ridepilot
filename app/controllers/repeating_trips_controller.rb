@@ -96,6 +96,7 @@ class RepeatingTripsController < ApplicationController
   end
 
   def destroy
+    @trip.unschedule!
     @trip.destroy
 
     respond_to do |format|

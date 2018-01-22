@@ -267,7 +267,7 @@ class RepeatingRun < ActiveRecord::Base
   end
 
   def remove_trip_itineraries!(trip_id, wday)
-    self.repeating_itineraries.where(trip_id: trip_id, wday: wday).delete_all
+    self.repeating_itineraries.where(repeating_trip_id: trip_id, wday: wday).delete_all
   end
   
   private

@@ -132,4 +132,11 @@ class RepeatingTrip < ActiveRecord::Base
 
     cloned_trip
   end
+
+  def unschedule!
+    weekday_assignments.each do |assignment|
+      rr = assignment.repeating_run
+      rr.delete_trip_manifest!(self.id, assignment.wday) if rr
+    end
+  end
 end
