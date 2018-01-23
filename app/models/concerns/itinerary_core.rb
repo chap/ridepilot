@@ -108,6 +108,8 @@ module ItineraryCore
         time
       end
 
+      self.depart_time = (self.eta + process_time.to_i.minutes) if self.eta
+
       self.save(validate: false)
     end
 
@@ -132,10 +134,6 @@ module ItineraryCore
       else 
         0
       end
-    end
-
-    def depart_time
-      (eta + process_time.to_i.minutes) if eta
     end
 
     def calculate_travel_time!
