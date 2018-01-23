@@ -363,6 +363,7 @@ class TripsController < ApplicationController
         }
       else
         prep_view
+        @mobilities_unsaved = !params[:mobilities].blank?
         format.html { render :action => "new" }
       end
     end
@@ -435,6 +436,7 @@ class TripsController < ApplicationController
         }
       else
         prep_view
+        @mobilities_unsaved = !params[:mobilities].blank?
         format.html { render :action => "edit"  }
         format.js   { @remote = true; render :json => {:status => "error", :form => render_to_string(:partial => 'form') }, :content_type => "text/json" }
       end
