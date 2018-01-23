@@ -165,6 +165,7 @@ class CustomersController < ApplicationController
         format.xml  { render :xml => @customer, :status => :created, :location => @customer }
       else
         prep_edit
+        @mobilities_unsaved = !params[:mobilities].blank?
         format.html { render :action => "new" }
         format.xml  { render :xml => @customer.errors, :status => :unprocessable_entity }
       end
@@ -258,6 +259,7 @@ class CustomersController < ApplicationController
         format.xml  { head :ok }
       else
         prep_edit
+        @mobilities_unsaved = !params[:mobilities].blank?
         format.html { render :action => "edit" }
         format.xml  { render :xml => @customer.errors, :status => :unprocessable_entity }
       end
