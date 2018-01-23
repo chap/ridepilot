@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180123203711) do
+ActiveRecord::Schema.define(version: 20180123212519) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1094,7 +1094,7 @@ ActiveRecord::Schema.define(version: 20180123203711) do
     t.boolean  "ntd_reportable",                                                  default: true
     t.integer  "passenger_load_min"
     t.integer  "passenger_unload_min"
-    t.integer  "early_pickup_allowed"
+    t.boolean  "early_pickup_allowed"
   end
 
   add_index "trips", ["called_back_by_id"], :name => "index_trips_on_called_back_by_id"

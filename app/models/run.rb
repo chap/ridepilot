@@ -166,7 +166,7 @@ class Run < ActiveRecord::Base
       build_begin_run_itinerary.save
       self.trips.each do |trip|
         build_itinerary(trip.pickup_time, trip.pickup_address, trip.id, 1).save
-        build_itinerary(trip.pickup_time, trip.pickup_address, trip.id, 2).save
+        build_itinerary(trip.appointment_time, trip.dropoff_address, trip.id, 2).save
       end
       build_end_run_itinerary.save
     end

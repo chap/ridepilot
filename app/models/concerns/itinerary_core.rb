@@ -108,9 +108,18 @@ module ItineraryCore
         time
       end
 
-      self.depart_time = (self.eta + process_time.to_i.minutes) if self.eta
+      update_depart_time
 
       self.save(validate: false)
+    end
+
+    def update_depart_time
+      new_time = (self.eta + process_time.to_i.minutes) if self.eta
+      self.depart_time = if trip && !trip.early_pickup_allowed
+        new_time > time ? new_time : time
+      else
+        new_time
+      end
     end
 
     # in minutes
@@ -147,8 +156,6 @@ module ItineraryCore
         }
 
         self.travel_time = TripDistanceDurationProxy.new(ENV['TRIP_PLANNER_TYPE'], params).get_drive_time.to_f
-
-        self.calculate_eta!
       end
     end
 

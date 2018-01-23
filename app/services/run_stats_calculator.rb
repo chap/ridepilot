@@ -113,9 +113,10 @@ class RunStatsCalculator
 
       if index < (itin_count - 1)
         itin.calculate_travel_time! 
-      else
-        itin.calculate_eta! 
       end
+      
+      itin.calculate_eta! 
+
       eta_info[itin.itin_id] = {
         scheduled_time: itin.time,
         eta: itin.eta,
