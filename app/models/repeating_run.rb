@@ -192,13 +192,16 @@ class RepeatingRun < ActiveRecord::Base
           break if pickup_index && appt_index
         end
       end
-      
+
+      is_run_end_included = manifest_order_array.last == 'run_end'
+      last_itin_spot = is_run_end_included ? (manifest_order_array.size - 1) : manifest_order_array.size
+
       unless pickup_index
-        pickup_index = manifest_order_array.size 
-        appt_index = pickup_index + 1
+        pickup_index = last_itin_spot
+        appt_index = last_itin_spot + 1
       else 
         unless appt_index
-          appt_index = manifest_order_array.size + 1
+          appt_index = last_itin_spot + 1
         end
       end
 
