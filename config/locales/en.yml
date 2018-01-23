@@ -900,6 +900,16 @@ en:
   address_group_label: 'Type'
   new_provider_common_address_dialog_title: "New Address"
 
+  # ETA
+  eta_related_settings: "ETA Calculation Related Settings"
+  passenger_load_min: "Passenger Load Time (min)"
+  passenger_unload_min: "Passenger Unload Time (min)"
+  early_pickup_allowed: "Allow early pickup?"
+  very_early_arrival_threshold_min: "Threshold (min) to flag as very early arrival"
+  early_arrival_threshold_min: "Threshold (min) to flag as early arrival"
+  late_arrival_threshold_min: "Threshold (min) to flag as late arrival"
+  very_late_arrival_threshold_min: "Threshold (min) to flag as very late arrival"
+
   #reports
   new_reports: "New Reports"
   previous_reports: "Previous Reports"
