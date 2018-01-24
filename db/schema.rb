@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180123212519) do
+ActiveRecord::Schema.define(version: 20180124003730) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -511,7 +511,7 @@ ActiveRecord::Schema.define(version: 20180123212519) do
     t.boolean  "add_value_allowed",       default: true
     t.boolean  "edit_value_allowed",      default: true
     t.boolean  "delete_value_allowed",    default: true
-    t.string   "model_name"
+    t.string   "model_name_str"
     t.string   "code_column_name"
     t.string   "description_column_name"
   end
@@ -577,7 +577,7 @@ ActiveRecord::Schema.define(version: 20180123212519) do
     t.string   "caption"
     t.string   "name"
     t.string   "value_column_name"
-    t.string   "model_name"
+    t.string   "model_name_str"
     t.string   "code_column_name"
     t.string   "description_column_name"
     t.datetime "created_at"
@@ -795,7 +795,7 @@ ActiveRecord::Schema.define(version: 20180123212519) do
     t.boolean  "ntd_reportable",                 default: true
     t.integer  "passenger_load_min"
     t.integer  "passenger_unload_min"
-    t.integer  "early_pickup_allowed"
+    t.boolean  "early_pickup_allowed"
   end
 
   add_index "repeating_trips", ["customer_id"], :name => "index_repeating_trips_on_customer_id"
