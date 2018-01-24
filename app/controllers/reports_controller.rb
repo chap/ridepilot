@@ -749,7 +749,7 @@ class ReportsController < ApplicationController
       @runs.each do |run|
         @data_by_date[run.date] = [] unless @data_by_date.has_key?(run.date)
         day_data = @data_by_date[run.date]
-        day_data << [run.name, run.incomplete_reason.join("; ")]
+        day_data << [run.name, run.id, run.incomplete_reason.join("; ")]
       end
 
       @run_dates = @data_by_date.keys.sort

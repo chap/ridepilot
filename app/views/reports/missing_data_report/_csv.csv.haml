@@ -7,5 +7,5 @@
   - # column headers
   = CSV.generate_line([translate_helper("run_name_column"), translate_helper("run_incomplete_reason")], {:row_sep => nil}).html_safe
   - @data_by_date[date].each do |data|
-    = CSV.generate_line([data[0], data[1]], {:row_sep => nil}).html_safe
+    = CSV.generate_line([data[0], data[2]], {:row_sep => nil}).html_safe
   = CSV.generate_line([""], {:row_sep => nil}).html_safe

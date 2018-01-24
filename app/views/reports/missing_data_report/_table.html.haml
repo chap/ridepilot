@@ -7,7 +7,11 @@
         %th= translate_helper("run_incomplete_reason")
     %tbody
       - @data_by_date[date].each do |data|
+        - run_name = data[0]
+        - run_id = data[1]
+        - incomplete_reason = data[2]
         %tr
-          %td{style: 'width: 150px;'}= data[0]
-          %td= data[1]
+          %td{style: 'width: 150px;'}
+            = link_to run_name, run_url(run_id)
+          %td= incomplete_reason
 
