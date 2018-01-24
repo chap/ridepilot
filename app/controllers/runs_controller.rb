@@ -190,7 +190,23 @@ class RunsController < ApplicationController
     end
   end 
 
-  def request_completion
+  def request_change_garage
+  end
+
+  def update_garage
+    @run.attributes = run_params
+
+    if @run.from_garage_address.present?
+      @run.from_garage_address.the_geom = Address.compute_geom(params[:from_garage_address_lat], params[:from_garage_address_lon])
+    end
+
+    if @run.to_garage_address.present?
+      @run.to_garage_address.the_geom = Address.compute_geom(params[:to_garage_address_lat], params[:to_garage_address_lon])
+    end
+
+    @run.save(validate: false)
+
+    redirect_to run_path(@run)
   end
 
   def request_uncompletion
@@ -202,17 +218,9 @@ class RunsController < ApplicationController
   end
 
   def complete
-    @run.attributes = run_params
-
-    if @run.from_garage_address.present?
-      @run.from_garage_address.the_geom = Address.compute_geom(params[:from_garage_address_lat], params[:from_garage_address_lon])
+    if @run.completable?
+      @run.set_complete!(current_user)
     end
-
-    if @run.to_garage_address.present?
-      @run.to_garage_address.the_geom = Address.compute_geom(params[:to_garage_address_lat], params[:to_garage_address_lon])
-    end
-
-    @run.set_complete!(current_user)
 
     redirect_to run_path(@run)
   end

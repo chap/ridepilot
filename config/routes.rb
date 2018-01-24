@@ -245,10 +245,11 @@ Rails.application.routes.draw do
 
       member do
         get :append_trips
-        get :request_completion
+        get :request_change_garage
+        patch :update_garage
         get :request_uncompletion
         patch :uncomplete
-        patch :complete
+        get :complete
         patch :assign_driver
         patch :unassign_driver
       end

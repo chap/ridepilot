@@ -1,10 +1,10 @@
 :ruby
   @run.from_garage_address ||= @run.vehicle.garage_address.try(:dup) || @run.build_from_garage_address(provider_id: current_provider_id)
   @run.to_garage_address ||= @run.vehicle.garage_address.try(:dup) || @run.build_to_garage_address(provider_id: current_provider_id)
-#runCompletionDialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1", "data-backdrop" => 'static'}
+#changeGarageDialog.modal.fade.col-sm-12{:role => "dialog", "aria-hidden" => 'true', :tabindex => "-1", "data-backdrop" => 'static'}
   .modal-dialog
     .modal-content
-      = form_for @run, url: complete_run_path(@run) do |f| 
+      = form_for @run, url: update_garage_run_path(@run) do |f| 
         .modal-header
           .pull-right
             = button_tag translate_helper(:ok), type: :submit, style: "margin-right: 5px;", class: "btn action-button", id: 'completeRun'
@@ -12,7 +12,7 @@
               = translate_helper(:cancel)
           .modal-title{:style => "text-align:left;"}
             %strong
-              = translate_helper(:complete_run_dialog_title)
+              = translate_helper(:change_garage_dialog_title)
         .modal-body.row
           %p.col-sm-12
             %b
@@ -37,6 +37,6 @@
           = render 'addresses/google_place_autocomplete_js', container: '.garage_address'
 
 :javascript
-  $('#runCompletionDialog').on('hidden.bs.modal', function() {
-    $('#runCompletionDialog').remove();
+  $('#changeGarageDialog').on('hidden.bs.modal', function() {
+    $('#changeGarageDialog').remove();
   });

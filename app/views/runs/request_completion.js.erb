@@ -1,7 +1,0 @@
-<% if !@run.complete? && @run.completable? %>
-  var $new_form = $("<%= j (render partial: 'run_completion_dialog') %>");
-
-  $('body').append($new_form);
-  $('#runCompletionDialog').modal('show');
-
-<% end %>

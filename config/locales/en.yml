@@ -1220,6 +1220,8 @@ en:
   unavailable_driver_for_run_time_range_warning: "Driver is not available within the run scheduled time range."
   proceed_button: "Proceed"
   run_completion_required: "Required for Completion"
+  change_garage: "Change Garage Location"
+  change_garage_dialog_title: "Change Start and End Location"
   from_garage: "From Garage"
   to_garage: "To Garage"
   from_garage_address_label: "From Garage"
