@@ -34,6 +34,8 @@ class Run < ActiveRecord::Base
 
   before_validation :fix_dates
   before_update :check_vehicle_change
+  before_update :check_manifest_change
+  after_update :apply_manifest_changes
 
   validate                  :name_uniqueness
   normalize_attribute :name, :with => [ :strip ]
@@ -310,15 +312,22 @@ class Run < ActiveRecord::Base
   end
 
   def add_trip_itineraries!(trip_id)
-    trip = Trip.find_by_id(trip_id) 
-    if trip 
-      build_itinerary(trip.pickup_time, trip.pickup_address, trip_id, 1).save
-      build_itinerary(trip.appointment_time, trip.dropoff_address, trip_id, 2).save
+    if self.itineraries.where(trip_id: trip_id).empty?
+      trip = Trip.find_by_id(trip_id) 
+      if trip 
+        build_itinerary(trip.pickup_time, trip.pickup_address, trip_id, 1).save
+        build_itinerary(trip.appointment_time, trip.dropoff_address, trip_id, 2).save
+        self.itineraries.clear_times! #clear other itins times
+      end
     end
   end
 
   def remove_trip_itineraries!(trip_id)
-    self.itineraries.where(trip_id: trip_id).delete_all
+    trip_itins = self.itineraries.where(trip_id: trip_id)
+    if trip_itins.any?
+      self.itineraries.where(trip_id: trip_id).delete_all
+      self.itineraries.clear_times! #clear other itins times
+    end
   end
 
   def as_calendar_json
@@ -626,6 +635,19 @@ class Run < ActiveRecord::Base
       self.to_garage_address = self.vehicle.try(:garage_address).try(:dup) 
     end
 
+    true
+  end
+
+  def check_manifest_change
+    if (self.changes.keys & ["scheduled_start_time", "scheduled_end_time", "from_garage_address_id", "to_garage_address_id"]).any?
+      @clear_manifest_times = true
+    end
+
+    true
+  end  
+
+  def apply_manifest_changes
+    self.itineraries.clear_times! if @clear_manifest_times
     true
   end
   

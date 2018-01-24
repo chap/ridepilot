@@ -169,6 +169,7 @@ class DispatchersController < ApplicationController
       new_order = params[:manifest_order].split(',').uniq
       @run.manifest_order = new_order 
       @run.save(validate: false)
+      @run.itineraries.clear_times! #clear itins times
 
       #TrackerActionLog.rearrange_trip_itineraries(@run, current_user)
     end
