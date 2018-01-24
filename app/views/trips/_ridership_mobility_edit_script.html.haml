@@ -133,6 +133,6 @@
     });
   });
 
-  if(#{ @mobilities_unsaved || @is_clone || @is_return || false}) {
+  if(#{ !params[:mobilities].blank? || @is_clone || @is_return || false}) {
     $('.editable-number[data-original-value!=0]').addClass('editable-unsaved');
   }

@@ -58,7 +58,6 @@ class RepeatingTripsController < ApplicationController
         }
       else
         prep_view
-        @mobilities_unsaved = !params[:mobilities].blank?
         format.html { render :action => "new" }
       end
     end
@@ -91,7 +90,6 @@ class RepeatingTripsController < ApplicationController
         }
       else
         prep_view
-        @mobilities_unsaved = !params[:mobilities].blank?
         format.html { render :action => "edit"  }
       end
     end

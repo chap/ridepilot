@@ -107,6 +107,7 @@ class CustomersController < ApplicationController
     @customer.provider = current_provider
     @customer.activated_date = Date.today
     edit_addresses
+    edit_mobilities
 
     if params[:ignore_dups] != "1"
       #check for duplicates
@@ -160,12 +161,10 @@ class CustomersController < ApplicationController
         edit_funding_authorization_numbers
         edit_eligibilities
         edit_ada_questions
-        edit_mobilities
         format.html { redirect_to(@customer, :notice => 'Customer was successfully created.') }
         format.xml  { render :xml => @customer, :status => :created, :location => @customer }
       else
         prep_edit
-        @mobilities_unsaved = !params[:mobilities].blank?
         format.html { render :action => "new" }
         format.xml  { render :xml => @customer.errors, :status => :unprocessable_entity }
       end
@@ -229,6 +228,7 @@ class CustomersController < ApplicationController
 
     @customer.assign_attributes customer_attrs
     edit_addresses
+    edit_mobilities
 
     #save address changes
     if address_attributes_param && address_attributes_param[:id].present?
@@ -254,12 +254,10 @@ class CustomersController < ApplicationController
         edit_funding_authorization_numbers
         edit_eligibilities
         edit_ada_questions
-        edit_mobilities
         format.html { redirect_to(@customer, :notice => 'Customer was successfully updated.') }
         format.xml  { head :ok }
       else
         prep_edit
-        @mobilities_unsaved = !params[:mobilities].blank?
         format.html { render :action => "edit" }
         format.xml  { render :xml => @customer.errors, :status => :unprocessable_entity }
       end
@@ -472,8 +470,7 @@ class CustomersController < ApplicationController
       @customer.ridership_mobilities.delete_all
 
       mobilities.each do |config|
-        new_item = @customer.ridership_mobilities.new(mobility_id: config[:mobility_id], ridership_id: config[:ridership_id], capacity: config[:capacity].to_i)
-        new_item.save
+        @customer.ridership_mobilities.build(mobility_id: config[:mobility_id], ridership_id: config[:ridership_id], capacity: config[:capacity].to_i)
       end
     end
   end
