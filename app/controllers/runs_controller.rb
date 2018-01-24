@@ -190,10 +190,10 @@ class RunsController < ApplicationController
     end
   end 
 
-  def request_change_garage
+  def request_change_locations
   end
 
-  def update_garage
+  def update_locations
     @run.attributes = run_params
 
     if @run.from_garage_address.present?

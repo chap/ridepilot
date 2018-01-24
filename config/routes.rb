@@ -245,8 +245,8 @@ Rails.application.routes.draw do
 
       member do
         get :append_trips
-        get :request_change_garage
-        patch :update_garage
+        get :request_change_locations
+        patch :update_locations
         get :request_uncompletion
         patch :uncomplete
         get :complete

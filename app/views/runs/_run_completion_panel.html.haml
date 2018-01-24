@@ -4,15 +4,20 @@
       = translate_helper(:run_completion_required)
   .panel-body{style: 'padding: 5px;'}
     - if edit_mode == :show
+      .col-sm-12
+        .pull-right
+          = link_to translate_helper(:change_locations), request_change_locations_run_path(@run), :remote => true, :title => "Change run start and end locations", :class => "btn action-button"
+          - if !@run.new_record? && can?(:edit, @run) && !@run.complete?
+            = link_to translate_helper(:complete), complete_run_path(@run), :disabled => !@run.completable?, :title => !@run.completable? ? "Incomplete trips or missing fields" : "", :class => "btn action-button run-completion-button"
       .form-group.col-sm-12
         .col-sm-3
-          = f.label :from_garage_address, translate_helper("from_garage")
+          = f.label :from_garage_address, translate_helper("start_location")
         .col-sm-9
           - from_address = @run.from_garage_address || @run.vehicle.try(:garage_address)
           = from_address.try(:address_text) 
       .form-group.col-sm-12
         .col-sm-3
-          = f.label :to_garage_address, translate_helper("to_garage")
+          = f.label :to_garage_address, translate_helper("end_location")
         .col-sm-9
           - to_address = @run.to_garage_address || @run.vehicle.try(:garage_address)
           = to_address.try(:address_text) 
@@ -38,6 +43,3 @@
           = f.label :paid, translate_helper("paid")
         .col-sm-9
           = f.select :paid, [[translate_helper("yes"), "true"], [translate_helper("no"), "false"]], {:selected => @run.paid.to_s }, class: 'form-control'
-    - if edit_mode == :show && !@run.new_record? && can?(:edit, @run) && !@run.complete?
-      .col-sm-12
-        = link_to translate_helper(:complete), complete_run_path(@run), :disabled => !@run.completable?, :title => !@run.completable? ? "Incomplete trips or missing fields" : "", :class => "btn action-button pull-right run-completion-button"
