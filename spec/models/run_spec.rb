@@ -3,7 +3,6 @@ require "rails_helper"
 RSpec.describe Run, type: :model do
   
   describe 'validations' do
-    
     # Set some context...
     let(:provider_a) { create(:provider) }
     let(:provider_b) { create(:provider) }
@@ -97,6 +96,61 @@ RSpec.describe Run, type: :model do
       expect(child_run_same_driver.valid_as_daily_run?).to be false
       
     end
-    
+  end
+
+  describe 'manifest changes' do
+    let(:provider_a) { create(:provider) }
+    let!(:run) { create(:run, :today, :scheduled_morning, provider: provider_a, scheduled_start_time: Date.today.beginning_of_day, scheduled_end_time: Date.today.end_of_day) }
+    let(:trip) { create(:trip, run: run) }
+
+    describe "#add_trip_manifest!" do 
+      before do 
+      end
+
+      it "add itineraries" do
+        expect{run.add_trip_manifest!(trip.id)}.to change{run.itineraries.count}.from(0).to(2)
+      end
+
+      it "updates manifest_order" do 
+        run.add_trip_manifest!(trip.id)
+        expect(run.manifest_order).to match_array(["trip_#{trip.id}_leg_1", "trip_#{trip.id}_leg_2"])
+      end
+    end
+
+    describe "#delete_trip_manifest!" do 
+      before do 
+        run.add_trip_manifest!(trip.id)
+      end
+
+      it "remove itineraries" do
+        expect{run.delete_trip_manifest!(trip.id)}.to change{run.itineraries.count}.from(2).to(0)
+      end
+
+      it "updates manifest_order" do 
+        run.delete_trip_manifest!(trip.id)
+        expect(run.manifest_order).to eq([])
+      end
+    end
+
+    describe "#sorted_itineraries" do 
+      before do 
+        day_base = Date.today.beginning_of_day
+        @trip_1 = create(:trip, pickup_time: day_base + 8.hours, appointment_time: day_base + 10.hours, run: run)
+        @trip_2 = create(:trip, pickup_time: day_base + 9.hours, appointment_time: day_base + 11.hours, run: run)
+
+        run.add_trip_manifest!(@trip_1.id)
+        run.add_trip_manifest!(@trip_2.id)
+      end
+
+      it "returns correct itineraries in order" do 
+        sorted_itineraries = run.sorted_itineraries
+        expect(sorted_itineraries.size).to eq(4)
+        expect(sorted_itineraries.collect(&:itin_id)).to match_array(["trip_#{@trip_1.id}_leg_1", "trip_#{@trip_2.id}_leg_1", "trip_#{@trip_1.id}_leg_2", "trip_#{@trip_2.id}_leg_2"])
+      end
+
+      it "is in sync with manifest_order" do 
+        expect(run.manifest_order).to match_array(["trip_#{@trip_1.id}_leg_1", "trip_#{@trip_2.id}_leg_1", "trip_#{@trip_1.id}_leg_2", "trip_#{@trip_2.id}_leg_2"])
+      end
+    end
   end
 end
