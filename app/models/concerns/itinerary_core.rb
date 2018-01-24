@@ -12,6 +12,10 @@ module ItineraryCore
     scope :revenue, -> { where.not(trip: nil) }
     scope :deadhead, -> { where(trip: nil) }
 
+    def self.clear_times
+      self.update_all(eta: nil, travel_time: nil, depart_time: nil)
+    end
+
     def trip_id
       @trip_id ||= trip.id
     end
