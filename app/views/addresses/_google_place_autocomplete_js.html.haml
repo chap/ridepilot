@@ -34,7 +34,7 @@
     }
 
     // reset values when there is a change
-    $(".address_search").change(function() {
+    $(".address_search").on('input propertychange', function() {
       resetAddressDetails($(this).parents("#{container}"));
     });
 
