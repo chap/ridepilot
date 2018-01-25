@@ -134,6 +134,14 @@ class Address < ActiveRecord::Base
     "(#{latitude}, #{longitude})" if geocoded?
   end
 
+  def same_geom_as?(a_address)
+    lat_lng_text.to_s == a_address.try(:lat_lng_text).to_s
+  end
+
+  def same_lat_lng?(lat, lng)
+    latitude.to_s == lat.to_s && longitude.to_s == lng.to_s 
+  end
+
   def coded_by_lat_lng?
     [address, city, state, zip].compact.join("").blank? && geocoded?
   end

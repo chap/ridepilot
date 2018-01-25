@@ -194,15 +194,20 @@ class RunsController < ApplicationController
   end
 
   def update_locations
-    @run.attributes = run_params
+    prev_from_address = @run.from_garage_address.try(:dup)
+    prev_to_address = @run.to_garage_address.try(:dup)
 
-    if @run.from_garage_address.present?
+    unless prev_from_address.same_lat_lng?(params[:from_garage_address_lat], params[:from_garage_address_lon])
+      @run.build_from_garage_address(provider_id: current_provider_id)
       @run.from_garage_address.the_geom = Address.compute_geom(params[:from_garage_address_lat], params[:from_garage_address_lon])
     end
 
-    if @run.to_garage_address.present?
+    unless prev_to_address.same_lat_lng?(params[:to_garage_address_lat], params[:to_garage_address_lon])
+      @run.build_to_garage_address(provider_id: current_provider_id)
       @run.to_garage_address.the_geom = Address.compute_geom(params[:to_garage_address_lat], params[:to_garage_address_lon])
     end
+
+    @run.attributes = run_params
 
     @run.save(validate: false)
 
