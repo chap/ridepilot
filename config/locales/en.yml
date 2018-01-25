@@ -909,6 +909,7 @@ en:
   early_arrival_threshold_min: "Threshold (min) to flag as early arrival"
   late_arrival_threshold_min: "Threshold (min) to flag as late arrival"
   very_late_arrival_threshold_min: "Threshold (min) to flag as very late arrival"
+  update_eta_related_settings: "Update"
 
   #reports
   new_reports: "New Reports"
