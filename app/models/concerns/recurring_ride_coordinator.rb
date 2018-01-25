@@ -103,6 +103,7 @@ module RecurringRideCoordinator
 
   def update_schedule_attributes
     self.schedule_attributes = recurring_ride_coordinator_attributes
+    true
   end
 
   def instantiate_recurring_ride_coordinators

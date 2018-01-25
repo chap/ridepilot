@@ -396,6 +396,8 @@ class Customer < ActiveRecord::Base
       # once ada_eligible is changed, clear ada questions if not ada_eligible
       customer_ada_questions.clear unless ada_eligible?
     end
+
+    true
   end
 
 end

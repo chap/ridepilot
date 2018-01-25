@@ -70,6 +70,7 @@ class Address < ActiveRecord::Base
       in_district = Region.count(:conditions => ["is_primary = 't' and st_contains(the_geom, ?)", the_geom]) > 0
       true # avoid returning false while doing before_validation
     end 
+    
   end
 
   def latitude

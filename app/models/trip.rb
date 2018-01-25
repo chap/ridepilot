@@ -475,11 +475,13 @@ class Trip < ActiveRecord::Base
 
   def check_eta_settings_change
     @clear_itineraries_times = ( self.changes.keys & ["passenger_load_min", "passenger_unload_min", "early_pickup_allowed"] ).any?
+    true
   end
 
   def apply_eta_settings_change
     if self.run
       self.run.itineraries.clear_times! if @clear_itineraries_times
     end
+    true
   end
 end

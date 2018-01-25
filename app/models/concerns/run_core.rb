@@ -58,6 +58,8 @@ module RunCore
     def update_scheduled_time_string
       self.scheduled_start_time_string = self.scheduled_start_time.try(:to_s, :time_utc)
       self.scheduled_end_time_string = self.scheduled_end_time.try(:to_s, :time_utc)
+
+      true
     end
   end
 
