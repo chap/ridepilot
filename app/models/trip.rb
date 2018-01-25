@@ -31,6 +31,9 @@ class Trip < ActiveRecord::Base
   validate :customer_active
   validate :fit_run_schedule
 
+  before_update :check_eta_settings_change
+  after_update :apply_eta_settings_change
+
   scope :after,              -> (pickup_time) { where('pickup_time > ?', pickup_time.utc) }
   scope :after_today,        -> { where('pickup_time > ?', Date.today.end_of_day) }
   scope :today_and_prior,    -> { where('pickup_time <= ?', Date.today.end_of_day) }
@@ -468,5 +471,15 @@ class Trip < ActiveRecord::Base
 
   def time_portion(time)
     (time - time.beginning_of_day) if time
+  end
+
+  def check_eta_settings_change
+    @clear_itineraries_times = ( self.changes.keys & ["passenger_load_min", "passenger_unload_min", "early_pickup_allowed"] ).any?
+  end
+
+  def apply_eta_settings_change
+    if self.run
+      self.run.itineraries.clear_times! if @clear_itineraries_times
+    end
   end
 end

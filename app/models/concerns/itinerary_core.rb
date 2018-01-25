@@ -12,6 +12,11 @@ module ItineraryCore
     scope :revenue, -> { where.not(trip: nil) }
     scope :deadhead, -> { where(trip: nil) }
 
+    scope :run_begin, -> { where(trip: nil, leg_flag: 0) }
+    scope :pickup, -> { where.not(trip: nil).where(leg_flag: 1) }
+    scope :dropoff, -> { where.not(trip: nil).where(leg_flag: 2) }
+    scope :run_end, ->{ where(trip: nil, leg_flag: 3) }
+
     def self.clear_times!
       self.where.not("eta is NULL AND travel_time is NULL AND depart_time is NULL").update_all(eta: nil, travel_time: nil, depart_time: nil)
     end
