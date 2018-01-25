@@ -47,7 +47,9 @@
       $("#pickup_address_notes").val(pickup_addr_notes);
       $('#' + prefix+ 'trip_funding_source_id').val(customerData.default_funding_source_id);
       $('#' + prefix+ 'trip_service_level').val(customerData.default_service_level);
-      $('#' + prefix+ 'trip_medicaid_eligible').attr('checked',customerData.medicaid_eligible);      
+      $('#' + prefix+ 'trip_medicaid_eligible').attr('checked',customerData.medicaid_eligible); 
+      $('#' + prefix+ 'trip_passenger_load_min').val(customerData.passenger_load_min);      
+      $('#' + prefix+ 'trip_passenger_unload_min').val(customerData.passenger_unload_min);     
     }
 
     $('.trip_form #customer_name').bind('railsAutocomplete.select', function(event, data){ 

@@ -117,6 +117,8 @@ class Customer < ActiveRecord::Base
       :address_data              => address_data,
       :default_funding_source_id => default_funding_source_id,
       :default_service_level     => service_level_name,
+      :passenger_load_min        => passenger_load_min,
+      :passenger_unload_min      => passenger_unload_min,
       :customer_eligibilities    => customer_eligibilities.where.not(eligibility_id: nil).specified.as_json
     }
   end
