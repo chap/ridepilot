@@ -175,11 +175,16 @@ class Run < ActiveRecord::Base
     end
   end
 
-  # "Cancels" a run: removes any trips from that run
+  # "Cancels" a run: mark as cancelled and unschedule everything
   def cancel!
     self.cancelled = true
+    unschedule!
+  end
+
+  # unschedule trips
+  def unschedule!(auto_save = true)
     self.manifest_order = nil
-    self.save(validate: false)
+    self.save(validate: false) if auto_save
     
     trips.clear # Doesn't actually destroy the records, just removes the association
     itineraries.delete_all
@@ -639,15 +644,22 @@ class Run < ActiveRecord::Base
   end
 
   def check_manifest_change
-    if (self.changes.keys & ["scheduled_start_time", "scheduled_end_time", "from_garage_address_id", "to_garage_address_id"]).any?
-      @clear_manifest_times = true
+    if self.changes.include?(:date)
+      @unschedule_trips = true
+    else
+      if (self.changes.keys & ["scheduled_start_time", "scheduled_end_time", "from_garage_address_id", "to_garage_address_id"]).any?
+        @clear_manifest_times = true
+      end
     end
 
     true
   end  
 
   def apply_manifest_changes
-    if @clear_manifest_times
+    if @unschedule_trips
+      # TODO
+      self.unschedule!(false)
+    elsif @clear_manifest_times
       self.itineraries.clear_times!
       self.itineraries.run_begin.update_all(time: self.scheduled_start_time, address_id: self.from_garage_address.try(:id) || self.vehicle.try(:garage_address).try(:id))
       self.itineraries.run_end.update_all(time: self.scheduled_end_time, address_id: self.to_garage_address.try(:id) || self.vehicle.try(:garage_address).try(:id))

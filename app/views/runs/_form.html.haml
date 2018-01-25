@@ -58,7 +58,8 @@
   = render 'unavailable_driver_vehicle_warning_dialog'
   :javascript
     $(function() {
-      $('.run_form input[type=submit]').click(function() {
+      var original_run_date = $('#run_date').val();
+      var check_driver_vehicle_availability_fn = function() {
         var driver_id = $('#run_driver_id').val();
         var vehicle_id = $('#run_vehicle_id').val();
         var date = $('#run_date').val();
@@ -76,6 +77,28 @@
               end_time: end_time
             }
           });
+        }
+      };
+
+      $('.run_form input[type=submit]').click(function() {
+        var new_run_date = $('#run_date').val();
+        if(new_run_date) {
+          // check if date change for a scheduled run (with trips)
+          if(#{ @run.trips.any? || false}) {
+            var date_changed = (new_run_date != original_run_date);
+            if(date_changed) {
+              bootbox.confirm("You have changed the run date. This would unschedule all associated trips. Are you sure to continue?", function(result) {
+                if(result) {
+                  check_driver_vehicle_availability_fn();
+                }
+              });
+            } else {
+              check_driver_vehicle_availability_fn();
+            }
+          } else {
+            check_driver_vehicle_availability_fn();
+          }
+
           return false;
         }
       })
