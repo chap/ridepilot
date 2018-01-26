@@ -29,6 +29,7 @@ class Ability
         can :read, Provider, :id => role.provider.id
         if role.admin?
           can :manage, role.provider
+          can :manage, VehicleType, :provider_id => role.provider_id
         end
         
         cannot :create, Provider
