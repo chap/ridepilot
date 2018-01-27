@@ -49,7 +49,7 @@ module DispatchHelper
     end
 
     # add itinerary specific data
-    itins = run.sorted_itineraries(true)
+    itins = is_recurring ? run.sorted_itineraries(true, recurring_dispatch_wday) : run.sorted_itineraries(true)
     # default occupancy by capacity type
     occupancy = {}
     capacity_type_ids.each do |c_id|
