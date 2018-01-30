@@ -272,9 +272,6 @@ class Run < ActiveRecord::Base
     itins = itineraries
     itins = itins.revenue if revenue_only
 
-    manifest_order.insert(0, "run_begin") if manifest_order.first != 'run_begin'
-    manifest_order << "run_end" if manifest_order.last != 'run_end'
-
     if itins.empty?
       # begin run
       itins << build_begin_run_itinerary unless revenue_only
@@ -295,6 +292,9 @@ class Run < ActiveRecord::Base
     if manifest_order.blank?
       itins = itins.sort_by { |itin| [itin.time_diff, itin.leg_flag] }
     else
+      manifest_order.insert(0, "run_begin") if manifest_order.first != 'run_begin'
+      manifest_order << "run_end" if manifest_order.last != 'run_end'
+
       itins = itins.sort_by{|itin| manifest_order.index(itin.itin_id).to_i}
     end
 
