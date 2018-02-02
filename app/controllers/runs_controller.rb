@@ -257,8 +257,12 @@ class RunsController < ApplicationController
   def reload_drivers
     @drivers = Driver.active.where(:provider_id=>current_provider_id).default_order
     date = Date.parse(params[:date]) rescue nil
-    from_time = DateTime.parse(params[:date] + " " + params[:from_time]) rescue nil
-    to_time = DateTime.parse(params[:date] + " " + params[:to_time]) rescue nil
+    unless params[:from_time].blank?
+      from_time = DateTime.parse(params[:date] + " " + params[:from_time]) rescue nil 
+    end
+    unless params[:to_time].blank?
+      to_time = DateTime.parse(params[:date] + " " + params[:to_time]) rescue nil 
+    end
     exclude_inactive_drivers(date, from_time, to_time)
   end
 

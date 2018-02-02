@@ -84,11 +84,17 @@
       });
 
       $('input.time_field_hour, input.time_field_minute').on('change', function() {
-        reload_drivers();
+        // use time_out to wait for #run_scheduled_start_time value updated
+        setTimeout(function() {
+          reload_drivers();
+        }, 10);
       });
 
       $(document).on('click', 'button.am-pm', function() {
-        reload_drivers();
+        // use time_out to wait for #run_scheduled_start_time value updated
+        setTimeout(function() {
+          reload_drivers();
+        }, 10);
       });
 
       var original_run_date = $('#run_date').val();

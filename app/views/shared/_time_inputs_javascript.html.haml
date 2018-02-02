@@ -11,7 +11,12 @@
         hour =  adjusted_hour - 12;
       }
 
-      time_field.find('.time_field_value').val(hour + ":" + min + " " + am_pm);      
+      var time_str = "";
+      if (hour && min && am_pm) {
+        time_str = hour + ":" + min + " " + am_pm;
+      }
+
+      time_field.find('.time_field_value').val(time_str);      
     }
 
     $(document).on('click', 'button.am-pm', function() {
