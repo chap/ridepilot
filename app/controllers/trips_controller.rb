@@ -12,9 +12,10 @@ class TripsController < ApplicationController
     filter_trips
 
     @vehicles        = Vehicle.where(:provider_id => current_provider_id)
-    if current_provider.try(:cab_enabled?)
-      @vehicles = add_cab(@vehicles)
-    end
+    cab_enabled = current_provider.try(:cab_enabled?)
+
+    @vehicles = add_cab(@vehicles) if cab_enabled
+
     @drivers         = Driver.for_provider current_provider_id
     @start_pickup_date = Time.zone.at(session[:trips_start].to_i).to_date
     @end_pickup_date = Time.zone.at(session[:trips_end].to_i).to_date
@@ -30,7 +31,9 @@ class TripsController < ApplicationController
     end
 
     runs = get_eligible_runs(trip_sessions)
-    @run_listings = runs.pluck(:name, :id) + [[TranslationEngine.translate_text(:unscheduled), -1]]
+    @run_listings = runs.pluck(:name, :id) 
+    @run_listings += [[TranslationEngine.translate_text(:cab), -1]] if cab_enabled
+    @run_listings += [[TranslationEngine.translate_text(:unscheduled), -2]]
 
     respond_to do |format|
       format.html
@@ -459,7 +462,9 @@ class TripsController < ApplicationController
   def update_run_filters
     filters_hash = params[:trip_filters].try(:symbolize_keys) || {}
     runs = get_eligible_runs(filters_hash)
-    @run_listings = runs.pluck(:name, :id) + [[TranslationEngine.translate_text(:unscheduled), -1]]
+    @run_listings = runs.pluck(:name, :id) 
+    @run_listings += [[TranslationEngine.translate_text(:cab), -1]] if current_provider.try(:cab_enabled?)
+    @run_listings += [[TranslationEngine.translate_text(:unscheduled), -2]]
   end
 
   private
