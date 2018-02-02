@@ -179,7 +179,6 @@ class RepeatingTripsController < ApplicationController
       :comments,
       :start_date,
       :end_date,
-      :ntd_reportable,
       :passenger_load_min,
       :passenger_unload_min,
       :early_pickup_allowed,

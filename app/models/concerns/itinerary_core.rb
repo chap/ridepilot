@@ -90,6 +90,14 @@ module ItineraryCore
       @capacity
     end
 
+    def ntd_capacity=(ntd_capacity)
+      @ntd_capacity = ntd_capacity
+    end
+
+    def ntd_capacity
+      @ntd_capacity
+    end
+
     def capacity_warning=(capacity_warning)
       @capacity_warning = capacity_warning
     end

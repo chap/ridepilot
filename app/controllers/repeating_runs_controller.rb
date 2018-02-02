@@ -113,7 +113,6 @@ class RepeatingRunsController < ApplicationController
       :repetition_vehicle_id,
       :start_date,
       :end_date,
-      :ntd_reportable,
       :comments
     )
   end

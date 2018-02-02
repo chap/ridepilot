@@ -23,10 +23,7 @@ module RunCore
     scope :for_vehicle,            -> (vehicle_id) { where(vehicle_id: vehicle_id) }
     scope :for_driver,             -> (driver_id) { where(driver_id: driver_id) }
     scope :has_scheduled_time,     -> { where.not(scheduled_start_time: nil).where.not(scheduled_end_time: nil) }
-
-    scope :ntd_reportable,         -> { where(ntd_reportable: true) }
-
-    # 
+ 
     scope :starts_before_time, -> (time) do
       query_str = date_agnostic_time_query_str(:scheduled_start_time, :<)
       secs = time.try(:seconds_since_midnight)

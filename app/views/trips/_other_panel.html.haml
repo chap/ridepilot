@@ -11,11 +11,6 @@
         - if !@is_repeating_trip &&@trip.customer_informed
           = "on #{@trip.called_back_at}" if @trip.called_back_at.present?
           = "by #{@trip.called_back_by.email}" if @trip.called_back_by.present?
-    .form-group.col-sm-12
-      .col-sm-3
-        = f.label :ntd_reportable, translate_helper("ntd_reportable_label")
-      .col-sm-9
-        = f.check_box :ntd_reportable
     - unless @is_repeating_trip
       .form-group.col-sm-12
         .col-sm-3

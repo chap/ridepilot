@@ -499,7 +499,6 @@ class TripsController < ApplicationController
       :number_of_senior_passengers_served,
       :number_of_disabled_passengers_served,
       :number_of_low_income_passengers_served,
-      :ntd_reportable,
       :passenger_load_min,
       :passenger_unload_min,
       :early_pickup_allowed,

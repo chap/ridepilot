@@ -24,10 +24,6 @@
         = f.label :name, translate_helper("name") 
       .col-sm-9
         = f.text_field :name, class: 'form-control', required: true
-    .col-sm-12.col-md-6.form-group
-      = f.label :ntd_reportable, class: 'pull-right' do 
-        = f.check_box :ntd_reportable
-        = translate_helper("ntd_reportable_label")
 
   .col-sm-12.col-md-6
     = render 'runs/date_time_panel', f: f, edit_mode: edit_mode

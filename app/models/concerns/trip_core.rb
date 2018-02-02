@@ -38,8 +38,6 @@ module TripCore
     scope :individual,         -> { joins(:customer).where(customers: {group: false}) }
     scope :not_called_back,    -> { where('called_back_at IS NULL') }
 
-    scope :ntd_reportable,         -> { where(ntd_reportable: true) }
-
     private
 
     def no_appointment_time?
@@ -49,6 +47,10 @@ module TripCore
 
   def trip_size
     (customer_space_count || 1) + guest_count.to_i + attendant_count.to_i + service_animal_space_count.to_i
+  end
+
+  def human_trip_size
+    (customer_space_count || 1) + guest_count.to_i + attendant_count.to_i 
   end
 
   def trip_count

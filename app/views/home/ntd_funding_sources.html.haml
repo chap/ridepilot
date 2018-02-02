@@ -1,0 +1,45 @@
+- editable = can? :manage, FundingSource
+
+.col-sm-12{style: 'padding: 10px;'}
+  %h2= translate_helper(:ntd_funding_sources_link_text)
+  %span= translate_helper(:funding_sources_ntd_edit_notes)
+  - if editable
+    .pull-right{style: 'padding-bottom: 5px;'}
+      %button.btn.btn-primary#save_funding_sources
+        = translate_helper("update_ntd_funding_sources")
+      = link_to translate_helper("back"), :back, class: "btn action-button"
+    - @funding_sources.each do |source|
+      .col-sm-12
+        %label
+          %input{type: 'checkbox', class: "funding_sources", value: source.id, checked: source.ntd_reportable?} 
+          = source.name
+  - else
+    %ul
+      - @funding_sources.ntd_reportable.pluck(:name).each do |source|
+        %li= source
+
+- if params[:provider] == 'true'
+  = render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'provider'
+- else
+  = render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'admin'
+
+- if editable
+  :javascript
+    $(function() {
+      $('#save_funding_sources').click(function() {
+        var ids = [];
+        $('input.funding_sources').each(function() {
+          if($(this).is(':checked')) {
+            ids.push($(this).val());
+          }
+        });
+
+        $.ajax({
+          url: "#{update_ntd_funding_sources_path(provider: params[:provider])}",
+          method: 'post',
+          data: {
+            ntd_funding_source_ids: ids.join(',')
+          }
+        });
+      });
+    });

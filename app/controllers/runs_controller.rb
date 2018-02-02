@@ -329,7 +329,6 @@ class RunsController < ApplicationController
       :complete, 
       :actual_start_time, 
       :actual_end_time, 
-      :ntd_reportable,
       :trips_attributes => [
         :id,
         :trip_result_id

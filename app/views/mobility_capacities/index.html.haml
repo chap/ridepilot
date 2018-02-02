@@ -1,3 +1,5 @@
+= render 'shared/highlight_active_tab_js', is_primary_nav: false, tab_class: 'admin'
+
 - editable = can? :manage, MobilityCapacity
 .col-sm-12{style: 'padding: 10px;'}
   - mobility_type_table = LookupTable.find_by_name('mobilities')

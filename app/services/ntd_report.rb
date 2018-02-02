@@ -31,14 +31,14 @@ class NtdReport
   end
 
   def get_base_data
-    # ntd_reportable runs
-    @runs = Run.ntd_reportable.complete.for_provider(@provider.try(:id)).for_date_range(@start_date, @end_date)
+    @runs = Run.complete.for_provider(@provider.try(:id)).for_date_range(@start_date, @end_date)
     @weekday_runs = @runs.where("extract(dow from date) in (?)", (1..5).to_a)
     @sat_runs = @runs.where("extract(dow from date) = ?", 6)
     @sun_runs = @runs.where("extract(dow from date) = ?", 0)
 
-    # ntd_reportable trips
-    @trips = Trip.ntd_reportable.for_provider(@provider.try(:id)).completed.joins(:run).where("runs.complete = ?", true).for_date_range(@start_date, @end_date)
+    @trips = Trip.for_provider(@provider.try(:id)).completed.joins(:run, :funding_source)
+      .where("runs.complete = ?", true).for_date_range(@start_date, @end_date)
+      .where(funding_sources: {ntd_reportable: true})
     @weekday_trips = @trips.where("extract(dow from pickup_time) in (?)", (1..5).to_a)
     @sat_trips = @trips.where("extract(dow from pickup_time) = ?", 6)
     @sun_trips = @trips.where("extract(dow from pickup_time) = ?", 0)

@@ -695,6 +695,12 @@ en:
   configure_provider_lookup_tables: "Configure Provider Lookup Tables"
   application_settings_link_text: "Application Settings"
   schedule_recurring_trips_runs: "Schedule Recurring Trips and Runs"
+  ntd_funding_sources_link_text: "Change NTD Funding Sources"
+  funding_sources_ntd_edit_notes: "Please choose NTD reportable funding sources and save."
+  update_ntd_funding_sources: "Save"
+  provider_ntd_funding_source_link_text: "Change NTD Funding Sources"
+  manage_provider_ntd_funding_source_link_text: "Manage Provider Specific NTD Funding Sources"
+
   #footer
   footer_content: "Footer content here."
   #application layout

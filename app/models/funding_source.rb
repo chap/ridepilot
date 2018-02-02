@@ -6,6 +6,10 @@ class FundingSource < ActiveRecord::Base
   validates_length_of :name, minimum: 2
   validate :name_uniqueness
 
+  scope :across_system,       -> { where(provider_id: nil) }
+  scope :provider_specific,   ->(provider_id) { where(provider_id: provider_id) }
+  scope :ntd_reportable,      -> { where(ntd_reportable: true) }
+
   def self.by_provider(provider)
     hidden_ids = HiddenLookupTableValue.hidden_ids self.table_name, provider.try(:id)
     where.not(id: hidden_ids).where("provider_id is NULL or provider_id = ?", provider.try(:id))

@@ -389,6 +389,10 @@ class Trip < ActiveRecord::Base
     self.save(validate: false) if self.changed?
   end
 
+  def ntd_reportable?
+    funding_source.try(:ntd_reportable?)
+  end
+
   private
 
   def driver_is_valid_for_vehicle

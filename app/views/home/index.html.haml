@@ -13,6 +13,8 @@
     %li= link_to translate_helper("mobility_capacities_link_text"), mobility_capacities_path
   - if can? :manage, LookupTable
     %li= link_to translate_helper("lookup_tables_link_text"), lookup_tables_path
+  - if can? :manage, FundingSource
+    %li= link_to translate_helper("ntd_funding_sources_link_text"), ntd_funding_sources_path
   - if can? :manage, Translation
     %li= link_to translate_helper("translation_engine_link_text"), translation_engine.translations_path
 

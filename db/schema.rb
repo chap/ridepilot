@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180125210854) do
+ActiveRecord::Schema.define(version: 20180202203233) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -453,6 +453,7 @@ ActiveRecord::Schema.define(version: 20180125210854) do
     t.string   "name",        limit: 255
     t.datetime "deleted_at"
     t.integer  "provider_id"
+    t.boolean  "ntd_reportable"
   end
 
   add_index "funding_sources", ["deleted_at"], name: "index_funding_sources_on_deleted_at", using: :btree
@@ -749,7 +750,6 @@ ActiveRecord::Schema.define(version: 20180125210854) do
     t.text     "manifest_order"
     t.string   "scheduled_start_time_string", limit: 255
     t.string   "scheduled_end_time_string",   limit: 255
-    t.boolean  "ntd_reportable",                          default: true
   end
 
   add_index "repeating_runs", ["driver_id"], name: "index_repeating_runs_on_driver_id", using: :btree
@@ -792,7 +792,6 @@ ActiveRecord::Schema.define(version: 20180125210854) do
     t.string   "dropoff_address_notes",          limit: 255
     t.integer  "customer_space_count"
     t.integer  "service_animal_space_count"
-    t.boolean  "ntd_reportable",                             default: true
     t.integer  "passenger_load_min"
     t.integer  "passenger_unload_min"
     t.boolean  "early_pickup_allowed"
@@ -951,7 +950,6 @@ ActiveRecord::Schema.define(version: 20180125210854) do
     t.text     "uncomplete_reason"
     t.string   "scheduled_start_time_string", limit: 255
     t.string   "scheduled_end_time_string",   limit: 255
-    t.boolean  "ntd_reportable",                          default: true
   end
 
   add_index "runs", ["deleted_at"], name: "index_runs_on_deleted_at", using: :btree
@@ -1094,7 +1092,6 @@ ActiveRecord::Schema.define(version: 20180125210854) do
     t.boolean  "driver_notified"
     t.integer  "customer_space_count"
     t.integer  "service_animal_space_count"
-    t.boolean  "ntd_reportable",                                                              default: true
     t.integer  "passenger_load_min"
     t.integer  "passenger_unload_min"
     t.boolean  "early_pickup_allowed"
@@ -1316,7 +1313,6 @@ ActiveRecord::Schema.define(version: 20180125210854) do
     t.text     "active_status_changed_reason"
     t.integer  "vehicle_maintenance_schedule_type_id"
     t.integer  "vehicle_type_id"
-    t.boolean  "ntd_reportable",                                   default: true
   end
 
   add_index "vehicles", ["default_driver_id"], name: "index_vehicles_on_default_driver_id", using: :btree

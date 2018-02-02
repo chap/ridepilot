@@ -43,6 +43,12 @@
       <%= link_to translate_helper("open_system_lookup_tables_link_text"), lookup_tables_path, target: '_blank' %>
     </div>
   </div>
+  <div class="row col-sm-12">
+    <label> <%= translate_helper(:provider_ntd_funding_source_link_text) %>: </label>
+    <div class="col-sm-12">
+      <%= link_to translate_helper("manage_provider_ntd_funding_source_link_text"), ntd_funding_sources_path(provider: true), target: '_blank' %> 
+    </div>
+  </div>
 </fieldset>
 <hr>
 

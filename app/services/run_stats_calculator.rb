@@ -26,11 +26,15 @@ class RunStatsCalculator
     passenger_miles = 0
 
     #NTD related
-    non_ntd_miles = 0
-    non_ntd_passenger_miles = 0
+    ntd_revenue_miles = 0
+    ntd_passenger_miles = 0
+    ntd_deadhead_miles = 0
+    is_first_leg_ntd = itins.first.trip.try(:ntd_reportable?)
+    is_last_leg_ntd = itins.last.trip.try(:ntd_reportable?)
 
     from_address = @run.from_garage_address || @run.vehicle.try(:garage_address)
     to_address = itins.first.address
+
     time = @run.scheduled_start_time
     
     deadhead_from_garage = get_drive_distance(from_address, to_address, time)
@@ -50,9 +54,9 @@ class RunStatsCalculator
         non_revenue_miles += dist
       end    
 
-      unless itin.trip.try(:ntd_reportable?)     
-        non_ntd_miles += dist
-        non_ntd_passenger_miles += dist * itin.capacity.to_f
+      if itin.ntd_capacity.to_f > 0    
+        ntd_revenue_miles += dist
+        ntd_passenger_miles += dist * itin.ntd_capacity.to_f
       end
     end
 
@@ -72,11 +76,20 @@ class RunStatsCalculator
     run_distance.deadhead_to_garage = deadhead_to_garage
     run_distance.passenger_miles = passenger_miles
     #NTD
-    run_distance.ntd_total_miles = total_dist - non_ntd_miles
-    run_distance.ntd_total_revenue_miles = revenuse_miles + non_revenue_miles - non_ntd_miles
-    run_distance.ntd_total_passenger_miles = passenger_miles - non_ntd_passenger_miles
-    run_distance.ntd_total_hours = @run.duration_in_hours * (run_distance.ntd_total_miles / run_distance.total_dist) #preportional to distance %
-    run_distance.ntd_total_revenue_hours = @run.duration_in_hours * (run_distance.ntd_total_revenue_miles / run_distance.total_dist)
+    ntd_deadhead_miles += deadhead_from_garage if is_first_leg_ntd 
+    ntd_deadhead_miles += deadhead_to_garage if is_last_leg_ntd 
+    ntd_total = ntd_revenue_miles + ntd_deadhead_miles
+
+    run_distance.ntd_total_miles = ntd_total
+    run_distance.ntd_total_revenue_miles = ntd_revenue_miles
+    run_distance.ntd_total_passenger_miles = ntd_passenger_miles
+
+    total_odometer_diff = @run.end_odometer - @run.start_odometer
+    ntd_mileage_ratio = ntd_total / total_odometer_diff.to_f
+    ntd_revenue_ratio = (ntd_total.to_f > 0) ? (ntd_revenue_miles / ntd_total.to_f) : 0
+
+    run_distance.ntd_total_hours = @run.duration_in_hours * ntd_mileage_ratio #preportional to distance %
+    run_distance.ntd_total_revenue_hours = run_distance.ntd_total_hours * ntd_revenue_ratio
 
     run_distance.save
   end
@@ -136,17 +149,25 @@ class RunStatsCalculator
     # calculate occupancy
     occupancy = 0
     delta = 0
+    ntd_occupancy = 0
+    ntd_delta = 0
     itins.each do |itin|
       occupancy += delta
       itin.capacity = occupancy
+      ntd_occupancy += ntd_delta
+      itin.ntd_capacity = ntd_occupancy
 
       trip = itin.trip
       next unless trip
 
-      if itin.leg_flag. == 1
-        delta = trip.trip_size unless TripResult::NON_DISPATCHABLE_CODES.include?(trip.trip_result.try(:code))
+      if itin.leg_flag == 1
+        unless TripResult::NON_DISPATCHABLE_CODES.include?(trip.trip_result.try(:code))
+          delta = trip.human_trip_size 
+          ntd_delta = delta if trip.ntd_reportable?
+        end
       elsif itin.leg_flag == 2
-        delta = -1 * trip.trip_size
+        delta = -1 * trip.human_trip_size
+        ntd_delta = delta if trip.ntd_reportable?
       end
     end
 
